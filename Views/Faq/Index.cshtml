@@ -1,0 +1,117 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "FAQ";
+}
+
+<link rel="stylesheet" href="~/css/faq.css" />
+
+<div class="faq-container">
+
+    <!-- Header -->
+    <h1 class="faq-title">Frequently Asked Questions</h1>
+    <p class="faq-subtitle">
+        Find answers to your questions about donating blood and using the BloodConnect platform.
+        We're here to help make the process as clear and simple as possible.
+    </p>
+
+    <!-- Search Bar -->
+    <div class="faq-search-wrap">
+        <input class="faq-search" placeholder="What can we help you with?" />
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="faq-tabs">
+        <button class="tab active">General Questions</button>
+        <button class="tab">Eligibility</button>
+        <button class="tab">The Process</button>
+        <button class="tab">After Donating</button>
+        <button class="tab">Account Support</button>
+    </div>
+
+    <!-- Accordion -->
+    <div class="faq-list">
+        <div class="faq-item">
+            <button class="faq-q">
+                How often can I donate blood?
+                <span class="chev"><img src="https://cdn-icons-png.flaticon.com/128/54/54470.png" width="10"/></span>
+            </button>
+            <div class="faq-a">
+                In most places, you can donate whole blood every 56 days (8 weeks). This can vary for
+                other types of donations like platelets or plasma. Consult with the donation center
+                for specific guidelines.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-q">
+                What are the basic eligibility requirements?
+                <span class="chev"><img src="https://cdn-icons-png.flaticon.com/128/54/54470.png" width="10" /></span>
+            </button>
+            <div class="faq-a">
+                You must meet age, weight, and health requirements. Check your local regulations.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-q">
+                How long does the donation process take?
+                <span class="chev"><img src="https://cdn-icons-png.flaticon.com/128/54/54470.png" width="10" /></span>
+            </button>
+            <div class="faq-a">
+                The full process typically takes 45 minutes to 1 hour.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-q">
+                What should I do after donating blood?
+                <span class="chev"><img src="https://cdn-icons-png.flaticon.com/128/54/54470.png" width="10" /></span>
+            </button>
+            <div class="faq-a">
+                Drink fluids, avoid heavy lifting, and rest for the remainder of the day.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-q">
+                Is donating blood safe?
+                <span class="chev"><img src="https://cdn-icons-png.flaticon.com/128/54/54470.png" width="10" /></span>
+            </button>
+            <div class="faq-a">
+                Yes. Blood donation follows strict medical and safety protocols.
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Box -->
+    <div class="faq-support-box">
+        <h3>Still have questions?</h3>
+        <p>
+            If you can't find the answer you're looking for, our support team is ready to help.
+            Please don’t hesitate to reach out.
+        </p>
+        <button class="support-btn">Contact Support</button>
+    </div>
+
+</div>
+
+<script>
+    // toggle
+    document.querySelectorAll(".faq-q").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const item = btn.parentElement;
+            item.classList.toggle("active");
+        });
+    });
+
+    // Tab active effect
+    document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+        });
+    });
+</script>
+
