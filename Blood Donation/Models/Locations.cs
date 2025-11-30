@@ -2,7 +2,7 @@
 
 namespace BloodDonation.Models
 {
-    public class Location
+    public class Locations
     {
         [Key]
         public int LocationId { get; set; }

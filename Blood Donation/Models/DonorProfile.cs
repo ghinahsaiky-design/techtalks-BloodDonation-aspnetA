@@ -15,13 +15,13 @@ namespace BloodDonation.Models
         public int BloodTypeId { get; set; }
 
         [ForeignKey("BloodTypeId")]
-        public BloodType BloodType { get; set; } // navigation property
+        public BloodTypes BloodType { get; set; } // navigation property
 
         [Required]
         public int LocationId { get; set; }
 
         [ForeignKey("LocationId")]
-        public Location Location { get; set; } // navigation property
+        public Locations Location { get; set; } // navigation property
 
         [Required]
         public bool IsHealthyForDonation { get; set; }

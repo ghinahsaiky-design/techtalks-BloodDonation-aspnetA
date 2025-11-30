@@ -2,7 +2,7 @@
 
 namespace BloodDonation.Models
 {
-    public class BloodType
+    public class BloodTypes
     {
         [Key]
         public int BloodTypeId { get; set; }
