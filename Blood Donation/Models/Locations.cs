@@ -9,6 +9,6 @@ namespace BloodDonation.Models
 
         [Required]
         [MaxLength(100)]
-        public string City { get; set; } // e.g., city, region, or area
+        public string Districts { get; set; } 
     }
 }
