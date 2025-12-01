@@ -50,19 +50,19 @@
                         </div>
                     </div>
                     <div class="flex gap-3 p-3 flex-wrap items-center justify-center">
-                        <div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#d60528] text-white pl-5 pr-5 cursor-pointer">
+                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#d60528] text-white pl-5 pr-5 cursor-pointer">
                             <p class="text-sm font-medium leading-normal">General Questions</p>
                         </div>
-                        <div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
+                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
                             <p class="text-[#343A40] dark:text-white/90 text-sm font-medium leading-normal">Eligibility</p>
                         </div>
-                        <div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
+                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
                             <p class="text-[#343A40] dark:text-white/90 text-sm font-medium leading-normal">The Process</p>
                         </div>
-                        <div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
+                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
                             <p class="text-[#343A40] dark:text-white/90 text-sm font-medium leading-normal">After Donating</p>
                         </div>
-                        <div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
+                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
                             <p class="text-[#343A40] dark:text-white/90 text-sm font-medium leading-normal">Account Support</p>
                         </div>
                     </div>
@@ -120,6 +120,36 @@
                     </div>
                 </div>
             </main>
-            </div>
-            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll(".tab");
+
+            // Set initial active tab (first one)
+            const setActive = (tab) => {
+                tabs.forEach(t => {
+                    t.classList.remove("bg-[#d60528]", "text-white");
+                    t.classList.add("bg-primary/20", "dark:bg-primary/30");
+                    const p = t.querySelector("p");
+                    p.classList.remove("text-white");
+                    p.classList.add("text-[#343A40]", "dark:text-white/90");
+                });
+
+                tab.classList.add("bg-[#d60528]", "text-white");
+                tab.classList.remove("bg-primary/20", "dark:bg-primary/30");
+                const p = tab.querySelector("p");
+                p.classList.add("text-white");
+                p.classList.remove("text-[#343A40]", "dark:text-white/90");
+            };
+
+            tabs.forEach(tab => {
+                tab.addEventListener("click", () => setActive(tab));
+            });
+
+            // Activate first tab by default
+            if (tabs.length) setActive(tabs[0]);
+        });
+    </script>
 </body>
