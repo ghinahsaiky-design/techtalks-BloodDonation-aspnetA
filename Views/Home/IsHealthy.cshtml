@@ -1,0 +1,157 @@
+﻿@{
+    ViewData["Title"] = "Are You Healthy?";
+}
+
+<div class="mx-auto max-w-4xl mt-5">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+        <div class="flex flex-col gap-3 text-center md:text-left">
+            <h1 class="text-4xl lg:text-5xl font-black tracking-tighter text-gray-900 dark:text-white">
+                Are You Healthy for Donation?
+            </h1>
+            <p class="text-base lg:text-lg font-normal text-gray-600 dark:text-gray-400">
+                A simplified health checklist to help you understand eligibility before donating.
+            </p>
+        </div>
+        <div class="shrink-0">
+            <img class="w-48 h-48 object-cover rounded-full shadow-lg border-4 border-white dark:border-background-dark/50" data-alt="A smiling nurse preparing for a blood donation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAOSKApGO2zAszkPXWYHGMkc-zQATCIXYwHtPedC-JbE2dDppFx02de_bFG7ZB1TXSOsM42-jkvnXtAQORO1CijFao3lpSK6qnMNtmHgjcox6fWVcn0ijPzVRkbTXYq3x0oWVP4cp8rYEhaK2RGueB12PUCt4iOgZQ_CV0A4LpYSB-t7yJrP2Vmv0R-5YSqt0bfYEGS_TEp3skXV1YYXpfWVxFQKun7KWuADj27B8w7Kzu-tex1HpZFsgd3RXSbNLhJaP692agQSgb" />
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-zinc-800/20 rounded-xl shadow-md overflow-hidden ring-1 ring-gray-200 dark:ring-zinc-800/50">
+        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-800 dark:text-white px-6 sm:px-8 py-5 border-b border-gray-200 dark:border-zinc-700">
+            Health Eligibility Checklist
+        </h2>
+        <div class="divide-y divide-gray-200 dark:divide-zinc-700">
+
+            <!-- Age -->
+            <div class="flex gap-4 p-6 sm:p-8 justify-between items-start">
+                <div class="flex items-start gap-4 sm:gap-6">
+                    <div class="flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50 shrink-0 size-12 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">celebration</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-base font-medium text-gray-900 dark:text-white">Age</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                            You must be at least 17 years old to donate in most states. There is no upper age limit as long as you are well with no restrictions or aids for walking.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weight -->
+            <div class="flex gap-4 p-6 sm:p-8 justify-between items-start">
+                <div class="flex items-start gap-4 sm:gap-6">
+                    <div class="flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50 shrink-0 size-12 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">scale</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-base font-medium text-gray-900 dark:text-white">Weight</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                            You must weigh at least 110 lbs (50 kg) to be eligible for blood donation for your own safety.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- General Health -->
+            <div class="flex gap-4 p-6 sm:p-8 justify-between items-start">
+                <div class="flex items-start gap-4 sm:gap-6">
+                    <div class="flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50 shrink-0 size-12 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">health_and_safety</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-base font-medium text-gray-900 dark:text-white">General Health Condition</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                            You must be in good health and feeling well on the day of donation. Avoid donating if you have a cold, flu, or any other illness.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hemoglobin -->
+            <div class="flex gap-4 p-6 sm:p-8 justify-between items-start">
+                <div class="flex items-start gap-4 sm:gap-6">
+                    <div class="flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50 shrink-0 size-12 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">bloodtype</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-base font-medium text-gray-900 dark:text-white">Hemoglobin Level</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                            Your hemoglobin level will be tested before donation. It must meet a certain level to ensure the donation is safe for you.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical History -->
+            <div class="flex gap-4 p-6 sm:p-8 justify-between items-start">
+                <div class="flex items-start gap-4 sm:gap-6">
+                    <div class="flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50 shrink-0 size-12 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">medical_information</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-base font-medium text-gray-900 dark:text-white">Medical History</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                            Certain medical conditions, medications, or recent surgeries may affect your eligibility. It's important to provide a complete medical history.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lifestyle -->
+            <div class="flex gap-4 p-6 sm:p-8 justify-between items-start">
+                <div class="flex items-start gap-4 sm:gap-6">
+                    <div class="flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50 shrink-0 size-12 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">hiking</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-base font-medium text-gray-900 dark:text-white">Lifestyle Requirements</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                            There are waiting periods after getting tattoos, piercings, or acupuncture. Be sure to inform the staff about any recent procedures.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Travel / Vaccines -->
+            <div class="flex gap-4 p-6 sm:p-8 justify-between items-start">
+                <div class="flex items-start gap-4 sm:gap-6">
+                    <div class="flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50 shrink-0 size-12 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">flight_takeoff</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-base font-medium text-gray-900 dark:text-white">Travel / Vaccines</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                            Travel to certain countries may result in a temporary deferral. Most vaccinations do not disqualify you from donating.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- For Women -->
+            <div class="flex gap-4 p-6 sm:p-8 justify-between items-start">
+                <div class="flex items-start gap-4 sm:gap-6">
+                    <div class="flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50 shrink-0 size-12 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">female</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-base font-medium text-gray-900 dark:text-white">For Women</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                            You must wait 6 weeks after giving birth to donate. It is not advisable to donate blood while pregnant or breastfeeding.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="mt-12 text-center p-6 bg-gray-100 dark:bg-zinc-800/20 rounded-lg">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+            <strong>Disclaimer:</strong> This checklist is a general guide. Final eligibility will be determined by our medical staff at the donation center on the day of your appointment.
+        </p>
+        <button class="mt-6 flex w-full sm:w-auto mx-auto items-center justify-center rounded-lg h-12 px-6 bg-soft-red text-white text-base font-bold tracking-wide shadow-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-soft-red/50">
+            Find a Donation Center
+        </button>
+    </div>
+</div>
