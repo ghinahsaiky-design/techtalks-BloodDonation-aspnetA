@@ -162,7 +162,9 @@ namespace BloodDonation.Migrations
                     { 21, "Nabatieh" },
                     { 22, "Bint Jbeil" },
                     { 23, "Marjeyoun" },
-                    { 24, "Hasbaya" }
+                    { 24, "Hasbaya" },
+                    { 25, "Rachaya" },
+                    { 26, "West Beqaa" }
                 });
 
             migrationBuilder.CreateIndex(

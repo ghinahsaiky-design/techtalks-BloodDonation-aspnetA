@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BloodDonation.Migrations
 {
     [DbContext(typeof(BloodDonationContext))]
-    [Migration("20251130184927_InitialTables")]
+    [Migration("20251201135458_InitialTables")]
     partial class InitialTables
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace BloodDonation.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -270,6 +270,16 @@ namespace BloodDonation.Migrations
                         {
                             LocationId = 24,
                             Districts = "Hasbaya"
+                        },
+                        new
+                        {
+                            LocationId = 25,
+                            Districts = "Rachaya"
+                        },
+                        new
+                        {
+                            LocationId = 26,
+                            Districts = "West Beqaa"
                         });
                 });
 

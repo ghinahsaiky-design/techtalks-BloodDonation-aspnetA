@@ -54,7 +54,9 @@ namespace BloodDonation.Data
                 new Locations { LocationId = 21, Districts = "Nabatieh" },
                 new Locations { LocationId = 22, Districts = "Bint Jbeil" },
                 new Locations { LocationId = 23, Districts = "Marjeyoun" },
-                new Locations { LocationId = 24, Districts = "Hasbaya" }
+                new Locations { LocationId = 24, Districts = "Hasbaya" },
+                new Locations { LocationId = 25, Districts = "Rachaya"},
+                new Locations { LocationId = 26, Districts = "West Beqaa"}
             );
         }
 
