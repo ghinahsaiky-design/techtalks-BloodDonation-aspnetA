@@ -21,24 +21,24 @@ body {
   margin-bottom: 60px;
 }
 .accordion-body {
-    color: #d32f2f; /* dark red */
+    color: #d32f2f; 
     border-radius: 8px;
     padding: 1.2rem;
 }
 
 .main-writing {
-    color: #d32f2f; /* dark red */
+    color: #d32f2f; 
 }
 .accordion-header {
-    color: #d32f2f; /* dark red */
+    color: #d32f2f; 
     font-weight: bold;
-    font-size: 1.1rem; /* increase text size */
+    font-size: 1.1rem; 
 }
 .accordion-button {
     color: black; 
     font-weight: bold;
-    font-size: 1.1rem; /* increase text size */
-    padding: 1.2rem 1.5rem; /* increase clickable area */
+    font-size: 1.1rem; 
+    padding: 1.2rem 1.5rem; 
     border-radius: 8px;
  
 }
@@ -52,7 +52,7 @@ body {
     }
 
     .accordion-button:not(.collapsed) {
-        background-color: #d32f2f; /* lighter red when open */
+        background-color: #d32f2f; 
         color: white;
         box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.2);
     }
