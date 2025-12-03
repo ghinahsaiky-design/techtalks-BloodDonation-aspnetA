@@ -40,5 +40,5 @@ namespace BloodDonation.Models
         [Required]
         [MaxLength(10)]
         public string Gender { get; set; } // "Male" or "Female"
-    }
+    } 
 }

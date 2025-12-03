@@ -205,6 +205,6 @@ namespace BloodDonation.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
-        }
+        } 
     }
 }

@@ -11,4 +11,4 @@ namespace BloodDonation.Models
         [MaxLength(3)]
         public string Type { get; set; } 
     }
-}
+} 

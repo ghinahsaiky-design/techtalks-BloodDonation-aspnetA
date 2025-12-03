@@ -57,7 +57,7 @@ namespace BloodDonation.Data
                 new Locations { LocationId = 24, Districts = "Hasbaya" },
                 new Locations { LocationId = 25, Districts = "Rachaya"},
                 new Locations { LocationId = 26, Districts = "West Beqaa"}
-            );
+            ); 
         }
 
     }

@@ -28,5 +28,5 @@ namespace BloodDonation.Models
         [Required]
         public bool IsUsed { get; set; } = false;
       
-    }
+    } 
 }

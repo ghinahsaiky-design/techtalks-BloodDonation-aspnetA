@@ -30,4 +30,4 @@ namespace BloodDonation.Models
         [MaxLength(20)]
         public string Role { get; set; } // "Donor", "Admin", "Owner"
     }
-}
+} 
