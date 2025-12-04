@@ -15,16 +15,16 @@ namespace BloodDonation.Models
         [MaxLength(100)]
         public string LastName { get; set; }
 
+        [Required]
         [EmailAddress]
         [MaxLength(100)]
-        public string? Email { get; set; } 
+        public string Email { get; set; } 
 
         [Required]
         public string Password { get; set; }
 
-        [Required]
         [MaxLength(20)]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         [Required]
         [MaxLength(20)]
