@@ -1,4 +1,6 @@
-﻿@{
+﻿@model BloodDonation.Models.ContactViewModel
+
+@{
     ViewData["Title"] = "Contact Us";
 }
 
@@ -8,7 +10,7 @@
         <div class="col-lg-10">
 
             <div class="text-center mb-5">
-                <h2 class="fw-bold">Get in Touch</h2>
+                <h2 class="fw-bold" style="font-size: 3.5rem;">Get in Touch</h2>
                 <p class="text-muted">
                     Whether you have questions, need support, or want to share feedback about BloodConnect,
                     we're here to help.
@@ -25,28 +27,47 @@
                             <h5 class="mb-4 fw-semibold">Send us a message</h5>
 
                             <form asp-action="Contact" method="post">
+
+                                <!-- GENERAL ERRORS (SMTP failures etc.) -->
+                                <div asp-validation-summary="All" class="text-danger mb-2"></div>
+
                                 <div class="mb-3">
-                                    <label class="form-label">Full Name</label>
-                                    <input type="text" class="form-control form-control-lg" placeholder="Your full name">
+                                    <label asp-for="FullName" class="form-label"></label>
+                                    <input asp-for="FullName" class="form-control form-control-lg" placeholder="Your full name" />
+                                    <span asp-validation-for="FullName" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control form-control-lg" placeholder="you@example.com">
+                                    <label asp-for="Email" class="form-label"></label>
+                                    <input asp-for="Email" class="form-control form-control-lg" placeholder="you@example.com" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Phone (optional)</label>
-                                    <input type="text" class="form-control form-control-lg" placeholder="+961 70 000 000">
+                                    <label asp-for="Phone" class="form-label"></label>
+                                    <input asp-for="Phone" class="form-control form-control-lg" placeholder="+961 70 000 000" />
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Message</label>
-                                    <textarea class="form-control form-control-lg" rows="4" placeholder="Write your message here..."></textarea>
+                                    <label asp-for="Message" class="form-label"></label>
+                                    <textarea asp-for="Message" class="form-control form-control-lg" rows="4" placeholder="Write your message here..."></textarea>
+                                    <span asp-validation-for="Message" class="text-danger"></span>
                                 </div>
-                                <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill">
+
+                                <button type="submit"
+                                        class="btn btn-lg w-100 rounded-pill"
+                                        style="background-color:#E94E4E; color:white; border:none;">
                                     Send Message
                                 </button>
+
+                                <!-- SUCCESS MESSAGE -->
+                                @if (ViewBag.Success != null)
+                                {
+                                    <div class="alert alert-success mt-3">
+                                        @ViewBag.Success
+                                    </div>
+                                }
+
                             </form>
 
                         </div>
@@ -69,7 +90,9 @@
                             <hr />
 
                             <h5 class="fw-semibold mb-2">Support Info</h5>
-                            <p class="text-muted small mb-1">Email: support@bloodconnect.com</p>
+                            <p class="text-muted small mb-1">
+                                Email: <a href="mailto:Blood.donation.webapp@gmail.com">Blood.donation.webapp@gmail.com</a>
+                           </p>
                             <p class="text-muted small mb-3">Working hours: 9:00 AM – 6:00 PM</p>
 
                             <hr />
