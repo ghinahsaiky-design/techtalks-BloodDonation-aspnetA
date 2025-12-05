@@ -30,126 +30,188 @@
 </script>
 
 <body class="font-display bg-background-light dark:bg-background-dark">
-    <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-        <div class="layout-container flex h-full grow flex-col">
-            <main class="px-4 sm:px-10 flex flex-1 justify-center py-5 mt-20">
-                <div class="layout-content-container flex flex-col max-w-4xl flex-1 gap-8">
-                    <div class="flex flex-col gap-4 text-center items-center py-8">
-                        <p class="text-[#343A40] dark:text-white text-4xl sm:text-5xl font-black leading-tight tracking-[-0.033em]">Frequently Asked Questions</p>
-                        <p class="text-slate-600 dark:text-slate-400 max-w-xl">Find answers to your questions about donating blood and using the BloodConnect platform. We're here to help make the process as clear and simple as possible.</p>
-                    </div>
-                    <div class="px-4 py-3">
-                        <div class="flex flex-col min-w-40 h-14 w-full">
-                            <label class="sr-only" for="faq-search">Search FAQ</label>
-                            <div class="flex w-full flex-1 items-stretch rounded-xl h-full shadow-sm bg-white dark:bg-background-dark cursor-pointer">
-                                <div class="text-slate-500 dark:text-slate-400 flex bg-transparent items-center justify-center pl-4 rounded-l-xl border-r-0">
-                                    <span class="material-symbols-outlined">search</span>
-                                </div>
-                                <input id="faq-search" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#343A40] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-transparent h-full placeholder:text-slate-500 dark:placeholder:text-slate-400 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="What can we help you with?" value="" />
-                            </div>
+    <div class="relative flex min-h-screen w-full flex-col">
+        <main class="px-4 sm:px-10 flex flex-1 justify-center py-5 mt-20">
+            <div class="flex flex-col max-w-4xl flex-1 gap-8">
+                <div class="flex flex-col gap-4 text-center items-center py-8">
+                    <p class="text-[#343A40] dark:text-white text-4xl sm:text-5xl font-black">Frequently Asked Questions</p>
+                    <p class="text-slate-600 dark:text-slate-400 max-w-xl">Find answers to your questions about donating blood and using the BloodConnect platform.</p>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="px-4 py-3">
+                    <div class="w-full">
+                        <label class="sr-only" for="faq-search">Search FAQ</label>
+
+                        <div class="flex items-center gap-3 bg-white shadow-md rounded-xl px-6 py-3 h-14
+                    dark:bg-background-dark dark:shadow-lg">
+
+                            <span class="material-symbols-outlined text-slate-500 dark:text-white/70">
+                                search
+                            </span>
+
+                            <input id="faq-search"
+                                   type="text"
+                                   placeholder="What can we help you with?"
+                                   class="form-input flex w-full rounded-r-xl rounded-l-none text-[#343A40] dark:text-white bg-transparent border-none px-4  focus:ring-primary/50" />
                         </div>
-                    </div>
-                    <div class="flex gap-3 p-3 flex-wrap items-center justify-center">
-                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#d60528] text-white pl-5 pr-5 cursor-pointer">
-                            <p class="text-sm font-medium leading-normal">General Questions</p>
-                        </div>
-                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
-                            <p class="text-[#343A40] dark:text-white/90 text-sm font-medium leading-normal">Eligibility</p>
-                        </div>
-                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
-                            <p class="text-[#343A40] dark:text-white/90 text-sm font-medium leading-normal">The Process</p>
-                        </div>
-                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
-                            <p class="text-[#343A40] dark:text-white/90 text-sm font-medium leading-normal">After Donating</p>
-                        </div>
-                        <div class="tab flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 dark:bg-primary/30 pl-5 pr-5 cursor-pointer hover:bg-primary/30 dark:hover:bg-primary/40">
-                            <p class="text-[#343A40] dark:text-white/90 text-sm font-medium leading-normal">Account Support</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-col p-4 space-y-2">
-                        <details class="flex flex-col border-b border-primary/20 dark:border-primary/30 py-2 group" open="">
-                            <summary class="flex cursor-pointer items-center justify-between gap-6 py-4 list-none">
-                                <p class="text-[#343A40] dark:text-white text-base font-semibold leading-normal">How often can I donate blood?</p>
-                                <div class="text-[#343A40] dark:text-white group-open:rotate-180 transition-transform">
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </summary>
-                            <p class="text-slate-600 dark:text-slate-400 text-sm font-normal leading-relaxed pb-4">In most places, you can donate whole blood every 56 days (8 weeks). This can vary for other types of donations like platelets or plasma. Always consult with the donation center for specific guidelines.</p>
-                        </details>
-                        <details class="flex flex-col border-b border-primary/20 dark:border-primary/30 py-2 group">
-                            <summary class="flex cursor-pointer items-center justify-between gap-6 py-4 list-none">
-                                <p class="text-[#343A40] dark:text-white text-base font-semibold leading-normal">What are the basic eligibility requirements?</p>
-                                <div class="text-[#343A40] dark:text-white group-open:rotate-180 transition-transform">
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </summary>
-                            <p class="text-slate-600 dark:text-slate-400 text-sm font-normal leading-relaxed pb-4">Generally, donors must be at least 17 years old (16 with parental consent in some areas), weigh at least 110 pounds, and be in good general health. Specific requirements can vary, so check with your local donation center.</p>
-                        </details>
-                        <details class="flex flex-col border-b border-primary/20 dark:border-primary/30 py-2 group">
-                            <summary class="flex cursor-pointer items-center justify-between gap-6 py-4 list-none">
-                                <p class="text-[#343A40] dark:text-white text-base font-semibold leading-normal">How long does the donation process take?</p>
-                                <div class="text-[#343A40] dark:text-white group-open:rotate-180 transition-transform">
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </summary>
-                            <p class="text-slate-600 dark:text-slate-400 text-sm font-normal leading-relaxed pb-4">The entire process, from registration to post-donation refreshments, typically takes about an hour. The actual blood donation part only takes about 8-10 minutes.</p>
-                        </details>
-                        <details class="flex flex-col border-b border-primary/20 dark:border-primary/30 py-2 group">
-                            <summary class="flex cursor-pointer items-center justify-between gap-6 py-4 list-none">
-                                <p class="text-[#343A40] dark:text-white text-base font-semibold leading-normal">What should I do after donating blood?</p>
-                                <div class="text-[#343A40] dark:text-white group-open:rotate-180 transition-transform">
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </summary>
-                            <p class="text-slate-600 dark:text-slate-400 text-sm font-normal leading-relaxed pb-4">After donating, you should have a snack and something to drink in the refreshment area. Avoid strenuous activity for the rest of the day and drink plenty of fluids to help your body replenish.</p>
-                        </details>
-                        <details class="flex flex-col border-b border-primary/20 dark:border-primary/30 py-2 group">
-                            <summary class="flex cursor-pointer items-center justify-between gap-6 py-4 list-none">
-                                <p class="text-[#343A40] dark:text-white text-base font-semibold leading-normal">Is donating blood safe?</p>
-                                <div class="text-[#343A40] dark:text-white group-open:rotate-180 transition-transform">
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </summary>
-                            <p class="text-slate-600 dark:text-slate-400 text-sm font-normal leading-relaxed pb-4">Yes, donating blood is very safe. All needles and blood bags are new, sterile, and disposed of after a single use. You cannot get any diseases from donating blood.</p>
-                        </details>
-                    </div>
-                    <div class="flex flex-col items-center gap-4 rounded-xl bg-primary/10 dark:bg-primary/20 p-8 my-10 text-center">
-                        <h3 class="text-2xl font-bold text-[#343A40] dark:text-white">Still have questions?</h3>
-                        <p class="text-slate-600 dark:text-slate-400 max-w-md">If you can't find the answer you're looking for, our support team is ready to help. Please don't hesitate to reach out.</p>
-                        <button class="flex h-12 items-center justify-center gap-x-2 rounded-lg bg-[#d60528] px-8 text-base font-bold text-white shadow-lg hover:bg-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/50">Contact Support</button>
                     </div>
                 </div>
-            </main>
-        </div>
+
+
+                <!-- Tabs -->
+                <div class="flex gap-3 p-3 flex-wrap items-center justify-center">
+
+                    <div class="tab flex h-10 items-center gap-x-2 rounded-lg bg-[#d60528] text-white px-5 cursor-pointer"
+                         data-category="account">
+                        <p class="text-sm font-medium text-white">Account Support</p>
+                    </div>
+
+                    <div class="tab flex h-10 items-center gap-x-2 rounded-lg bg-primary/20 px-5 cursor-pointer"
+                         data-category="general">
+                        <p class="text-[#343A40] text-sm font-medium">General Questions</p>
+                    </div>
+
+                    <div class="tab flex h-10 items-center gap-x-2 rounded-lg bg-primary/20 px-5 cursor-pointer"
+                         data-category="process">
+                        <p class="text-[#343A40] text-sm font-medium">The Process</p>
+                    </div>
+
+                </div>
+
+
+                <!-- FAQ Content -->
+                <div id="faq-list" class="flex flex-col p-4 space-y-2">
+
+                    <!-- GENERAL QUESTIONS -->
+                    <details data-category="general" class="faq-item border-b border-primary/20 py-2 group" open>
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">What is BloodConnect?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">BloodConnect helps users find blood donors or donation centers quickly by location and blood type.</p>
+                    </details>
+
+                    <details data-category="general" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">Is BloodConnect free to use?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Yes. Both donors and recipients can use the platform for free.</p>
+                    </details>
+
+                    <details data-category="general" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How accurate is the donor information?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Donors update their information regularly, ensuring accuracy.</p>
+                    </details>
+
+                    <!-- ACCOUNT SUPPORT -->
+                    <details data-category="account" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">I forgot my password. How can I reset it?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Click “Forgot Password” on the login page and follow the instructions.</p>
+                    </details>
+
+                    <details data-category="account" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How do I update my personal information?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Go to Account Settings → Profile Details.</p>
+                    </details>
+
+                    <details data-category="account" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How do I delete my account?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Go to Account Settings → Delete Account.</p>
+                    </details>
+
+                    <!-- THE PROCESS -->
+                    <details data-category="process" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How does the matching process work?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">We match donors and recipients based on location, blood type, and activity.</p>
+                    </details>
+
+                    <details data-category="process" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How do I become a donor?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Create an account and complete your donor profile.</p>
+                    </details>
+
+                </div>
+
+                <!-- Contact Support -->
+                <div class="flex flex-col items-center gap-4 rounded-xl bg-primary/10 p-8 my-10 text-center">
+                    <h3 class="text-2xl font-bold text-[#343A40]">Still have questions?</h3>
+                    <p class="text-slate-600 max-w-md">Our support team is ready to help.</p>
+                    <button class="h-12 rounded-lg bg-[#d60528] px-8 text-white font-bold" onclick="window.location.href='@Url.Action("Contact", "Home")'">Contact Support</button>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener("DOMContentLoaded", () => {
             const tabs = document.querySelectorAll(".tab");
+            const searchInput = document.getElementById("faq-search");
+            const faqs = document.querySelectorAll(".faq-item");
 
-            // Set initial active tab (first one)
-            const setActive = (tab) => {
-                tabs.forEach(t => {
-                    t.classList.remove("bg-[#d60528]", "text-white");
-                    t.classList.add("bg-primary/20", "dark:bg-primary/30");
-                    const p = t.querySelector("p");
-                    p.classList.remove("text-white");
-                    p.classList.add("text-[#343A40]", "dark:text-white/90");
+            let activeCategory = "account";
+            let searchText = "";
+
+            function applyFilters() {
+                faqs.forEach(q => {
+                    const category = q.dataset.category;
+                    const text = q.innerText.toLowerCase();
+
+                    const matchCategory = category === activeCategory;
+                    const matchSearch = text.includes(searchText);
+
+                    q.style.display = (matchCategory && matchSearch) ? "block" : "none";
                 });
-
-                tab.classList.add("bg-[#d60528]", "text-white");
-                tab.classList.remove("bg-primary/20", "dark:bg-primary/30");
-                const p = tab.querySelector("p");
-                p.classList.add("text-white");
-                p.classList.remove("text-[#343A40]", "dark:text-white/90");
-            };
+            }
 
             tabs.forEach(tab => {
-                tab.addEventListener("click", () => setActive(tab));
+                tab.addEventListener("click", () => {
+                    activeCategory = tab.dataset.category;
+
+                    // Remove active style from all
+                    tabs.forEach(t => {
+                        t.classList.remove("bg-[#d60528]", "text-white");
+                        t.classList.add("bg-primary/20");
+                        const p = t.querySelector("p");
+                        p.classList.remove("text-white");
+                        p.classList.add("text-[#343A40]");
+                    });
+
+                    // Add active style to clicked tab
+                    tab.classList.add("bg-[#d60528]", "text-white");
+                    tab.classList.remove("bg-primary/20");
+                    tab.querySelector("p").classList.add("text-white");
+
+                    applyFilters();
+                });
             });
 
-            // Activate first tab by default
-            if (tabs.length) setActive(tabs[0]);
+            searchInput.addEventListener("input", () => {
+                searchText = searchInput.value.toLowerCase();
+                applyFilters();
+            });
+
+            applyFilters(); // initial filter
         });
     </script>
+
 </body>
