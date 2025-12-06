@@ -24,10 +24,10 @@
                                     A single donation can save up to three lives. Your contribution is a lifeline in an emergency and a beacon of hope for many.
                                 </h2>
                                 <div class="flex-wrap gap-4 flex justify-center lg:justify-start mt-4">
-                                    <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-soft-red text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg">
+                                     <button onclick="location.href='@(@Url.Action("SearchDonors", "Dashboard"))'" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-soft-red text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg">
                                         <span class="truncate">Search for a Donor</span>
                                     </button>
-                                    <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-gray-200 dark:bg-gray-700 text-deep-blue dark:text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">
+                                    <button onclick="location.href='@(@Url.Action("SignUp", "Auth"))'" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-gray-200 dark:bg-gray-700 text-deep-blue dark:text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">
                                         <span class="truncate">Become a Donor</span>
                                     </button>
                                 </div>
