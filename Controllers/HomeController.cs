@@ -22,6 +22,40 @@ namespace BloodDonation.Controllers
         {
             return View();
         }
+        public IActionResult Support()
+        {
+            return View();
+
+        }
+        public IActionResult About()
+        {
+            return View();
+
+        }
+
+        public IActionResult FAQ()
+        {
+            return View();
+
+        }
+        public IActionResult Contact()
+        {
+            return View();
+
+        }
+
+
+        public IActionResult Service()
+        {
+            return View();
+
+        }
+
+        public IActionResult IsHealthy()
+        {
+            return View();
+        }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

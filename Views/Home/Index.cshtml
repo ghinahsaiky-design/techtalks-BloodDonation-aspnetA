@@ -2,7 +2,88 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+
+
+           
+            
+            
+            
+            <main class="flex-grow pt-20">
+                <!-- HeroSection Section -->
+                <section class="relative bg-white dark:bg-black/20 overflow-hidden py-20 md:py-32">
+                    <div class="absolute inset-0 bg-gradient-to-br from-red-50 to-blue-50 dark:from-red-900/10 dark:to-blue-900/10"></div>
+                    <div class="absolute top-10 left-10 w-32 h-32 bg-red-100 dark:bg-red-900/20 rounded-full opacity-50 blur-2xl"></div>
+                    <div class="absolute bottom-10 right-10 w-48 h-48 bg-blue-100 dark:bg-blue-900/20 rounded-full opacity-50 blur-2xl"></div>
+                    <div class="container mx-auto px-6 lg:px-8 relative z-10">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                            <div class="flex flex-col gap-6 text-center lg:text-left">
+                                <h1 class="text-deep-blue dark:text-white text-4xl md:text-6xl font-black leading-tight tracking-[-0.033em]">
+                                    Be a Hero. Donate Blood.
+                                </h1>
+                                <h2 class="text-slate-600 dark:text-slate-300 text-base md:text-lg font-normal leading-normal max-w-lg mx-auto lg:mx-0">
+                                    A single donation can save up to three lives. Your contribution is a lifeline in an emergency and a beacon of hope for many.
+                                </h2>
+                                <div class="flex-wrap gap-4 flex justify-center lg:justify-start mt-4">
+                                    <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-soft-red text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg">
+                                        <span class="truncate">Search for a Donor</span>
+                                    </button>
+                                    <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-gray-200 dark:bg-gray-700 text-deep-blue dark:text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">
+                                        <span class="truncate">Become a Donor</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex justify-center items-center">
+                                <img class="w-full max-w-md lg:max-w-xl object-contain rounded-xl shadow-2xl" data-alt="Stylized illustration of medical professionals and community members with blood donation symbols" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3MfY5OFhbdx4sxRBy76DAw59Q_KucKR-HBN_1V4Hk37-Ta2FWnO4lYvAFgkXUD_4LUvQJmnmEgCbhfXdY-H78TmxmfCp0wDC1jFT8jflcioyo4TjAh1daJxhjJzzJkPFRy3IYAKuY0j5W4y0R37tk7S7uyquHC8YxQQrkFWh9DOBfcXBGyCoRBeBQThSiF4dX-AIBltmUUa6bDfC3bm_Ja2UtgqdPUIV_bWjOfAwxLEJIPgeTwPCaroiD96d0EAkXuSGxMKGNZw4" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- FeatureSection Section -->
+                <section class="py-20 md:py-28 bg-soft-gray dark:bg-background-dark">
+                    <div class="container mx-auto px-6 lg:px-8">
+                        <div class="flex flex-col gap-12">
+                            <div class="text-center flex flex-col gap-4 max-w-3xl mx-auto">
+                                <h1 class="text-deep-blue dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
+                                    Join Our Lifesaving Community
+                                </h1>
+                                <p class="text-slate-600 dark:text-slate-300 text-base leading-normal">
+                                    BloodConnect makes it easy to make a difference. Discover how you can contribute to saving lives in your area.
+                                </p>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                <div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 p-8 text-center items-center transition-all hover:shadow-2xl hover:-translate-y-2">
+                                    <div class="text-soft-red bg-red-100 dark:bg-red-900/30 p-4 rounded-full">
+                                        <span class="material-symbols-outlined text-4xl">favorite</span>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <h2 class="text-deep-blue dark:text-white text-xl font-bold leading-tight">Save Lives</h2>
+                                        <p class="text-slate-600 dark:text-slate-300 text-sm font-normal leading-normal">One donation can help multiple people in need. Your selfless act has a ripple effect of hope.</p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 p-8 text-center items-center transition-all hover:shadow-2xl hover:-translate-y-2">
+                                    <div class="text-soft-red bg-red-100 dark:bg-red-900/30 p-4 rounded-full">
+                                        <span class="material-symbols-outlined text-4xl">bloodtype</span>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <h2 class="text-deep-blue dark:text-white text-xl font-bold leading-tight">Become a Donor</h2>
+                                        <p class="text-slate-600 dark:text-slate-300 text-sm font-normal leading-normal">Register in minutes to become a voluntary blood donor and be notified when you're needed.</p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 p-8 text-center items-center transition-all hover:shadow-2xl hover:-translate-y-2">
+                                    <div class="text-soft-red bg-red-100 dark:bg-red-900/30 p-4 rounded-full">
+                                        <span class="material-symbols-outlined text-4xl">pin_drop</span>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <h2 class="text-deep-blue dark:text-white text-xl font-bold leading-tight">Find Local Donors</h2>
+                                        <p class="text-slate-600 dark:text-slate-300 text-sm font-normal leading-normal">Quickly search for and connect with blood donors in your immediate vicinity during emergencies.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+            
+           
+        
+     

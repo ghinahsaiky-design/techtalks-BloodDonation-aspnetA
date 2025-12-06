@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>BloodConnect Terms of Service Page</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#d60528",
+                "background-light": "#f8f5f6",
+                "background-dark": "#230f13",
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-[#181112] dark:text-gray-200">
+    <div class="relative flex min-h-screen w-full flex-col">
+        <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="flex flex-col lg:flex-row gap-10">
+                <!-- SideNavBar -->
+                <aside class="w-full lg:w-64 lg:sticky lg:top-24 self-start">
+                    <div class="flex h-full flex-col justify-between bg-white dark:bg-background-dark rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+                        <div class="flex flex-col gap-4">
+                            <div class="flex flex-col">
+                                <h1 class="text-[#181112] dark:text-gray-100 text-base font-bold leading-normal">Terms of Service</h1>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Last Updated: December 5, 2025</p>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <a class="group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-red-600 transition-colors"
+                                   href="#introduction">
+                                    <span class="material-symbols-outlined text-xl">info</span>
+                                    <p class="text-sm font-medium leading-normal">1. Introduction</p>
+                                </a>
+                                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-red-600 transition-colors"
+                                   href="#user-accounts">
+                                    <span class="material-symbols-outlined text-xl">person</span>
+                                    <p class="text-sm font-medium leading-normal">2. User Accounts &amp; Eligibility</p>
+                                </a>
+                                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-red-600 transition-colors" href="#user-conduct">
+                                    <span class="material-symbols-outlined text-xl">gavel</span>
+                                    <p class="text-sm font-medium leading-normal">3. User Conduct</p>
+                                </a>
+                                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-red-600 transition-colors" href="#privacy-policy">
+                                    <span class="material-symbols-outlined text-xl">lock</span>
+                                    <p class="text-sm font-medium leading-normal">4. Privacy Policy</p>
+                                </a>
+                                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-red-600 transition-colors" href="#disclaimers">
+                                    <span class="material-symbols-outlined text-xl">warning</span>
+                                    <p class="text-sm font-medium leading-normal">5. Disclaimers</p>
+                                </a>
+                                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-red-600 transition-colors" href="#intellectual-property">
+                                    <span class="material-symbols-outlined text-xl">copyright</span>
+                                    <p class="text-sm font-medium leading-normal">6. Intellectual Property</p>
+                                </a>
+                                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-red-600 transition-colors" href="#termination">
+                                    <span class="material-symbols-outlined text-xl">cancel</span>
+                                    <p class="text-sm font-medium leading-normal">7. Termination of Service</p>
+                                </a>
+                                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-red-600 transition-colors" href="#contact">
+                                    <span class="material-symbols-outlined text-xl">mail</span>
+                                    <p class="text-sm font-medium leading-normal">8. Contact Information</p>
+                                </a>
+                            </div>
+                        </div>
+                        <a href="/files/BloodConnect_Terms.pdf" download class="mt-6 w-full flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-red-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-700 transition-colors">
+                            <span class="material-symbols-outlined text-xl">download</span>
+                            <span class="truncate">Download PDF</span>
+                        </a>
+
+                    </div>
+                </aside>
+                <!-- Main Content -->
+                <div class="flex-1">
+                    <div class="bg-white dark:bg-background-dark rounded-lg border border-gray-200 dark:border-gray-800 p-6 md:p-8">
+                        <div class="flex flex-wrap justify-between gap-3 pb-6 border-b border-gray-200 dark:border-gray-800">
+                            <p class="text-[#181112] dark:text-gray-100 text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">Terms of Service</p>
+                        </div>
+                        <div class="prose prose-lg dark:prose-invert max-w-none prose-h2:text-[#181112] dark:prose-h2:text-gray-100 prose-p:text-gray-600 dark:prose-p:text-gray-300">
+                            <section class="scroll-mt-24" id="introduction">
+                                <h2 class="text-[#181112] text-[22px] font-bold leading-tight tracking-[-0.015em] pt-8 pb-3">1. Introduction</h2>
+                                <p class="text-base font-normal leading-relaxed">
+                                    Welcome to BloodConnect. These terms and conditions outline the rules and regulations for the use of BloodConnect's Website. By accessing this website we assume you accept these terms and conditions. Do not continue to use BloodConnect if you do not agree to take all of the terms and conditions stated on this page. Our platform is dedicated to connecting voluntary blood donors with those in need of blood, facilitating a community-driven approach to saving lives.
+                                </p>
+                            </section>
+                            <section class="scroll-mt-24" id="user-accounts">
+                                <h2 class="text-[#181112] text-[22px] font-bold leading-tight tracking-[-0.015em] pt-8 pb-3">2. User Accounts &amp; Eligibility</h2>
+                                <p class="text-base font-normal leading-relaxed">
+                                    To use BloodConnect as a donor or requestor, you must register for an account. You must be at least 18 years of age and eligible to donate blood according to local health regulations. You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete. You are responsible for safeguarding your password and for all activities that occur under your account.
+                                </p>
+                            </section>
+                            <section class="scroll-mt-24" id="user-conduct">
+                                <h2 class="text-[#181112] text-[22px] font-bold leading-tight tracking-[-0.015em] pt-8 pb-3">3. User Conduct</h2>
+                                <p class="text-base font-normal leading-relaxed">
+                                    Users are expected to use the platform responsibly and ethically. You agree not to use the service for any unlawful purpose, to solicit others to perform or participate in any unlawful acts, or to harass, abuse, or harm another person. Misinformation regarding health status, blood type, or any other critical information is strictly prohibited and may result in immediate account termination.
+                                </p>
+                            </section>
+                            <section class="scroll-mt-24" id="privacy-policy">
+                                <h2 class="text-[#181112] text-[22px] font-bold leading-tight tracking-[-0.015em] pt-8 pb-3">4. Privacy Policy</h2>
+                                <p class="text-base font-normal leading-relaxed">
+                                    Your privacy is important to us. Our <a asp-controller="Home" asp-action="Privacy" class="text-red-600 hover:underline">
+                                        Privacy Policy
+                                    </a>, which is an integral part of these Terms, explains how we collect, use, and protect your personal information. By using BloodConnect, you agree to the collection and use of information in accordance with our Privacy Policy. Please review it carefully to understand our practices.
+                                </p>
+                            </section>
+                            <section class="scroll-mt-24" id="disclaimers">
+                                <h2 class="text-[#181112] text-[22px] font-bold leading-tight tracking-[-0.015em] pt-8 pb-3">5. Disclaimers</h2>
+                                <p class="text-base font-normal leading-relaxed">
+                                    BloodConnect is a platform to facilitate connections and does not provide medical advice. We are not a medical institution, blood bank, or healthcare provider. Any information found on the platform is for informational purposes only. We do not guarantee the accuracy of user-provided information or the health condition of any donor. All users are advised to verify information and consult with certified medical professionals.
+                                </p>
+                            </section>
+                            <section class="scroll-mt-24" id="intellectual-property">
+                                <h2 class="text-[#181112] text-[22px] font-bold leading-tight tracking-[-0.015em] pt-8 pb-3">6. Intellectual Property</h2>
+                                <p class="text-base font-normal leading-relaxed">
+                                    All content on this website, including the logo, text, graphics, and software, is the property of BloodConnect or its content suppliers and protected by international copyright laws. You may not reproduce, distribute, or create derivative works from any part of the website without express written permission.
+                                </p>
+                            </section>
+                            <section class="scroll-mt-24" id="termination">
+                                <h2 class="text-[#181112] text-[22px] font-bold leading-tight tracking-[-0.015em] pt-8 pb-3">7. Termination of Service</h2>
+                                <p class="text-base font-normal leading-relaxed">
+                                    We may terminate or suspend your access to our service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the service will cease immediately.
+                                </p>
+                            </section>
+                            <section class="scroll-mt-24" id="contact">
+                                <h2 class="text-[#181112] text-[22px] font-bold leading-tight tracking-[-0.015em] pt-8 pb-3">8. Contact Information</h2>
+                                <p class="text-base font-normal leading-relaxed">
+                                    If you have any questions about these Terms, please contact us at <a href="mailto:Blood.Donation.Webapp@gmail.com"
+                                                                                                         class="text-red-600">
+                                        Blood.Donation.Webapp@gmail.com
+                                    </a> We are available to address your concerns and provide clarification on any part of this agreement.
+                                </p>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

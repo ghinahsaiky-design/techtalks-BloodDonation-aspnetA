@@ -1,0 +1,217 @@
+﻿@{
+    ViewData["Title"] = "FAQ";
+}
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
+    }
+</style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#d60528",
+            "background-light": "#f8f5f6",
+            "background-dark": "#230f13",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+</script>
+
+<body class="font-display bg-background-light dark:bg-background-dark">
+    <div class="relative flex min-h-screen w-full flex-col">
+        <main class="px-4 sm:px-10 flex flex-1 justify-center py-5 mt-20">
+            <div class="flex flex-col max-w-4xl flex-1 gap-8">
+                <div class="flex flex-col gap-4 text-center items-center py-8">
+                    <p class="text-[#343A40] dark:text-white text-4xl sm:text-5xl font-black">Frequently Asked Questions</p>
+                    <p class="text-slate-600 dark:text-slate-400 max-w-xl">Find answers to your questions about donating blood and using the BloodConnect platform.</p>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="px-4 py-3">
+                    <div class="w-full">
+                        <label class="sr-only" for="faq-search">Search FAQ</label>
+
+                        <div class="flex items-center gap-3 bg-white shadow-md rounded-xl px-6 py-3 h-14
+                    dark:bg-background-dark dark:shadow-lg">
+
+                            <span class="material-symbols-outlined text-slate-500 dark:text-white/70">
+                                search
+                            </span>
+
+                            <input id="faq-search"
+                                   type="text"
+                                   placeholder="What can we help you with?"
+                                   class="form-input flex w-full rounded-r-xl rounded-l-none text-[#343A40] dark:text-white bg-transparent border-none px-4  focus:ring-primary/50" />
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Tabs -->
+                <div class="flex gap-3 p-3 flex-wrap items-center justify-center">
+
+                    <div class="tab flex h-10 items-center gap-x-2 rounded-lg bg-[#d60528] text-white px-5 cursor-pointer"
+                         data-category="account">
+                        <p class="text-sm font-medium text-white">Account Support</p>
+                    </div>
+
+                    <div class="tab flex h-10 items-center gap-x-2 rounded-lg bg-primary/20 px-5 cursor-pointer"
+                         data-category="general">
+                        <p class="text-[#343A40] text-sm font-medium">General Questions</p>
+                    </div>
+
+                    <div class="tab flex h-10 items-center gap-x-2 rounded-lg bg-primary/20 px-5 cursor-pointer"
+                         data-category="process">
+                        <p class="text-[#343A40] text-sm font-medium">The Process</p>
+                    </div>
+
+                </div>
+
+
+                <!-- FAQ Content -->
+                <div id="faq-list" class="flex flex-col p-4 space-y-2">
+
+                    <!-- GENERAL QUESTIONS -->
+                    <details data-category="general" class="faq-item border-b border-primary/20 py-2 group" open>
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">What is BloodConnect?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">BloodConnect helps users find blood donors or donation centers quickly by location and blood type.</p>
+                    </details>
+
+                    <details data-category="general" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">Is BloodConnect free to use?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Yes. Both donors and recipients can use the platform for free.</p>
+                    </details>
+
+                    <details data-category="general" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How accurate is the donor information?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Donors update their information regularly, ensuring accuracy.</p>
+                    </details>
+
+                    <!-- ACCOUNT SUPPORT -->
+                    <details data-category="account" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">I forgot my password. How can I reset it?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Click “Forgot Password” on the login page and follow the instructions.</p>
+                    </details>
+
+                    <details data-category="account" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How do I update my personal information?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Go to Account Settings → Profile Details.</p>
+                    </details>
+
+                    <details data-category="account" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How do I delete my account?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Go to Account Settings → Delete Account.</p>
+                    </details>
+
+                    <!-- THE PROCESS -->
+                    <details data-category="process" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How does the matching process work?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">We match donors and recipients based on location, blood type, and activity.</p>
+                    </details>
+
+                    <details data-category="process" class="faq-item border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] font-semibold">How do I become a donor?</p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">expand_more</span>
+                        </summary>
+                        <p class="text-slate-600 pb-4">Create an account and complete your donor profile.</p>
+                    </details>
+
+                </div>
+
+                <!-- Contact Support -->
+                <div class="flex flex-col items-center gap-4 rounded-xl bg-primary/10 p-8 my-10 text-center">
+                    <h3 class="text-2xl font-bold text-[#343A40]">Still have questions?</h3>
+                    <p class="text-slate-600 max-w-md">Our support team is ready to help.</p>
+                    <button class="h-12 rounded-lg bg-[#d60528] px-8 text-white font-bold" onclick="window.location.href='@Url.Action("Contact", "Home")'">Contact Support</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const tabs = document.querySelectorAll(".tab");
+            const searchInput = document.getElementById("faq-search");
+            const faqs = document.querySelectorAll(".faq-item");
+
+            let activeCategory = "account";
+            let searchText = "";
+
+            function applyFilters() {
+                faqs.forEach(q => {
+                    const category = q.dataset.category;
+                    const text = q.innerText.toLowerCase();
+
+                    const matchCategory = category === activeCategory;
+                    const matchSearch = text.includes(searchText);
+
+                    q.style.display = (matchCategory && matchSearch) ? "block" : "none";
+                });
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener("click", () => {
+                    activeCategory = tab.dataset.category;
+
+                    // Remove active style from all
+                    tabs.forEach(t => {
+                        t.classList.remove("bg-[#d60528]", "text-white");
+                        t.classList.add("bg-primary/20");
+                        const p = t.querySelector("p");
+                        p.classList.remove("text-white");
+                        p.classList.add("text-[#343A40]");
+                    });
+
+                    // Add active style to clicked tab
+                    tab.classList.add("bg-[#d60528]", "text-white");
+                    tab.classList.remove("bg-primary/20");
+                    tab.querySelector("p").classList.add("text-white");
+
+                    applyFilters();
+                });
+            });
+
+            searchInput.addEventListener("input", () => {
+                searchText = searchInput.value.toLowerCase();
+                applyFilters();
+            });
+
+            applyFilters(); // initial filter
+        });
+    </script>
+
+</body>
