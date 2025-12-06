@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-feature/homepage
     <Folder Include="wwwroot\NewFolder\" />
     
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
@@ -16,7 +15,7 @@ feature/homepage
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
- master
+
   </ItemGroup>
 
 </Project>
