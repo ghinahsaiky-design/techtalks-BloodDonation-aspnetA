@@ -1,17 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BloodDonation.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BloodDonation.Controllers
 {
     public class AuthController : Controller
     {
-        public IActionResult Login()
-        {
-            return View();
-        }
+        // other actions...
 
+        [HttpGet]
         public IActionResult SignUp()
         {
-            return View();
+            var model = new RegisterViewModel();
+            return View(model);
         }
+
+        // Your friend will later add the POST:
+        // [HttpPost]
+        // public async Task<IActionResult> SignUp(RegisterViewModel model) { ... }
     }
 }
