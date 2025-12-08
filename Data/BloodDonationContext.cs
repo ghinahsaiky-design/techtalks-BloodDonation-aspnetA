@@ -1,10 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BloodDonation.Models;
+﻿using BloodDonation.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace BloodDonation.Data
 {
-    public class BloodDonationContext : DbContext
+    public class BloodDonationContext
+    : IdentityDbContext<Users, IdentityRole<int>, int>
+
     {
         public BloodDonationContext(DbContextOptions<BloodDonationContext> options) : base(options) { }
 

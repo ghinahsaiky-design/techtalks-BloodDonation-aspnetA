@@ -6,7 +6,7 @@ namespace BloodDonation.Models
     public class DonorProfile
     {
         [Key]
-        [ForeignKey("UserId")] // links to Users.UserId
+        [ForeignKey("User")] // links to Users.UserId
         public int DonorId { get; set; }
 
         public Users User { get; set; } // navigation property to User
