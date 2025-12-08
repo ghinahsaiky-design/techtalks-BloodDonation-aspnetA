@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using System.ComponentModel.DataAnnotations;
+
 namespace BloodDonation.Models
 {
     public class RegisterViewModel
     {
         [Required]
-        [Display(Name = "Full Name")] 
+        [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
 
         [Required]
@@ -27,18 +29,33 @@ namespace BloodDonation.Models
         [Display(Name = "Phone Number")]
         public string Phone { get; set; } = string.Empty;
 
+        // -----------------------------
+        // FIXED VALUES TO MATCH DATABASE
+        // -----------------------------
         [Required]
         [Display(Name = "Location")]
-        public string Location { get; set; } = string.Empty;
+        public int LocationId { get; set; }   // <-- MUST BE INT
 
         [Required]
         [Display(Name = "Blood Type")]
-        public string BloodType { get; set; } = string.Empty;
+        public int BloodTypeId { get; set; }   // <-- MUST BE INT
+
 
         [Display(Name = "I confirm I am eligible to donate.")]
         public bool IsHealthyForDonation { get; set; }
 
         [Display(Name = "Hide my identity from recipients.")]
         public bool IsIdentityHidden { get; set; }
+
+        [Required]
+        public int Age { get; set; }
+
+        [Required]
+        public string Gender { get; set; } = string.Empty;
+
+
+        // Lists used for dropdowns
+        public List<Locations> Locations { get; set; } = new();
+        public List<BloodTypes> BloodTypes { get; set; } = new();
     }
 }

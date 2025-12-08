@@ -84,6 +84,19 @@
                     </span>
                     <input asp-for="Phone" class="form-control border-start-0" placeholder="Phone Number" />
                 </div>
+                <!-- Gender -->
+                <div class="input-group input-group-lg mb-3">
+                    <span class="input-group-text">
+                        <i class="bi bi-gender-ambiguous"></i>
+                    </span>
+                    <select asp-for="Gender" class="form-select border-start-0">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <span asp-validation-for="Gender" class="text-danger small"></span>
+
 
                 <!-- Location + Blood Type -->
                 <div class="row mb-3 select-icon-group">
@@ -93,38 +106,16 @@
                             <span class="input-group-text bg-light border-end-0">
                                 <i class="bi bi-geo-alt"></i>
                             </span>
-                            <select asp-for="Location"
-                                    class="form-select border-start-0">
-                                <option value="">Location</option>
-                                <option>Akkar</option>
-                                <option>Aley</option>
-                                <option>Baabda</option>
-                                <option>Baalbek</option>
-                                <option>Batroun</option>
-                                <option>Beirut</option>
-                                <option>Bint Jbeil</option>
-                                <option>Bsharri</option>
-                                <option>Chouf</option>
-                                <option>Hasbaya</option>
-                                <option>Hermel</option>
-                                <option>Jbeil</option>
-                                <option>Jezzine</option>
-                                <option>Keserwan</option>
-                                <option>Koura</option>
-                                <option>Marjeyoun</option>
-                                <option>Metn</option>
-                                <option>Minieh–Dennieh</option>
-                                <option>Nabatieh</option>
-                                <option>Rachaya</option>
-                                <option>Sidon</option>
-                                <option>Tripoli</option>
-                                <option>Tyre</option>
-                                <option>West Bekaa</option>
-                                <option>Zahle</option>
-                                <option>Zgharta</option>
+                            <select asp-for="LocationId" class="form-select border-start-0">
+                                <option value="">Select Location</option>
+                                @foreach (var loc in Model.Locations)
+                                {
+                                    <option value="@loc.LocationId">@loc.Districts</option>
+                                }
                             </select>
+
                         </div>
-                        <span asp-validation-for="Location" class="text-danger small"></span>
+                        <span asp-validation-for="LocationId" class="text-danger small"></span>
                     </div>
 
                     <!-- Blood Type -->
@@ -133,20 +124,16 @@
                             <span class="input-group-text bg-light border-end-0">
                                 <i class="bi bi-droplet"></i>
                             </span>
-                            <select asp-for="BloodType"
-                                    class="form-select border-start-0">
-                                <option value="">Blood Type</option>
-                                <option>A+</option>
-                                <option>A-</option>
-                                <option>B+</option>
-                                <option>B-</option>
-                                <option>AB+</option>
-                                <option>AB-</option>
-                                <option>O+</option>
-                                <option>O-</option>
+                            <select asp-for="BloodTypeId" class="form-select border-start-0">
+                                <option value="">Select Blood Type</option>
+                                @foreach (var bt in Model.BloodTypes)
+                                {
+                                    <option value="@bt.BloodTypeId">@bt.Type</option>
+                                }
                             </select>
+
                         </div>
-                        <span asp-validation-for="BloodType" class="text-danger small"></span>
+                        <span asp-validation-for="BloodTypeId" class="text-danger small"></span>
                     </div>
                 </div>
 
