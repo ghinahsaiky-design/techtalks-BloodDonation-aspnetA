@@ -49,11 +49,14 @@ namespace BloodDonation.Controllers
             model.Results = query
                 .Select(d => new SearchResultViewModel
                 {
+                    DonorId = d.DonorId,
                     DonorName = d.User.FirstName + " " + d.User.LastName,
                     BloodType = d.BloodType.Type,
                     City = d.Location.Districts,
                     PhoneNumber = d.User.Phone,
                     Email = d.User.Email,
+                    IsHealthy = d.IsHealthyForDonation,
+                    IsIdentityHidden = d.IsIdentityHidden,
                     IsAvailable = d.IsAvailable
                 }).ToList();
 

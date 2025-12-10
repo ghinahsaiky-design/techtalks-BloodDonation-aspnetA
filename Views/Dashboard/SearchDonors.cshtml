@@ -68,42 +68,73 @@
 
                     @foreach (var d in Model.Results)
                     {
-                        <div class="relative rounded-2xl bg-white p-6 shadow-lg border border-gray-200">
 
-                            <!-- Blood Type Badge -->
+
+                        <div class="relative rounded-2xl p-6 shadow-lg border transition h-full flex flex-col justify-between">
+
+
+                            @if (!d.IsAvailable || !d.IsHealthy)
+                            {
+                                <div class="flex items-center gap-2 mb-1">
+
+                                    @if (!d.IsAvailable)    
+                                    {
+                                        <span class="bg-gray-700 text-white text-xs px-3 py-1 rounded-full">
+                                            Unavailable
+                                        </span>
+                                    }
+
+                                    @if (!d.IsHealthy)
+                                    {
+                                        <span class="bg-red-700 text-white text-xs px-3 py-1 rounded-full">
+                                            Not Healthy
+                                        </span>
+                                    }
+
+                                </div>
+                            }
+
+                            <!-- Blood Type -->
                             <span class="absolute right-4 top-4 rounded-lg bg-red-100 px-3 py-3 text-2xl font-bold text-red-600">
                                 @d.BloodType
                             </span>
 
                             <!-- Donor Name -->
-                            <p class="text-xl font-semibold mb-4">@d.DonorName</p>
-
+                            @if(d.IsIdentityHidden){
+                                 <p class="text-xl font-semibold mb-4">Donor #@d.DonorId</p>
+                            }else{
+                                  <p class="text-xl font-semibold mb-4">@d.DonorName</p>
+                            }
                             <!-- City -->
                             <div class="flex items-center gap-2 text-gray-700 mb-2">
                                 <span class="material-symbols-outlined text-red-600">location_on</span>
                                 <span>@d.City</span>
                             </div>
 
-                            <!-- Email -->
-                            <div class="flex items-center gap-2 text-gray-700 mb-2">
+                            <!-- Email (blur if unavailable) -->
+                            <div class="flex items-center gap-2 text-gray-700 mb-2 @(!d.IsAvailable || !d.IsHealthy ? "blur-sm select-none" : "")">
                                 <span class="material-symbols-outlined text-green-600">mail</span>
                                 <span>@d.Email</span>
                             </div>
+
+                            <!-- Phone -->
                             @if (!string.IsNullOrEmpty(d.PhoneNumber))
                             {
-                            <!-- Phone -->
-                            <div class="flex items-center gap-2 text-gray-700 mb-4">
-                                <span class="material-symbols-outlined text-blue-600">call</span>
-                                <span>@d.PhoneNumber</span>
-                            </div>
+                                <div class="flex items-center gap-2 text-gray-700 mb-4 @(!d.IsAvailable || !d.IsHealthy ? "blur-sm select-none" : "")">
+                                    <span class="material-symbols-outlined text-blue-600">call</span>
+                                    <span>@d.PhoneNumber</span>
+                                </div>
                             }
                             else
                             {
                                 <div class="pt-[50px]"></div>
                             }
+
                             <!-- Contact Button -->
-                            <button onclick="openContactModal('@d.Email', '@d.PhoneNumber')"
-                                    class="w-full rounded-lg bg-blue-900 py-3 text-white font-semibold hover:bg-blue-800 transition">
+                            <button @(!d.IsAvailable || !d.IsHealthy ? "disabled" : "")
+                                    onclick="openContactModal('@d.Email', '@d.PhoneNumber')"
+                                    class="w-full rounded-lg py-3 font-semibold transition
+                                                                       @(!d.IsAvailable || !d.IsHealthy ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-900 text-white hover:bg-blue-800")">
                                 Contact
                             </button>
                         </div>
