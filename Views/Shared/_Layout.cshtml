@@ -66,13 +66,44 @@
                         <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-controller="Home" asp-action="IsHealthy">Are You Healthy?</a>
 
                     </div>
-                    <button onclick="location.href='@(@Url.Action("Login", "Auth"))'" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 bg-soft-red text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg">
-                        <span class="truncate">Login</span>
-                    </button>
 
-                    <button onclick="location.href='@(@Url.Action("SignUp", "Auth"))'" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 bg-soft-red text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg" asp-action="SignUp" asp-controller="Auth">
-                        <span class="truncate">SignUp</span>
-                    </button>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="flex items-center gap-3">
+                            <!-- Circle avatar -->
+                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-soft-red text-white text-sm font-semibold">
+                                @User.Identity.Name?.FirstOrDefault().ToString().ToUpper()
+                            </div>
+
+                            <!-- Hello text -->
+                            <span class="text-deep-blue dark:text-white text-sm font-medium leading-normal">
+                                Hello, @User.Identity.Name
+                            </span>
+
+                            <!-- Logout button -->
+                            <form asp-action="Logout" asp-controller="Auth" method="post" class="inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="flex items-center justify-center rounded-full h-9 px-4 text-xs font-semibold bg-gray-100 text-deep-blue hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 transition-all">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 bg-soft-red text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
+                           asp-action="Login" asp-controller="Auth">
+                            <span class="truncate">Login</span>
+                        </a>
+
+                        <a class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 bg-soft-red text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
+                           asp-action="SignUp" asp-controller="Auth">
+                            <span class="truncate">SignUp</span>
+                        </a>
+                    }
+
+
 
                 </div>
             </div>
