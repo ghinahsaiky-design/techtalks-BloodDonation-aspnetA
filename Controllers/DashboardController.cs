@@ -16,35 +16,10 @@ namespace BloodDonation.Controllers
         }
 
         [HttpGet]
-        public IActionResult SearchDonors()
-        {
-            var model = new SearchViewModel();
-
-            // Fill dropdowns
-            model.Locations = _context.Locations
-                .OrderBy(l => l.Districts)
-                .Select(l => new SelectListItem
-                {
-                    Value = l.LocationId.ToString(),
-                    Text = l.Districts
-                });
-
-            model.BloodTypes = _context.BloodTypes
-                .OrderBy(b => b.Type)
-                .Select(b => new SelectListItem
-                {
-                    Value = b.BloodTypeId.ToString(),
-                    Text = b.Type
-                });
-
-            return View(model);
-        }
-
-        
-        [HttpPost]
         public IActionResult SearchDonors(SearchViewModel model)
         {
-            // Refill dropdowns
+
+            // Fill dropdowns
             model.Locations = _context.Locations
                 .OrderBy(l => l.Districts)
                 .Select(l => new SelectListItem
