@@ -2,6 +2,8 @@
 using BloodDonation.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System;
 
 namespace BloodDonation.Controllers
@@ -16,25 +18,25 @@ namespace BloodDonation.Controllers
         }
 
         [HttpGet]
-        public IActionResult SearchDonors(SearchViewModel model)
+        public async Task<IActionResult> SearchDonors(SearchViewModel model)
         {
 
             // Fill dropdowns
-            model.Locations = _context.Locations
+            model.Locations = await _context.Locations
                 .OrderBy(l => l.Districts)
                 .Select(l => new SelectListItem
                 {
                     Value = l.LocationId.ToString(),
                     Text = l.Districts
-                });
+                }).ToListAsync();
 
-            model.BloodTypes = _context.BloodTypes
+            model.BloodTypes = await _context.BloodTypes
                 .OrderBy(b => b.Type)
                 .Select(b => new SelectListItem
                 {
                     Value = b.BloodTypeId.ToString(),
                     Text = b.Type
-                });
+                }).ToListAsync();
 
             // Build query
             var query = _context.DonorProfile.AsQueryable();
@@ -46,7 +48,7 @@ namespace BloodDonation.Controllers
                 query = query.Where(d => d.BloodTypeId == model.SelectedBloodTypeId.Value);
 
 
-            model.Results = query
+            model.Results = await query
                 .Select(d => new SearchResultViewModel
                 {
                     DonorName = d.IsIdentityHidden ? $"Donor #{d.DonorId}" : d.User.FirstName + " " + d.User.LastName,
@@ -56,7 +58,7 @@ namespace BloodDonation.Controllers
                     Email = d.User.Email,
                     IsHealthy = d.IsHealthyForDonation,
                     IsAvailable = d.IsAvailable
-                }).ToList();
+                }).ToListAsync();
 
             return View(model);
         }
