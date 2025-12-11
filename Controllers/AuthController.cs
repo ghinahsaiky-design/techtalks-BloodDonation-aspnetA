@@ -97,6 +97,50 @@ namespace BloodDonation.Controllers
         }
 
 
+        // ----------------------
+        // LOGIN (GET)
+        // ----------------------
+        [HttpGet]
+        public IActionResult Login(string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        // ----------------------
+        // LOGIN (POST)
+        // ----------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var result = await _signInManager.PasswordSignInAsync(
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: true);
+
+            if (result.Succeeded)
+            {
+                return LocalRedirect(returnUrl ?? "/");
+            }
+
+            if (result.IsLockedOut)
+            {
+                ModelState.AddModelError("", "Account locked. Try again later.");
+                return View(model);
+            }
+
+            ModelState.AddModelError("", "Invalid login attempt.");
+            return View(model);
+        }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
