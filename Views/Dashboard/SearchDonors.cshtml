@@ -100,11 +100,8 @@
                             </span>
 
                             <!-- Donor Name -->
-                            @if(d.IsIdentityHidden){
-                                 <p class="text-xl font-semibold mb-4">Donor #@d.DonorId</p>
-                            }else{
-                                  <p class="text-xl font-semibold mb-4">@d.DonorName</p>
-                            }
+                            <p class="text-xl font-semibold mb-4">@d.DonorName</p>
+                            
                             <!-- City -->
                             <div class="flex items-center gap-2 text-gray-700 mb-2">
                                 <span class="material-symbols-outlined text-red-600">location_on</span>
@@ -143,7 +140,7 @@
             }
             else
             {
-                <p class="px-4 pt-4 text-gray-500">No donors found yet. Please select filters and click Search.</p>
+                <p class="text-center text-gray-500 py-6">No donors match your search. Try changing the filters.</p>
             }
         </div>
 
