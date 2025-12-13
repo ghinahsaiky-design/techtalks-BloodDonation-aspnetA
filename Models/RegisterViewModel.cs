@@ -57,7 +57,7 @@ namespace BloodDonation.Models
         public bool IsIdentityHidden { get; set; }
 
         [Required]
-        public int Age { get; set; }
+        public DateOnly DateOfBirth { get; set; }
 
         [Required]
         public string Gender { get; set; } = string.Empty;

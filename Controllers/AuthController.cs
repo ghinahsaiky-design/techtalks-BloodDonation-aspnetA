@@ -2,6 +2,8 @@
 using BloodDonation.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
 
 
 namespace BloodDonation.Controllers
@@ -65,7 +67,10 @@ namespace BloodDonation.Controllers
                 PhoneNumber = model.Phone,
                 Role="Donor"
             };
-
+            var claims = new List<Claim>
+            {
+                new Claim("FirstName",user.FirstName)
+            };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
@@ -76,7 +81,7 @@ namespace BloodDonation.Controllers
                     DonorId = user.Id,  // FK to IdentityUser
                     BloodTypeId = model.BloodTypeId,
                     LocationId = model.LocationId,
-                    Age = model.Age,
+                    DateOfBirth = model.DateOfBirth,
                     Gender = model.Gender,
                     IsHealthyForDonation = model.IsHealthyForDonation,
                     IsIdentityHidden = model.IsIdentityHidden,
@@ -88,7 +93,7 @@ namespace BloodDonation.Controllers
                 await _context.SaveChangesAsync();
 
                 // Auto login
-                await _signInManager.SignInAsync(user, isPersistent: false);
+                await _signInManager.SignInWithClaimsAsync(user, isPersistent: false,claims);
 
                 return RedirectToAction("Index", "Home");
             }
