@@ -47,10 +47,19 @@ namespace BloodDonation.Controllers
                 return View(model);
             }
 
+            // Check if the email is already registered
+            if (await _userManager.FindByEmailAsync(model.Email) != null)
+            {
+                ModelState.AddModelError("Email", "Email is already registered.");
+                model.Locations = _context.Locations.ToList();
+                model.BloodTypes = _context.BloodTypes.ToList();
+                return View(model);
+            }
+
             var user = new Users
             {
-                FirstName = model.FullName,
-                LastName = model.FullName,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
                 Email = model.Email,
                 UserName = model.Email,
                 PhoneNumber = model.Phone,

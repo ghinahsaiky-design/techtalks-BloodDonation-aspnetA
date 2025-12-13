@@ -41,21 +41,31 @@
             <form asp-action="SignUp" method="post">
                 <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-                <!-- Full Name -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-person"></i>
-                    </span>
-                    <input asp-for="FullName" class="form-control border-start-0" placeholder="Full Name" />
+            <!-- First Name -->
+            <div class="field-wrapper">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="FirstName" class="form-control @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "is-invalid" : "")" placeholder="First Name" />
                 </div>
-                <span asp-validation-for="FullName" class="text-danger small"></span>
+                <span asp-validation-for="FirstName" class="invalid-feedback d-block" aria-live="polite" role="alert"></span>
+            </div>
 
-                <!-- Email -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-at"></i>
-                    </span>
-                    <input asp-for="Email" class="form-control border-start-0" placeholder="Email Address" />
+
+            <!-- Last Name -->
+            <div class="field-wrapper">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="LastName" class="form-control @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "is-invalid" : "")" placeholder="Last Name" />
+                </div>
+                <span asp-validation-for="LastName" class="invalid-feedback d-block" aria-live="polite" role="alert"></span>
+            </div>
+
+
+            <!-- Email -->
+            <div class="field-wrapper">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-at"></i></span>
+                    <input asp-for="Email" type="email" class="form-control @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "is-invalid" : "")" placeholder="Email Address" />
                 </div>
                 <span asp-validation-for="Email" class="text-danger small"></span>
 
@@ -77,19 +87,21 @@
                 </div>
                 <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
 
-                <!-- Phone -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-telephone"></i>
-                    </span>
-                    <input asp-for="Phone" class="form-control border-start-0" placeholder="Phone Number" />
+            <!-- Phone -->
+            <div class="field-wrapper">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                    <input asp-for="Phone" type="number" inputmode="tel" pattern="^\+?[0-9\s\-\(\)]{7,20}$" maxlength="20" autocomplete="tel"
+                           class="form-control @(ViewData.ModelState["Phone"]?.Errors.Count > 0 ? "is-invalid" : "")" placeholder="Phone Number" />
                 </div>
-                <!-- Gender -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-gender-ambiguous"></i>
-                    </span>
-                    <select asp-for="Gender" class="form-select border-start-0">
+                <span asp-validation-for="Phone" class="invalid-feedback d-block" aria-live="polite" role="alert"></span>
+            </div>
+
+            <!-- Gender -->
+            <div class="field-wrapper">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                    <select asp-for="Gender" class="form-select @(ViewData.ModelState["Gender"]?.Errors.Count > 0 ? "is-invalid" : "")">
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
@@ -169,3 +181,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
