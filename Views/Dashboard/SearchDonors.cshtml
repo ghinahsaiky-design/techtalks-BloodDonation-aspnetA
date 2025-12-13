@@ -1,7 +1,216 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model SearchViewModel
 @{
+    ViewData["Title"] = "Search For Donors";
 }
 
-<h1>Dashboard</h1>
+<main class="flex justify-center  py-10">
+    <div class="w-full max-w-7xl px-4">
+
+        <!-- Search Section -->
+        <div class="rounded-2xl bg-white shadow-lg p-8">
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">Find a Blood Donor</h1>
+                <p class="mt-2 text-gray-600">Search for available blood donors in your area.</p>
+            </div>
+
+            <!-- Filters -->
+            <form method="get"
+                  asp-controller="Dashboard"
+                  asp-action="SearchDonors"
+                  class="flex flex-col items-center gap-6 md:flex-row md:justify-center">
+
+                <!-- Location -->
+                <div class="flex w-full max-w-md flex-col">
+                    <label class="pb-2 text-base font-medium">Location</label>
+                    <div class="relative w-full">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">location_on</span>
+                        <select asp-for="SelectedLocationId"
+                                asp-items="Model.Locations"
+                                class="form-select w-full h-14 rounded-lg border pl-11 pr-10 text-base">
+                            <option value="">Select Location</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Blood Type -->
+                <div class="flex w-full max-w-md flex-col">
+                    <label class="pb-2 text-base font-medium">Blood Type</label>
+                    <div class="relative w-full">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">bloodtype</span>
+                        <select asp-for="SelectedBloodTypeId"
+                                asp-items="Model.BloodTypes"
+                                class="form-select w-full h-14 rounded-lg border pl-11 pr-10 text-base">
+                            <option value="">Select Blood Type</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Search Button -->
+                <div class="flex w-full max-w-md pt-7">
+                    <button type="submit"
+                            class="w-full h-14 flex items-center justify-center gap-2 rounded-lg bg-red-600 text-xl font-semibold text-white hover:bg-red-700 transition">
+                        <span class="material-symbols-outlined text-2xl">search</span>
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results -->
+        <div class="flex flex-col gap-4 mt-6">
+            @if (Model.Results != null && Model.Results.Any())
+            {
+                <h2 class="text-2xl font-bold px-4 pb-3 pt-5">
+                    Showing @Model.Results.Count result(s)
+                </h2>
+
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 px-4 pb-6">
+
+                    @foreach (var d in Model.Results)
+                    {
+
+
+                        <div class="relative rounded-2xl p-6 shadow-lg border transition h-full flex flex-col justify-between">
+
+
+                            @if (!d.IsAvailable || !d.IsHealthy)
+                            {
+                                <div class="flex items-center gap-2 mb-1">
+
+                                    @if (!d.IsAvailable)    
+                                    {
+                                        <span class="bg-gray-700 text-white text-xs px-3 py-1 rounded-full">
+                                            Unavailable
+                                        </span>
+                                    }
+
+                                    @if (!d.IsHealthy)
+                                    {
+                                        <span class="bg-red-700 text-white text-xs px-3 py-1 rounded-full">
+                                            Not Healthy
+                                        </span>
+                                    }
+
+                                </div>
+                            }
+
+                            <!-- Blood Type -->
+                            <span class="absolute right-4 top-4 rounded-lg bg-red-100 px-3 py-3 text-2xl font-bold text-red-600">
+                                @d.BloodType
+                            </span>
+
+                            <!-- Donor Name -->
+                            <p class="text-xl font-semibold mb-4">@d.DonorName</p>
+                            
+                            <!-- City -->
+                            <div class="flex items-center gap-2 text-gray-700 mb-2">
+                                <span class="material-symbols-outlined text-red-600">location_on</span>
+                                <span>@d.City</span>
+                            </div>
+
+                            <!-- Email (blur if unavailable) -->
+                            <div class="flex items-center gap-2 text-gray-700 mb-2 @(!d.IsAvailable || !d.IsHealthy ? "blur-sm select-none" : "")">
+                                <span class="material-symbols-outlined text-green-600">mail</span>
+                                <span>@d.Email</span>
+                            </div>
+
+                            <!-- Phone -->
+                            @if (!string.IsNullOrEmpty(d.PhoneNumber))
+                            {
+                                <div class="flex items-center gap-2 text-gray-700 mb-4 @(!d.IsAvailable || !d.IsHealthy ? "blur-sm select-none" : "")">
+                                    <span class="material-symbols-outlined text-blue-600">call</span>
+                                    <span>@d.PhoneNumber</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="pt-[50px]"></div>
+                            }
+
+                            <!-- Contact Button -->
+                            <button @(!d.IsAvailable || !d.IsHealthy ? "disabled" : "")
+                                    onclick="openContactModal('@d.Email', '@d.PhoneNumber')"
+                                    class="w-full rounded-lg py-3 font-semibold transition
+                                                                       @(!d.IsAvailable || !d.IsHealthy ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-900 text-white hover:bg-blue-800")">
+                                Contact
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-center text-gray-500 py-6">No donors match your search. Try changing the filters.</p>
+            }
+        </div>
+
+    </div>
+</main>
+
+
+<!-- Contact Modal -->
+<div id="contactModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-lg p-6">
+        <h2 class="text-xl font-semibold mb-4">Contact Donor</h2>
+
+        <div id="phoneOption" class="hidden">
+            <button id="phoneBtn"
+                    class="w-full bg-green-600 text-white py-2 rounded-lg mb-3 font-medium hover:bg-green-700 transition">
+                Contact via WhatsApp
+            </button>
+        </div>
+
+        <div id="emailOption" class="hidden">
+            <button id="emailBtn"
+                    class="w-full bg-blue-600 text-white py-2 rounded-lg mb-3 font-medium hover:bg-blue-700 transition">
+                Contact via Email
+            </button>
+        </div>
+
+        <button onclick="closeContactModal()"
+                class="w-full bg-gray-300 py-2 rounded-lg font-medium hover:bg-gray-400 transition">
+            Cancel
+        </button>
+    </div>
+</div>
+
+
+<script>
+    function openContactModal(email, phone) {
+        const modal = document.getElementById("contactModal");
+
+        const phoneOption = document.getElementById("phoneOption");
+        const emailOption = document.getElementById("emailOption");
+
+        // Reset
+        phoneOption.classList.add("hidden");
+        emailOption.classList.add("hidden");
+
+        // WhatsApp option
+        if (phone && phone.trim() !== "") {
+            phoneOption.classList.remove("hidden");
+            document.getElementById("phoneBtn").onclick = function () {
+                window.open(`https://wa.me/${phone}`, "_blank");
+            };
+        }
+
+        // Email option
+        if (email && email.trim() !== "") {
+            emailOption.classList.remove("hidden");
+            document.getElementById("emailBtn").onclick = function () {
+                window.location.href = `mailto:${email}`;
+            };
+        }
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function closeContactModal() {
+        const modal = document.getElementById("contactModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+</script>
