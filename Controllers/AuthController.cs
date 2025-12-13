@@ -127,7 +127,7 @@ namespace BloodDonation.Controllers
 
             if (result.Succeeded)
             {
-                return LocalRedirect(returnUrl ?? "/");
+                return RedirectToAction("SearchDonor", "Dashboard");
             }
 
             if (result.IsLockedOut)
@@ -136,7 +136,7 @@ namespace BloodDonation.Controllers
                 return View(model);
             }
 
-            ModelState.AddModelError("", "Invalid login attempt.");
+            ModelState.AddModelError("Password", "Invalid login attempt.");
             return View(model);
         }
 
