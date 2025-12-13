@@ -54,7 +54,7 @@ namespace BloodDonation.Controllers
                     DonorName = d.IsIdentityHidden ? $"Donor #{d.DonorId}" : d.User.FirstName + " " + d.User.LastName,
                     BloodType = d.BloodType.Type,
                     City = d.Location.Districts,
-                    PhoneNumber = d.User.Phone,
+                    PhoneNumber = d.User.PhoneNumber,
                     Email = d.User.Email,
                     IsHealthy = d.IsHealthyForDonation,
                     IsAvailable = d.IsAvailable

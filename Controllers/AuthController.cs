@@ -141,7 +141,7 @@ namespace BloodDonation.Controllers
 
             if (result.Succeeded)
             {
-                return RedirectToAction("SearchDonor", "Dashboard");
+                return RedirectToAction("SearchDonors", "Dashboard");
             }
 
             if (result.IsLockedOut)
