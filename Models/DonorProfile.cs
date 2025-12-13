@@ -35,7 +35,10 @@ namespace BloodDonation.Models
         public DateTime? LastDonationDate { get; set; } // optional
 
         [Required]
-        public int Age { get; set; }
+        public DateOnly DateOfBirth { get; set; }
+
+
+
 
         [Required]
         [MaxLength(10)]

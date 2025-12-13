@@ -4,168 +4,234 @@
     Layout = "~/Views/Shared/_AuthLayout.cshtml";
     ViewData["Title"] = "Sign Up";
 }
-
 <style>
-    /* Make input icons black & white */
-    .input-group-text i {
-        color: #6c757d !important; /* gray */
-        font-size: 1.1rem;
+    body {
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
     }
 
+    .auth-card {
+        backdrop-filter: blur(14px);
+        background: rgba(255,255,255,0.95);
+        border-radius: 28px;
+        box-shadow: 0 25px 60px rgba(0,0,0,.08);
+    }
+
+    /* 🔥 FULL ROUND INPUTS */
+    .form-control,
+    .form-select {
+        border-radius: 999px !important; /* FULL ROUND */
+        padding: .9rem 1.2rem;
+        border: 1px solid transparent;
+        transition: all .2s ease;
+       
+    }
+     .form-control:hover,
+.form-control:focus,
+.form-select:hover,
+.form-select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: #e5e7eb !important;
+}
+
+        .form-control:focus,
+         {
+            border-color: #E94E4E;
+            box-shadow: 0 0 0 3px rgba(233,78,78,.18);
+        }
+
+    /* Rounded icons */
     .input-group-text {
-        background-color: transparent !important;
-        border-right: none;
+        background: transparent;
+        border: none;
+        color: #9ca3af;
+        font-size: 1.1rem;
+        padding-left: 1.1rem;
     }
 
-    /* Red login link */
+    /* Make input-group look like one pill */
+    .input-group {
+        border-radius: 999px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+    }
+
+        .input-group:focus-within {
+            border-color: #E94E4E;
+            box-shadow: 0 0 0 3px rgba(233,78,78,.18);
+        }
+
+    /* Checkbox */
+    .form-check-input {
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+        .form-check-input:checked {
+            background-color: #E94E4E;
+            border-color: #E94E4E;
+        }
+
+    /* Button */
+    .btn-main {
+        background: linear-gradient(135deg, #E94E4E, #ff6b6b);
+        border: none;
+        border-radius: 999px;
+        padding: .9rem;
+        font-weight: 600;
+        color: white;
+    }
+
     .login-link {
         color: #E94E4E;
         font-weight: 500;
         text-decoration: none;
     }
-
-        .login-link:hover {
-            text-decoration: underline;
-        }
 </style>
 
 <div class="d-flex justify-content-center align-items-center min-vh-100">
-    <div class="card shadow-sm border-0 rounded-4" style="max-width: 480px; width: 100%;">
-        <div class="card-body p-4 p-md-5">
-
-            <h2 class="fw-bold text-center mb-1">Create Your Donor Account</h2>
-            <p class="text-muted text-center mb-4">
-                Join BloodConnect and help save lives.
-            </p>
-
-            <form asp-action="SignUp" method="post">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
-                <!-- Full Name -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-person"></i>
-                    </span>
-                    <input asp-for="FullName" class="form-control border-start-0" placeholder="Full Name" />
-                </div>
-                <span asp-validation-for="FullName" class="text-danger small"></span>
-
-                <!-- Email -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-at"></i>
-                    </span>
-                    <input asp-for="Email" class="form-control border-start-0" placeholder="Email Address" />
-                </div>
-                <span asp-validation-for="Email" class="text-danger small"></span>
-
-                <!-- Password -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-lock"></i>
-                    </span>
-                    <input asp-for="Password" type="password" class="form-control border-start-0" placeholder="Password" />
-                </div>
-                <span asp-validation-for="Password" class="text-danger small"></span>
-
-                <!-- Confirm Password -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-lock"></i>
-                    </span>
-                    <input asp-for="ConfirmPassword" type="password" class="form-control border-start-0" placeholder="Confirm Password" />
-                </div>
-                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-
-                <!-- Phone -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-telephone"></i>
-                    </span>
-                    <input asp-for="Phone" class="form-control border-start-0" placeholder="Phone Number" />
-                </div>
-                <!-- Gender -->
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">
-                        <i class="bi bi-gender-ambiguous"></i>
-                    </span>
-                    <select asp-for="Gender" class="form-select border-start-0">
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                </div>
-                <span asp-validation-for="Gender" class="text-danger small"></span>
-
-
-                <!-- Location + Blood Type -->
-                <div class="row mb-3 select-icon-group">
-                    <!-- Location -->
-                    <div class="col-6">
-                        <div class="input-group input-group-lg">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="bi bi-geo-alt"></i>
-                            </span>
-                            <select asp-for="LocationId" class="form-select border-start-0">
-                                <option value="">Select Location</option>
-                                @foreach (var loc in Model.Locations)
-                                {
-                                    <option value="@loc.LocationId">@loc.Districts</option>
-                                }
-                            </select>
-
-                        </div>
-                        <span asp-validation-for="LocationId" class="text-danger small"></span>
-                    </div>
-
-                    <!-- Blood Type -->
-                    <div class="col-6">
-                        <div class="input-group input-group-lg">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="bi bi-droplet"></i>
-                            </span>
-                            <select asp-for="BloodTypeId" class="form-select border-start-0">
-                                <option value="">Select Blood Type</option>
-                                @foreach (var bt in Model.BloodTypes)
-                                {
-                                    <option value="@bt.BloodTypeId">@bt.Type</option>
-                                }
-                            </select>
-
-                        </div>
-                        <span asp-validation-for="BloodTypeId" class="text-danger small"></span>
-                    </div>
-                </div>
-
-
-                <!-- Checkboxes -->
-                <div class="form-check mb-2">
-                    <input asp-for="IsHealthyForDonation" class="form-check-input" />
-                    <label asp-for="IsHealthyForDonation" class="form-check-label">
-                        I confirm I am eligible to donate.
-                    </label>
-                </div>
-
-                <div class="form-check mb-4">
-                    <input asp-for="IsIdentityHidden" class="form-check-input" />
-                    <label asp-for="IsIdentityHidden" class="form-check-label">
-                        Hide my identity from recipients.
-                    </label>
-                </div>
-
-                <!-- Button -->
-                <button type="submit"
-                        class="btn btn-lg w-100 rounded-pill"
-                        style="background-color:#E94E4E; color:white;">
-                    Sign Up
-                </button>
-
-                <p class="text-center mt-3 small mb-0">
-                    Already have an account?
-                    <a asp-controller="Auth" asp-action="Login" class="login-link">Log In</a>
-                </p>
-            </form>
-
+    <div class="auth-card p-4 p-md-5 w-100" style="max-width:480px;">
+        <div class="text-soft-red">
+            <svg width="50"
+                 height="50" fill="#FF5252" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z"></path>
+            </svg>
         </div>
+        <h2 class="fw-bold text-center mb-1">Create Account</h2>
+        <p class="text-muted text-center mb-4">Join BloodConnect and save lives</p>
+
+        <form asp-action="SignUp" method="post">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <!-- First Name -->
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+            </div>
+            <span asp-validation-for="FirstName" class="text-danger small"></span>
+
+            <!-- Last Name -->
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+            </div>
+            <span asp-validation-for="LastName" class="text-danger small"></span>
+
+            <!-- Email -->
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-at"></i></span>
+                <input asp-for="Email" type="email" class="form-control" placeholder="Email Address" />
+            </div>
+            <span asp-validation-for="Email" class="text-danger small"></span>
+
+            <!-- Password -->
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
+            </div>
+            <span asp-validation-for="Password" class="text-danger small"></span>
+
+            <!-- Confirm Password -->
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm Password" />
+            </div>
+            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+
+            <!-- Phone -->
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                <input asp-for="Phone" class="form-control" placeholder="Phone Number" />
+            </div>
+            <span asp-validation-for="Phone" class="text-danger small"></span>
+
+
+
+
+
+
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-date"></i></span>
+                <input asp-for="DateOfBirth" class="form-control" placeholder="Date Of Birth" type="date"/>
+            </div>
+            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+
+            <!-- Gender -->
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                <select asp-for="Gender" class="form-select">
+                    <option value="">Select Gender</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                </select>
+            </div>
+            <span asp-validation-for="Gender" class="text-danger small"></span>
+
+            <!-- Location & Blood -->
+            <div class="row mb-3">
+                <!-- Location -->
+                <div class="col-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-geo-alt"></i>
+                        </span>
+                        <select asp-for="LocationId" class="form-select">
+                            <option value="">Location</option>
+                            @foreach (var l in Model.Locations)
+                            {
+                                <option value="@l.LocationId">@l.Districts</option>
+                            }
+                        </select>
+                    </div>
+                    <span asp-validation-for="LocationId" class="text-danger small"></span>
+                </div>
+
+                <!-- Blood Type -->
+                <div class="col-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-droplet-fill"></i>
+                        </span>
+                        <select asp-for="BloodTypeId" class="form-select">
+                            <option value="">Blood Type</option>
+                            @foreach (var b in Model.BloodTypes)
+                            {
+                                <option value="@b.BloodTypeId">@b.Type</option>
+                            }
+                        </select>
+                    </div>
+                    <span asp-validation-for="BloodTypeId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="form-check mb-2">
+                <input asp-for="IsHealthyForDonation" class="form-check-input" />
+                <label asp-for="IsHealthyForDonation" class="form-check-label">
+                    I am eligible to donate blood
+                </label>
+            </div>
+
+            <div class="form-check mb-4">
+                <input asp-for="IsIdentityHidden" class="form-check-input" />
+                <label asp-for="IsIdentityHidden" class="form-check-label">
+                    Hide my identity
+                </label>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-main w-100">
+                Create Account
+            </button>
+
+            <p class="text-center mt-3 small">
+                Already have an account?
+                <a asp-controller="Auth" asp-action="Login" class="login-link">Log In</a>
+            </p>
+        </form>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

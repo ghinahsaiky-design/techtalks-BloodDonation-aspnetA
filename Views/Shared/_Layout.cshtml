@@ -77,7 +77,7 @@
 
                             <!-- Hello text -->
                             <span class="text-deep-blue dark:text-white text-sm font-medium leading-normal">
-                                Hello, @User.Identity.Name
+                                Hello, @User.FindFirst("FirstName")?.Value
                             </span>
 
                             <!-- Logout button -->

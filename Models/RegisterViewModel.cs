@@ -6,9 +6,18 @@ namespace BloodDonation.Models
 {
     public class RegisterViewModel
     {
+      
+
         [Required]
-        [Display(Name = "Full Name")]
-        public string FullName { get; set; } = string.Empty;
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; } = string.Empty;
+
+
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; } = string.Empty;
+
 
         [Required]
         [EmailAddress]
@@ -48,7 +57,7 @@ namespace BloodDonation.Models
         public bool IsIdentityHidden { get; set; }
 
         [Required]
-        public int Age { get; set; }
+        public DateOnly DateOfBirth { get; set; }
 
         [Required]
         public string Gender { get; set; } = string.Empty;
