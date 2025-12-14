@@ -27,7 +27,10 @@
                         <select asp-for="SelectedLocationId"
                                 asp-items="Model.Locations"
                                 class="form-select w-full h-14 rounded-lg border pl-11 pr-10 text-base">
-                            <option value="">Select Location</option>
+                            <option value="" disabled selected hidden>
+                                Select Location
+                            </option>
+                            <option value="">All Locations</option>
                         </select>
                     </div>
                 </div>
