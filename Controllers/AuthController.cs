@@ -149,7 +149,11 @@ namespace BloodDonation.Controllers
                 ModelState.AddModelError("", "Account locked. Try again later.");
                 return View(model);
             }
-
+        
+            ModelState.Remove(nameof(LoginViewModel.Email));
+            ModelState.Remove(nameof(LoginViewModel.Password));
+            model.Email = string.Empty;
+            model.Password = string.Empty;
             ModelState.AddModelError("Password", "Invalid login attempt.");
             return View(model);
         }
