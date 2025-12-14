@@ -48,7 +48,7 @@ namespace BloodDonation.Controllers
                 query = query.Where(d => d.BloodTypeId == model.SelectedBloodTypeId.Value);
 
 
-            model.Results = await query
+            model.Results = await query.OrderBy(d => !d.IsHealthyForDonation)
                 .Select(d => new SearchResultViewModel
                 {
                     DonorName = d.IsIdentityHidden ? $"Donor #{d.DonorId}" : d.User.FirstName + " " + d.User.LastName,

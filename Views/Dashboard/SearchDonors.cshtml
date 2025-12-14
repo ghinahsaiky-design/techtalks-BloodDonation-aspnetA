@@ -79,21 +79,9 @@
                             @if (!d.IsAvailable || !d.IsHealthy)
                             {
                                 <div class="flex items-center gap-2 mb-1">
-
-                                    @if (!d.IsAvailable)    
-                                    {
-                                        <span class="bg-gray-700 text-white text-xs px-3 py-1 rounded-full">
-                                            Unavailable
-                                        </span>
-                                    }
-
-                                    @if (!d.IsHealthy)
-                                    {
                                         <span class="bg-red-700 text-white text-xs px-3 py-1 rounded-full">
-                                            Not Healthy
+                                            Currently Not Available
                                         </span>
-                                    }
-
                                 </div>
                             }
 
