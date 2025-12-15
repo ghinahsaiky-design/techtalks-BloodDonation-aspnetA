@@ -141,6 +141,14 @@ namespace BloodDonation.Controllers
 
             if (result.Succeeded)
             {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                var claims = new List<Claim>
+                {
+                    new Claim("FirstName", user.FirstName)
+                };
+
+                await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
                 return RedirectToAction("SearchDonors", "Dashboard");
             }
 

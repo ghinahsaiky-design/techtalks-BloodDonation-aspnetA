@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+
+@{
+    var firstName = User.FindFirst("FirstName")?.Value ?? "";
+    var firstLetter = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString() : "";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -68,16 +74,6 @@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <div class="flex items-center gap-3">
-                            <!-- Circle avatar -->
-                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-soft-red text-white text-sm font-semibold">
-                                @User.Identity.Name?.FirstOrDefault().ToString().ToUpper()
-                            </div>
-
-                            <!-- Hello text -->
-                            <span class="text-deep-blue dark:text-white text-sm font-medium leading-normal">
-                                Hello, @User.FindFirst("FirstName")?.Value
-                            </span>
-
                             <!-- Logout button -->
                             <form asp-action="Logout" asp-controller="Auth" method="post" class="inline">
                                 @Html.AntiForgeryToken()
@@ -86,6 +82,22 @@
                                     Logout
                                 </button>
                             </form>
+                            <!-- Circle avatar -->
+                            <a asp-controller="Users" asp-action="DonorProfile" asp-route-id="@User.FindFirstValue(ClaimTypes.NameIdentifier)"
+                               class="relative group flex h-10 w-10 items-center justify-center rounded-full bg-soft-red text-white text-sm font-semibold">
+
+                                @firstLetter
+
+                                <!-- Hover text -->
+                                <span class="absolute top-12 text-sm font-medium text-soft-red opacity-0 transition-opacity group-hover:opacity-100">
+                                    View profile
+                                </span>
+                            </a>
+
+                            <!-- Hello text -->
+                            <span class="text-deep-blue dark:text-white text-sm font-medium leading-normal">
+                                Hello, @firstName
+                            </span>
                         </div>
                     }
                     else
