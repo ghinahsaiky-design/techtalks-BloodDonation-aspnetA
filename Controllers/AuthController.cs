@@ -95,7 +95,7 @@ namespace BloodDonation.Controllers
                 // Auto login
                 await _signInManager.SignInWithClaimsAsync(user, isPersistent: false,claims);
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("SearchDonors", "Dashboard");
             }
 
             // SHOW ERRORS
