@@ -2,5 +2,42 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
 }
-<h1>Hello this is the login page </h1>
+@model BloodDonation.Models.LoginViewModel
+
+<div class="d-flex flex-column align-items-center justify-content-center min-vh-100" style="background-color: #faf7f8;">
+    <div class="card shadow p-4" style="max-width: 400px; width: 100%; border-radius: 12px;">
+        <div class="text-center mb-4">
+            <h4 class="fw-bold mt-3">Welcome Back</h4>
+            <p class="text-muted">Log in to your account to continue.</p>
+        </div>
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+        <form asp-action="Login" method="post">
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn w-100 text-white fw-bold" style="background-color: #d32f2f;">Login</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <p class="text-muted">
+                Don’t have an account? <a href="/Auth/SignUp" class="fw-bold text-danger">Create an account</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,10 +1,4 @@
-﻿@using System.Security.Claims
-
-@{
-    var firstName = User.FindFirst("FirstName")?.Value ?? "";
-    var firstLetter = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString() : "";
-}
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -58,90 +52,23 @@
                     <div class="w-7 h-7 text-soft-red">
                         <img src="~/images/BloodDonationLogo.png" alt="Blood Donation Logo" class="w-full h-full object-contain" />
                     </div>
-                   <a asp-controller="Home" asp-action="Index">
-                    <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">BloodConnect</h2>
+                    <a asp-controller="Home" asp-action="Index">
+                        <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">BloodConnect</h2>
                     </a>
                 </div>
                 <div class="flex flex-1 justify-end items-center gap-8">
                     <div class="hidden md:flex items-center gap-8">
-                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-controller="Home" asp-action="Index">Home</a>
-                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-action="About" asp-controller="Home">About Us</a>
-                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-action="Contact" asp-controller="Home">Contact</a>
-                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-controller="Home" asp-action="IsHealthy">Are You Healthy?</a>
+                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-red-600 transition-colors" asp-controller="Home" asp-action="Index"> Home </a>                        
+                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-red-600 transition-colors" asp-action="About" asp-controller="Home">About Us</a>
+                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-red-600 transition-colors" asp-action="Contact" asp-controller="Home">Contact</a>
+                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-red-600 transition-colors" asp-controller="Home" asp-action="IsHealthy">Are You Healthy?</a>
 
                     </div>
-
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <div class="flex items-center gap-3">
-                            <!-- Logout button -->
-                            <form asp-action="Logout" asp-controller="Auth" method="post" class="inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit"
-                                        class="flex items-center justify-center rounded-full h-9 px-4 text-xs font-semibold bg-gray-100 text-deep-blue hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 transition-all">
-                                    Logout
-                                </button>
-                            </form>
-                            <!-- Circle avatar -->
-                            <a asp-controller="Users" asp-action="DonorProfile" asp-route-id="@User.FindFirstValue(ClaimTypes.NameIdentifier)"
-                               class="relative group flex h-10 w-10 items-center justify-center rounded-full bg-soft-red text-white text-sm font-semibold">
-
-                                @firstLetter
-
-                                <!-- Hover text -->
-                                <span class="absolute top-12 text-sm font-medium text-soft-red opacity-0 transition-opacity group-hover:opacity-100">
-                                    View profile
-                                </span>
-                            </a>
-
-                            <!-- Hello text -->
-                            <span class="text-deep-blue dark:text-white text-sm font-medium leading-normal">
-                                Hello, @firstName
-                            </span>
-                        </div>
-                    }
-                    else
-                    {
-                        <a class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 bg-soft-red text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
-                           asp-action="Login" asp-controller="Auth">
-                            <span class="truncate">Login</span>
-                        </a>
-
-                        <a class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 bg-soft-red text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
-                           asp-action="SignUp" asp-controller="Auth">
-                            <span class="truncate">SignUp</span>
-                        </a>
-                    }
-
-
-
                 </div>
             </div>
         </div>
     </header>
 
-
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BloodDonation</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()

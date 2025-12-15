@@ -1,30 +1,29 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace BloodDonation.Models
 {
-    public class Users
+    public class Users:IdentityUser<int>
     {
-        [Key] // Primary Key
-        public int UserId { get; set; }
+
 
         [Required]
         [MaxLength(100)]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = "";
 
         [Required]
         [MaxLength(100)]
         public string LastName { get; set; }
 
-        [Required]
-        [EmailAddress]
-        [MaxLength(100)]
-        public string Email { get; set; } 
+        //[Required]
+        //[EmailAddress]
+      //  [MaxLength(100)]
+       // public string Email { get; set; } 
 
-        [Required]
-        public string Password { get; set; }
+     
 
-        [MaxLength(20)]
-        public string? Phone { get; set; }
+        //[MaxLength(20)]
+        //public string? Phone { get; set; }
 
         [Required]
         [MaxLength(20)]
