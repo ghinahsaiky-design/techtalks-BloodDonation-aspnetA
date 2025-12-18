@@ -28,5 +28,8 @@ namespace BloodDonation.Models
         [Required]
         [MaxLength(20)]
         public string Role { get; set; } // "Donor", "Admin", "Owner"
+
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 } 

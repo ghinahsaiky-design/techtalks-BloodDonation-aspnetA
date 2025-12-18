@@ -43,5 +43,7 @@ namespace BloodDonation.Models
         [Required]
         [MaxLength(10)]
         public string Gender { get; set; } // "Male" or "Female"
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     } 
 }
