@@ -1,0 +1,80 @@
+@using Microsoft.AspNetCore.Identity
+@using BloodDonation.Models
+@inject SignInManager<Users> SignInManager
+@inject UserManager<Users> UserManager
+
+@{
+    // Determine panel subtitle based on role
+    var panelSubtitle = "Panel";
+    if (User.IsInRole("Owner"))
+    {
+        panelSubtitle = "Owner Panel";
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        panelSubtitle = "Admin Panel";
+    }
+}
+
+<div class="h-full flex flex-col">
+    <!-- Logo Section -->
+    <div class="flex items-center gap-3 px-6 py-6 border-b border-gray-200">
+        <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
+            <img src="~/images/BloodDonationLogo.png" alt="Logo" class="w-6 h-6 object-contain" />
+        </div>
+        <div>
+            <h1 class="text-lg font-bold text-gray-800 leading-tight">BloodConnect</h1>
+            <p class="text-xs text-gray-500">@panelSubtitle</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        
+        <!-- Home -->
+        <a asp-controller="Home" asp-action="Index"
+           class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
+            <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">home</span>
+            <span class="font-medium">Home</span>
+        </a>
+
+        <!-- Profile -->
+        <a asp-controller="Account" asp-action="Profile"
+           class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
+            <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">person</span>
+            <span class="font-medium">Profile</span>
+        </a>
+
+        <!-- Manage Donors (Admin & Owner only) -->
+        @if (User.IsInRole("Admin") || User.IsInRole("Owner"))
+        {
+            <a asp-controller="Donor" asp-action="Index"
+               class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
+                <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">group</span>
+                <span class="font-medium">Manage Donors</span>
+            </a>
+        }
+
+        <!-- Manage Admins (Owner only) -->
+        @if (User.IsInRole("Owner"))
+        {
+            <a asp-controller="AdminManager" asp-action="Index"
+               class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
+                <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">admin_panel_settings</span>
+                <span class="font-medium">Manage Admins</span>
+            </a>
+        }
+    </nav>
+
+    <!-- Sidebar Footer / Logout -->
+    <div class="px-4 py-4 border-t border-gray-200">
+        <form asp-action="Logout" asp-controller="Auth" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit"
+                    class="flex items-center gap-3 px-4 py-3 w-full text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
+                <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">logout</span>
+                <span class="font-medium">Logout</span>
+            </button>
+        </form>
+    </div>
+</div>
