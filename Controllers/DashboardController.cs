@@ -38,8 +38,10 @@ namespace BloodDonation.Controllers
                     Text = b.Type
                 }).ToListAsync();
 
-            // Build query
-            var query = _context.DonorProfile.AsQueryable();
+            // Build query - Only show users with "Donor" role
+            var query = _context.DonorProfile
+                .Where(d => d.User.Role == "Donor")
+                .AsQueryable();
 
             if (model.SelectedLocationId.HasValue)
                 query = query.Where(d => d.LocationId == model.SelectedLocationId.Value);

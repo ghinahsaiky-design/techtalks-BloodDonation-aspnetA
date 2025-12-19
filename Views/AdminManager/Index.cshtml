@@ -1,0 +1,96 @@
+@page
+@{
+    // ViewData["Title"] = "Admin Management";
+
+    // Mock data for the table
+    var admins = new[] {
+        new { Id = "#445", Name = "Sarah Jenkins", Email = "sarah.jenkins@bloodconnect.com", Location = "New York, USA" },
+        new { Id = "#446", Name = "David Ross", Email = "david.ross@bloodconnect.com", Location = "London, UK" },
+        new { Id = "#447", Name = "Lisa Chang", Email = "lisa.chang@bloodconnect.com", Location = "Tokyo, Japan" },
+        new { Id = "#448", Name = "James Wilson", Email = "james.wilson@bloodconnect.com", Location = "Sydney, Australia" }
+    };
+}
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<div class="flex min-h-screen bg-slate-100 font-sans">
+
+
+    <main class="flex-1 p-8">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Enhanced Admin Management Page</h2>
+            <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition">
+                <span class="text-xl">+</span> Add New Admin
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500 font-medium">Total Admins</p>
+                <h3 class="text-4xl font-bold text-gray-800 mt-2">12</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500 font-medium">Total Donors</p>
+                <h3 class="text-4xl font-bold text-gray-800 mt-2">1,234</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500 font-medium">Active Users</p>
+                <h3 class="text-4xl font-bold text-gray-800 mt-2">850</h3>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex flex-wrap gap-4 items-center">
+                <div class="relative flex-1 min-w-[300px]">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </span>
+                    <input type="text" placeholder="Search administrators..." class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                </div>
+                <select class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2 rounded-lg focus:outline-none">
+                    <option>Role</option>
+                </select>
+                <select class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2 rounded-lg focus:outline-none">
+                    <option>Status</option>
+                </select>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 text-gray-500 uppercase text-xs font-semibold">
+                        <tr>
+                            <th class="px-6 py-4">ID</th>
+                            <th class="px-6 py-4">Administrator</th>
+                            <th class="px-6 py-4">Email</th>
+                            <th class="px-6 py-4">Location</th>
+                            <th class="px-6 py-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach (var admin in admins)
+                        {
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 text-gray-500">@admin.Id</td>
+                                <td class="px-6 py-4 font-semibold text-gray-800">@admin.Name</td>
+                                <td class="px-6 py-4 text-gray-600">@admin.Email</td>
+                                <td class="px-6 py-4 text-gray-600">@admin.Location</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex justify-center gap-3">
+                                        <button class="text-red-600 hover:bg-red-50 p-1 rounded transition">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                        </button>
+                                        <button class="text-red-600 hover:bg-red-50 p-1 rounded transition">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>

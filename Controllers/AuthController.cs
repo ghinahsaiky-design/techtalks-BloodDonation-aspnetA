@@ -145,7 +145,8 @@ namespace BloodDonation.Controllers
 
                 var claims = new List<Claim>
                 {
-                    new Claim("FirstName", user.FirstName)
+                    new Claim("FirstName", user.FirstName),
+                    new Claim(ClaimTypes.Role, user.Role)
                 };
 
                 await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
