@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using BloodDonation.Models;
 using Microsoft.AspNetCore.Identity;
@@ -52,7 +53,19 @@ namespace BloodDonation.Data
 
                     if (result.Succeeded)
                     {
-                        Console.WriteLine($"Admin user '{adminData.Email}' created successfully with password: {adminData.Password}");
+                        // Add role claim
+                        var roleClaimResult = await _userManager.AddClaimAsync(adminUser, new Claim(ClaimTypes.Role, "Admin"));
+                        var customRoleClaimResult = await _userManager.AddClaimAsync(adminUser, new Claim("Role", "Admin"));
+                        
+                        if (roleClaimResult.Succeeded && customRoleClaimResult.Succeeded)
+                        {
+                            Console.WriteLine($"✓ Admin user '{adminData.Email}' (ID: {adminUser.Id}) created successfully with password: {adminData.Password} and role claims added");
+                        }
+                        else
+                        {
+                            var errors = roleClaimResult.Errors.Concat(customRoleClaimResult.Errors);
+                            Console.WriteLine($"✗ Admin user '{adminData.Email}' created but failed to add claims: {string.Join(", ", errors.Select(e => e.Description))}");
+                        }
                     }
                     else
                     {
@@ -61,8 +74,102 @@ namespace BloodDonation.Data
                 }
                 else
                 {
-                    Console.WriteLine($"Admin user '{adminData.Email}' already exists.");
+                    // Check if user already has role claims, if not add them
+                    var existingClaims = await _userManager.GetClaimsAsync(adminUser);
+                    var hasRoleClaim = existingClaims.Any(c => c.Type == ClaimTypes.Role && (c.Value == "Admin" || c.Value == "Owner"));
+                    
+                    if (!hasRoleClaim)
+                    {
+                        var userRole = adminUser.Role ?? "Admin";
+                        var roleClaimResult = await _userManager.AddClaimAsync(adminUser, new Claim(ClaimTypes.Role, userRole));
+                        var customRoleClaimResult = await _userManager.AddClaimAsync(adminUser, new Claim("Role", userRole));
+                        
+                        if (roleClaimResult.Succeeded && customRoleClaimResult.Succeeded)
+                        {
+                            Console.WriteLine($"✓ Added role claims to existing admin user '{adminData.Email}' (ID: {adminUser.Id}) with role '{userRole}'");
+                        }
+                        else
+                        {
+                            var errors = roleClaimResult.Errors.Concat(customRoleClaimResult.Errors);
+                            Console.WriteLine($"✗ Failed to add claims to existing admin user '{adminData.Email}': {string.Join(", ", errors.Select(e => e.Description))}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Admin user '{adminData.Email}' already exists with role claims.");
+                    }
                 }
+            }
+
+            // Ensure all existing Admin and Owner users have role claims
+            await EnsureAdminAndOwnerClaimsAsync();
+        }
+
+        /// <summary>
+        /// Ensures all users with Role = "Admin" or "Owner" have the appropriate role claims
+        /// </summary>
+        private async Task EnsureAdminAndOwnerClaimsAsync()
+        {
+            try
+            {
+                var adminAndOwnerUsers = await _context.Users
+                    .Where(u => u.Role == "Admin" || u.Role == "Owner")
+                    .ToListAsync();
+
+                Console.WriteLine($"Found {adminAndOwnerUsers.Count} Admin/Owner users to process for claims.");
+
+                foreach (var user in adminAndOwnerUsers)
+                {
+                    try
+                    {
+                        var existingClaims = await _userManager.GetClaimsAsync(user);
+                        var hasRoleClaim = existingClaims.Any(c => 
+                            (c.Type == ClaimTypes.Role || c.Type == "Role") && 
+                            (c.Value == "Admin" || c.Value == "Owner"));
+
+                        if (!hasRoleClaim)
+                        {
+                            // Add both ClaimTypes.Role and custom "Role" claim for compatibility
+                            var roleClaimResult = await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, user.Role));
+                            var customRoleClaimResult = await _userManager.AddClaimAsync(user, new Claim("Role", user.Role));
+                            
+                            if (roleClaimResult.Succeeded && customRoleClaimResult.Succeeded)
+                            {
+                                Console.WriteLine($"✓ Added role claims to user '{user.Email}' (ID: {user.Id}) with role '{user.Role}'");
+                            }
+                            else
+                            {
+                                var errors = roleClaimResult.Errors.Concat(customRoleClaimResult.Errors);
+                                Console.WriteLine($"✗ Failed to add claims to user '{user.Email}': {string.Join(", ", errors.Select(e => e.Description))}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"- User '{user.Email}' already has role claims.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"✗ Error processing user '{user.Email}': {ex.Message}");
+                    }
+                }
+
+                // Verify claims were saved
+                var totalUsersWithClaims = 0;
+                foreach (var user in adminAndOwnerUsers)
+                {
+                    var claims = await _userManager.GetClaimsAsync(user);
+                    if (claims.Any(c => (c.Type == ClaimTypes.Role || c.Type == "Role") && (c.Value == "Admin" || c.Value == "Owner")))
+                    {
+                        totalUsersWithClaims++;
+                    }
+                }
+                Console.WriteLine($"Claims verification: {totalUsersWithClaims}/{adminAndOwnerUsers.Count} Admin/Owner users have role claims.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ Error in EnsureAdminAndOwnerClaimsAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
         }
 

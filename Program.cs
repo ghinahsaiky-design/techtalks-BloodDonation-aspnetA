@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // Get database configuration
-var useMySQL = builder.Configuration.GetValue<bool>("UseMySQL", true);
+var useMySQL = builder.Configuration.GetValue<bool>("UseMySQL", false);
 var databaseProvider = builder.Configuration["DatabaseProvider"] ?? (useMySQL ? "MySQL" : "SQLServer");
 var connectionString = useMySQL 
     ? builder.Configuration.GetConnectionString("BloodDonationDb") 

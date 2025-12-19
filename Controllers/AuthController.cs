@@ -69,7 +69,8 @@ namespace BloodDonation.Controllers
             };
             var claims = new List<Claim>
             {
-                new Claim("FirstName",user.FirstName)
+                new Claim("FirstName",user.FirstName),
+                new Claim(ClaimTypes.Role, user.Role)
             };
             var result = await _userManager.CreateAsync(user, model.Password);
 
