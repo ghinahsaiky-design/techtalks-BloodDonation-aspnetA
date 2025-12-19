@@ -1,0 +1,291 @@
+@model BloodDonation.Models.AddDonorViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = ViewBag.DonorId != null ? "Edit Donor" : "Add New Donor";
+}
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>@ViewData["Title"] - BloodConnect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d70427",
+                        "background-light": "#f8f5f6",
+                        "background-dark": "#230f12",
+                        "blue-700": "#1E40AF",
+                        "gray-100": "#F3F4F6",
+                        "gray-800": "#1F2937",
+                        "gray-500": "#6B7280",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100 overflow-hidden">
+<div class="relative flex min-h-screen w-full flex-row group/design-root">
+<aside class="flex h-screen min-h-screen w-64 flex-col bg-white dark:bg-background-dark dark:border-r dark:border-white/10 shadow-sm z-20">
+<div class="flex h-full flex-col justify-between p-4">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3 px-3 py-2">
+<img src="~/images/BloodDonationLogo.png" alt="BloodConnect logo" class="size-10 rounded-full object-cover"/>
+<div class="flex flex-col">
+<h1 class="text-gray-800 dark:text-white text-base font-bold leading-normal">BloodConnect</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Admin Panel</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5 transition-colors" href="@Url.Action("Index", "Admin")">
+<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary transition-colors" href="@Url.Action("DonorManagement", "Admin")">
+<span class="material-symbols-outlined !fill-1">group</span>
+<p class="text-sm font-bold leading-normal">Donors</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5 transition-colors" href="@Url.Action("RequestManagement", "Admin")">
+<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">inbox</span>
+<p class="text-sm font-medium leading-normal">Requests</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5 transition-colors" href="@Url.Action("Settings", "Admin")">
+<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</nav>
+</div>
+<div class="px-3 py-2">
+<form asp-action="Logout" asp-controller="Auth" method="post" class="inline">
+@Html.AntiForgeryToken()
+<button type="submit" class="flex items-center gap-3 text-red-600 hover:text-red-700 transition-colors w-full">
+<span class="material-symbols-outlined">logout</span>
+<p class="text-sm font-medium leading-normal">Sign Out</p>
+</button>
+</form>
+</div>
+</div>
+</aside>
+<div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-white/10 bg-white dark:bg-background-dark px-8 py-3 sticky top-0 z-10 shadow-sm">
+<div class="flex items-center gap-4 text-gray-800 dark:text-white">
+<a href="@Url.Action("DonorManagement", "Admin")" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span class="text-sm font-medium">Back to Donors</span>
+</a>
+<div class="h-4 w-px bg-gray-300 dark:bg-white/20"></div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">@(ViewBag.DonorId != null ? "Edit Donor" : "Add New Donor")</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4 items-center">
+<div class="relative">
+<button class="flex items-center justify-center rounded-full size-10 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-primary rounded-full border-2 border-white dark:border-background-dark"></span>
+</button>
+</div>
+<div class="h-8 w-px bg-gray-200 dark:bg-white/10 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden md:block">
+<p class="text-sm font-semibold text-gray-800 dark:text-white">@ViewBag.AdminName</p>
+<p class="text-xs text-gray-500">Admin</p>
+</div>
+<img src="~/images/BloodDonationLogo.png" alt="Admin user avatar" class="size-10 rounded-full object-cover border-2 border-white dark:border-white/10 shadow-sm"/>
+</div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50 dark:bg-[#1a0b0d]">
+<div class="max-w-5xl mx-auto">
+<div class="bg-white dark:bg-background-dark rounded-xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
+<div class="px-6 py-5 border-b border-gray-100 dark:border-white/5 flex flex-col gap-1">
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">@(ViewBag.DonorId != null ? "Edit Donor Information" : "New Donor Registration")</h1>
+<p class="text-sm text-gray-500">Please fill in the donor information accurately. Fields marked with * are mandatory.</p>
+</div>
+<form asp-action="@(ViewBag.DonorId != null ? "EditDonor" : "AddDonor")" asp-controller="Admin" method="post" class="p-6 md:p-8 space-y-8">
+@if (ViewBag.DonorId != null)
+{
+    <input type="hidden" name="id" value="@ViewBag.DonorId" />
+}
+@Html.AntiForgeryToken()
+<div asp-validation-summary="ModelOnly" class="text-red-600 text-sm mb-4"></div>
+<section>
+<div class="flex items-center gap-3 mb-5 text-gray-900 dark:text-white">
+<div class="flex items-center justify-center size-8 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined text-[18px]">person</span>
+</div>
+<h3 class="text-lg font-semibold">Personal Details</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="FirstName">First Name <span class="text-red-500">*</span></label>
+<input asp-for="FirstName" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow" placeholder="e.g. John" />
+<span asp-validation-for="FirstName" class="text-red-600 text-xs"></span>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="LastName">Last Name <span class="text-red-500">*</span></label>
+<input asp-for="LastName" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow" placeholder="e.g. Doe" />
+<span asp-validation-for="LastName" class="text-red-600 text-xs"></span>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="Email">Email Address <span class="text-red-500">*</span></label>
+<input asp-for="Email" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow" placeholder="john@example.com" type="email"/>
+<span asp-validation-for="Email" class="text-red-600 text-xs"></span>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="PhoneNumber">Phone Number</label>
+<input asp-for="PhoneNumber" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow" placeholder="+961 3 123456" type="tel"/>
+<span asp-validation-for="PhoneNumber" class="text-red-600 text-xs"></span>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="DateOfBirth">Date of Birth <span class="text-red-500">*</span></label>
+<input asp-for="DateOfBirth" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow" type="date"/>
+<span asp-validation-for="DateOfBirth" class="text-red-600 text-xs"></span>
+</div>
+@if (ViewBag.DonorId == null)
+{
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="Password">Password <span class="text-red-500">*</span></label>
+<input asp-for="Password" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow" type="password" required data-val="true" data-val-required="Password is required" data-val-minlength="Password must be at least 6 characters" data-val-minlength-min="6"/>
+<span asp-validation-for="Password" class="text-red-600 text-xs"></span>
+</div>
+}
+else
+{
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="Password">New Password (leave empty to keep current)</label>
+<input asp-for="Password" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow" type="password" placeholder="Enter new password" data-val="false"/>
+<span asp-validation-for="Password" class="text-red-600 text-xs"></span>
+</div>
+}
+</div>
+</section>
+<div class="h-px bg-gray-100 dark:bg-white/5"></div>
+<section>
+<div class="flex items-center gap-3 mb-5 text-gray-900 dark:text-white">
+<div class="flex items-center justify-center size-8 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+<span class="material-symbols-outlined text-[18px]">bloodtype</span>
+</div>
+<h3 class="text-lg font-semibold">Donation Information</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="BloodTypeId">Blood Type <span class="text-red-500">*</span></label>
+<select asp-for="BloodTypeId" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow">
+<option value="">Select Blood Type...</option>
+@foreach (var bloodType in Model.BloodTypes)
+{
+    <option value="@bloodType.BloodTypeId">@bloodType.Type</option>
+}
+</select>
+<span asp-validation-for="BloodTypeId" class="text-red-600 text-xs"></span>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="Gender">Gender <span class="text-red-500">*</span></label>
+<select asp-for="Gender" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow">
+<option value="">Select Gender...</option>
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+</select>
+<span asp-validation-for="Gender" class="text-red-600 text-xs"></span>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="LastDonationDate">Last Donation Date</label>
+<input asp-for="LastDonationDate" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow" type="date"/>
+<p class="text-xs text-gray-500">Leave empty if first time donor</p>
+<span asp-validation-for="LastDonationDate" class="text-red-600 text-xs"></span>
+</div>
+</div>
+</section>
+<div class="h-px bg-gray-100 dark:bg-white/5"></div>
+<section>
+<div class="flex items-center gap-3 mb-5 text-gray-900 dark:text-white">
+<div class="flex items-center justify-center size-8 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+</div>
+<h3 class="text-lg font-semibold">Privacy &amp; Location</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" asp-for="LocationId">City / Region <span class="text-red-500">*</span></label>
+<select asp-for="LocationId" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-2.5 transition-shadow">
+<option value="">Select Region...</option>
+@foreach (var location in Model.Locations)
+{
+    <option value="@location.LocationId">@location.Districts</option>
+}
+</select>
+<span asp-validation-for="LocationId" class="text-red-600 text-xs"></span>
+</div>
+<div class="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+<div class="space-y-0.5">
+<label class="text-sm font-medium text-gray-900 dark:text-white" asp-for="IsIdentityHidden">Hide Identity</label>
+<p class="text-xs text-gray-500">Keep donor identity anonymous in public lists</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input asp-for="IsIdentityHidden" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+<div class="space-y-0.5">
+<label class="text-sm font-medium text-gray-900 dark:text-white" asp-for="IsHealthyForDonation">Is Healthy for Donation</label>
+<p class="text-xs text-gray-500">Confirm donor is eligible to donate</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input asp-for="IsHealthyForDonation" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+<div class="space-y-0.5">
+<label class="text-sm font-medium text-gray-900 dark:text-white" asp-for="IsAvailable">Is Available</label>
+<p class="text-xs text-gray-500">Donor is currently available for donation</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input asp-for="IsAvailable" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<div class="flex items-center justify-end gap-4 pt-6 mt-8 border-t border-gray-100 dark:border-white/5">
+<a href="@Url.Action("DonorManagement", "Admin")" class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-white/10 text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 font-medium text-sm hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all">
+                                Cancel
+                            </a>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-white font-medium text-sm shadow-md shadow-primary/20 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all active:scale-95" type="submit">
+                                @(ViewBag.DonorId != null ? "Update Donor" : "Save Donor")
+                            </button>
+</div>
+</form>
+</div>
+</div>
+</main>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+</body></html>

@@ -1,0 +1,324 @@
+@model IEnumerable<BloodDonation.Models.DonorRequest>
+@{
+    Layout = null;
+    ViewData["Title"] = "Admin Request Management";
+}
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BloodConnect - Request Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d70427",
+                        "background-light": "#f8f5f6",
+                        "background-dark": "#230f12",
+                        "blue-700": "#1E40AF",
+                        "gray-100": "#F3F4F6",
+                        "gray-800": "#1F2937",
+                        "gray-500": "#6B7280",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100">
+<div class="relative flex min-h-screen w-full flex-row group/design-root">
+<aside class="flex h-screen min-h-screen w-64 flex-col bg-white dark:bg-background-dark dark:border-r dark:border-white/10 shadow-sm">
+<div class="flex h-full flex-col justify-between p-4">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3 px-3 py-2">
+<img src="~/images/BloodDonationLogo.png" alt="BloodConnect logo" class="size-10 rounded-full object-cover"/>
+<div class="flex flex-col">
+<h1 class="text-gray-800 dark:text-white text-base font-bold leading-normal">BloodConnect</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Admin Panel</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("Index", "Admin")">
+<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("DonorManagement", "Admin")">
+<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">group</span>
+<p class="text-sm font-medium leading-normal">Donors</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary" href="@Url.Action("RequestManagement", "Admin")">
+<span class="material-symbols-outlined !fill-1">inbox</span>
+<p class="text-sm font-bold leading-normal">Requests</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("Settings", "Admin")">
+<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</nav>
+</div>
+<div class="px-3 py-2">
+<form asp-action="Logout" asp-controller="Auth" method="post" class="inline">
+@Html.AntiForgeryToken()
+<button type="submit" class="flex items-center gap-3 text-red-600 hover:text-red-700 transition-colors w-full">
+<span class="material-symbols-outlined">logout</span>
+<p class="text-sm font-medium leading-normal">Sign Out</p>
+</button>
+</form>
+</div>
+</div>
+</aside>
+<div class="flex-1 flex flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark px-10 py-3 sticky top-0 z-10 shadow-sm">
+<div class="flex items-center gap-4 text-gray-800 dark:text-white">
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Requests Management</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4 items-center">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full size-10 bg-background-light text-blue-700 dark:bg-white/10 dark:text-primary/80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<img src="~/images/BloodDonationLogo.png" alt="Admin user avatar" class="size-10 rounded-full object-cover"/>
+</div>
+</header>
+<main class="flex-1 p-6 md:p-8 lg:p-10">
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+<p class="text-gray-800 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em] min-w-72">Incoming Blood Requests</p>
+<button onclick="document.getElementById('createRequestModal').classList.remove('hidden')" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90">
+<span class="truncate">+ Create New Request</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">Total Requests</p>
+<p class="text-gray-800 dark:text-white tracking-light text-3xl font-bold leading-tight">@ViewBag.TotalRequests</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">Pending Approval</p>
+<p class="text-gray-800 dark:text-white tracking-light text-3xl font-bold leading-tight">@ViewBag.PendingRequests</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">Critical Cases</p>
+<p class="text-gray-800 dark:text-white tracking-light text-3xl font-bold leading-tight">@ViewBag.CriticalCases</p>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark rounded-xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
+<form method="get" action="@Url.Action("RequestManagement", "Admin")" class="flex flex-wrap justify-between items-center gap-4 p-4 border-b border-gray-100 dark:border-white/10">
+<div class="relative w-full max-w-xs">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500">search</span>
+</div>
+<input name="searchTerm" value="@ViewBag.SearchTerm" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-white/20 bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Search requests..." type="text"/>
+</div>
+<div class="flex gap-2">
+<select name="bloodTypeFilter" onchange="this.form.submit()" class="rounded-lg border border-gray-200 dark:border-white/20 bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+<option value="">Blood Type</option>
+@foreach (var bt in ViewBag.BloodTypes as List<BloodDonation.Models.BloodTypes> ?? new List<BloodDonation.Models.BloodTypes>())
+{
+    <option value="@bt.Type" selected="@(ViewBag.BloodTypeFilter == bt.Type)">@bt.Type</option>
+}
+</select>
+<select name="urgencyFilter" onchange="this.form.submit()" class="rounded-lg border border-gray-200 dark:border-white/20 bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+<option value="">Urgency Level</option>
+<option value="Critical" selected="@(ViewBag.UrgencyFilter == "Critical")">Critical</option>
+<option value="High" selected="@(ViewBag.UrgencyFilter == "High")">High</option>
+<option value="Normal" selected="@(ViewBag.UrgencyFilter == "Normal")">Normal</option>
+<option value="Low" selected="@(ViewBag.UrgencyFilter == "Low")">Low</option>
+</select>
+<select name="statusFilter" onchange="this.form.submit()" class="rounded-lg border border-gray-200 dark:border-white/20 bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+<option value="">All Status</option>
+<option value="Pending" selected="@(ViewBag.StatusFilter == "Pending")">Pending</option>
+<option value="Approved" selected="@(ViewBag.StatusFilter == "Approved")">Approved</option>
+<option value="Completed" selected="@(ViewBag.StatusFilter == "Completed")">Completed</option>
+<option value="Cancelled" selected="@(ViewBag.StatusFilter == "Cancelled")">Cancelled</option>
+</select>
+<button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">Search</button>
+</div>
+</form>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-gray-100 dark:bg-white/5 text-xs uppercase text-gray-500 dark:text-gray-400">
+<tr>
+<th class="px-6 py-3" scope="col">Request ID</th>
+<th class="px-6 py-3" scope="col">Patient Name</th>
+<th class="px-6 py-3" scope="col">Blood Type</th>
+<th class="px-6 py-3" scope="col">Location</th>
+<th class="px-6 py-3" scope="col">Contact Number</th>
+<th class="px-6 py-3" scope="col">Hospital</th>
+<th class="px-6 py-3" scope="col">Urgency</th>
+<th class="px-6 py-3" scope="col">Status</th>
+<th class="px-6 py-3 text-right" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody>
+@if (Model == null || !Model.Any())
+{
+    <tr>
+        <td colspan="9" class="px-6 py-8 text-center text-gray-500">No requests found</td>
+    </tr>
+}
+else
+{
+    @foreach (var request in Model)
+    {
+        var urgencyClass = request.UrgencyLevel == "Critical" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" :
+                          request.UrgencyLevel == "High" ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400" :
+                          request.UrgencyLevel == "Normal" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" : 
+                          "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+        
+        var statusClass = request.Status == "Completed" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
+                         request.Status == "Approved" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" :
+                         request.Status == "Pending" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                         "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+        
+        <tr class="border-b dark:border-white/10 hover:bg-background-light dark:hover:bg-white/5">
+            <td class="px-6 py-4 font-medium">#REQ-@request.RequestId</td>
+            <td class="px-6 py-4 font-bold">@request.PatientName</td>
+            <td class="px-6 py-4 font-mono font-bold text-primary">@request.BloodType.Type</td>
+            <td class="px-6 py-4">@request.Location.Districts</td>
+            <td class="px-6 py-4">@request.ContactNumber</td>
+            <td class="px-6 py-4">@(request.HospitalName ?? "N/A")</td>
+            <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @urgencyClass">@request.UrgencyLevel</span></td>
+            <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @statusClass">@request.Status</span></td>
+            <td class="px-6 py-4 text-right space-x-2">
+                @if (request.Status == "Pending")
+                {
+                    <form method="post" action="@Url.Action("UpdateDonorRequestStatus", "Admin")" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="requestId" value="@request.RequestId" />
+                        <input type="hidden" name="status" value="Approved" />
+                        <button type="submit" class="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-white/10 text-green-600" title="Approve"><span class="material-symbols-outlined text-base">check_circle</span></button>
+                    </form>
+                }
+                @if (request.Status != "Completed" && request.Status != "Cancelled")
+                {
+                    <form method="post" action="@Url.Action("UpdateDonorRequestStatus", "Admin")" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="requestId" value="@request.RequestId" />
+                        <input type="hidden" name="status" value="Completed" />
+                        <button type="submit" class="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-white/10 text-blue-700 dark:text-primary/80" title="Mark Complete"><span class="material-symbols-outlined text-base">done</span></button>
+                    </form>
+                }
+                @if (request.Status == "Pending")
+                {
+                    <form method="post" action="@Url.Action("UpdateDonorRequestStatus", "Admin")" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="requestId" value="@request.RequestId" />
+                        <input type="hidden" name="status" value="Cancelled" />
+                        <button type="submit" class="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-white/10 text-red-600" title="Cancel"><span class="material-symbols-outlined text-base">cancel</span></button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+}
+</tbody>
+</table>
+</div>
+<div class="flex justify-between items-center p-4">
+<span class="text-sm text-gray-500 dark:text-gray-400">Showing 1 to @(Model?.Count() ?? 0) of @ViewBag.TotalRequests requests</span>
+<div class="inline-flex rounded-lg shadow-sm">
+<button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 rounded-l-lg hover:bg-gray-100 dark:hover:bg-white/10">Previous</button>
+<button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border-t border-b border-gray-200 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10">1</button>
+<button class="px-3 py-1 text-sm font-medium text-white bg-primary border-t border-b border-primary">2</button>
+<button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border-t border-b border-gray-200 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10">3</button>
+<button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 rounded-r-lg hover:bg-gray-100 dark:hover:bg-white/10">Next</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+<!-- Create Request Modal -->
+<div id="createRequestModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 hidden">
+<div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="document.getElementById('createRequestModal').classList.add('hidden')"></div>
+<div class="relative w-full max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-background-dark p-6 text-left shadow-2xl transition-all border border-gray-100 dark:border-white/10 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between mb-5">
+<h3 class="text-xl font-bold leading-6 text-gray-900 dark:text-white">Create New Blood Request</h3>
+<button onclick="document.getElementById('createRequestModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<form method="post" action="@Url.Action("CreateDonorRequest", "Admin")">
+@Html.AntiForgeryToken()
+<div class="space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Patient Name *</label>
+<input name="PatientName" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Enter patient name" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Contact Number *</label>
+<input name="ContactNumber" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="+961 XX XXX XXX" type="tel"/>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Blood Type *</label>
+<select name="BloodTypeId" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5">
+<option value="">Select blood type...</option>
+@foreach (var bt in ViewBag.BloodTypes as List<BloodDonation.Models.BloodTypes> ?? new List<BloodDonation.Models.BloodTypes>())
+{
+    <option value="@bt.BloodTypeId">@bt.Type</option>
+}
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Location *</label>
+<select name="LocationId" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5">
+<option value="">Select location...</option>
+@foreach (var loc in ViewBag.Locations as List<BloodDonation.Models.Locations> ?? new List<BloodDonation.Models.Locations>())
+{
+    <option value="@loc.LocationId">@loc.Districts</option>
+}
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Urgency Level *</label>
+<select name="UrgencyLevel" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5">
+<option value="">Select urgency...</option>
+<option value="Critical">Critical</option>
+<option value="High">High</option>
+<option value="Normal">Normal</option>
+<option value="Low">Low</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Hospital Name</label>
+<input name="HospitalName" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Hospital name (optional)" type="text"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Additional Notes</label>
+<textarea name="AdditionalNotes" rows="3" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Any additional information..."></textarea>
+</div>
+<div class="mt-6 flex justify-end gap-3 border-t border-gray-100 dark:border-white/10 pt-4">
+<button type="button" onclick="document.getElementById('createRequestModal').classList.add('hidden')" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:bg-white/5 dark:text-gray-200 dark:border-white/10">Cancel</button>
+<button type="submit" class="rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Create Request</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+
+</body></html>

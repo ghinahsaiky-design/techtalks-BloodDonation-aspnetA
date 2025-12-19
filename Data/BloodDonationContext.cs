@@ -17,6 +17,8 @@ namespace BloodDonation.Data
         public DbSet<BloodTypes> BloodTypes { get; set; }
         public DbSet<Locations> Locations { get; set; }
         public DbSet<PasswordReset> PasswordResets { get; set; }
+        public DbSet<TrackedAction> Actions { get; set; }
+        public DbSet<DonorRequest> DonorRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

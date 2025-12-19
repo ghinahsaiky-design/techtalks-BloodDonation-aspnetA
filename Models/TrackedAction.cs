@@ -1,6 +1,8 @@
-﻿namespace BloodDonation.Models
+﻿using System;
+
+namespace BloodDonation.Models
 {
-    public class Action
+    public class TrackedAction
     {
         public int Id { get; set; }
         public string Name { get; set; }
