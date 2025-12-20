@@ -33,6 +33,11 @@ namespace BloodDonation.Models
         [MaxLength(20)]
         public string ContactNumber { get; set; } = "";
 
+        [Required]
+        [MaxLength(200)]
+        [EmailAddress]
+        public string RequesterEmail { get; set; } = "";
+
         [MaxLength(100)]
         public string? HospitalName { get; set; }
 

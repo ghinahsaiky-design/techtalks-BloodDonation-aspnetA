@@ -50,6 +50,7 @@
     </script>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100 h-screen overflow-hidden">
+<partial name="_NotificationAlert" />
 <div class="relative flex h-full w-full flex-row group/design-root">
 <aside class="flex h-full w-64 flex-col bg-white dark:bg-background-dark dark:border-r dark:border-white/10 shadow-sm z-20 hidden lg:flex shrink-0">
 <div class="flex h-full flex-col justify-between p-4">
@@ -100,10 +101,27 @@
 <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">System Settings</h2>
 </div>
 <div class="flex flex-1 justify-end gap-4 items-center">
-<button class="flex items-center justify-center rounded-full size-10 hover:bg-background-light text-blue-700 dark:hover:bg-white/10 dark:text-primary/80 transition-colors relative">
+<div class="relative">
+<button id="notificationBtn" onclick="toggleNotificationDropdown()" class="flex items-center justify-center rounded-full size-10 hover:bg-background-light text-blue-700 dark:hover:bg-white/10 dark:text-primary/80 transition-colors relative">
 <span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-2 right-2 size-2 bg-primary rounded-full border-2 border-white dark:border-background-dark"></span>
+<span id="notificationBadge" class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center px-1 hidden">0</span>
 </button>
+<div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-background-dark rounded-lg shadow-xl border border-gray-200 dark:border-white/10 z-50 max-h-96 overflow-y-auto">
+<div class="p-4 border-b border-gray-200 dark:border-white/10">
+<h3 class="text-sm font-bold text-gray-900 dark:text-white">Recent Confirmations</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Donor confirmations from the last 24 hours</p>
+</div>
+<div id="notificationList" class="p-2">
+<div class="text-center py-4 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined animate-spin text-2xl mb-2">sync</span>
+<p class="text-sm">Loading...</p>
+</div>
+</div>
+<div class="p-3 border-t border-gray-200 dark:border-white/10 text-center">
+<a href="@Url.Action("RequestManagement", "Admin")" class="text-xs text-primary hover:underline">View All Requests</a>
+</div>
+</div>
+</div>
 <img src="~/images/BloodDonationLogo.png" alt="Admin user avatar" class="size-10 rounded-full object-cover border-2 border-gray-100 dark:border-white/10"/>
 </div>
 </header>
@@ -149,6 +167,35 @@
         </div>
     </section>
 }
+<section class="bg-white dark:bg-background-dark rounded-xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-gray-100 dark:border-white/10">
+<div class="flex items-center gap-3 mb-1">
+<span class="material-symbols-outlined text-blue-700 dark:text-primary">lock</span>
+<h2 class="text-lg font-bold text-gray-900 dark:text-white">Change Password</h2>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 pl-9">Update your account password for better security.</p>
+</div>
+<form asp-action="ChangePassword" asp-controller="Admin" method="post" class="p-6 md:p-8">
+@Html.AntiForgeryToken()
+<div class="space-y-4 max-w-md">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+<input name="CurrentPassword" type="password" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Enter current password"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+<input name="NewPassword" type="password" required minlength="6" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Enter new password (min 6 characters)"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+<input name="ConfirmPassword" type="password" required minlength="6" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Confirm new password"/>
+</div>
+<div class="flex gap-3 pt-2">
+<button type="submit" class="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg shadow-sm hover:bg-primary/90 transition-colors">Change Password</button>
+</div>
+</div>
+</form>
+</section>
 <section class="bg-white dark:bg-background-dark rounded-xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
 <div class="p-6 border-b border-gray-100 dark:border-white/10">
 <div class="flex items-center gap-3 mb-1">
@@ -283,5 +330,92 @@
 </main>
 </div>
 </div>
+
+<script>
+    let notificationDropdownOpen = false;
+
+    function toggleNotificationDropdown() {
+        const dropdown = document.getElementById('notificationDropdown');
+        if (dropdown) {
+            notificationDropdownOpen = !notificationDropdownOpen;
+            if (notificationDropdownOpen) {
+                dropdown.classList.remove('hidden');
+                loadNotifications();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        const btn = document.getElementById('notificationBtn');
+        const dropdown = document.getElementById('notificationDropdown');
+        if (btn && dropdown && !btn.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+            notificationDropdownOpen = false;
+        }
+    });
+
+    async function loadNotifications() {
+        try {
+            const response = await fetch('/Admin/GetNotificationCount');
+            const data = await response.json();
+            
+            if (data.success) {
+                updateNotificationBadge(data.count);
+                updateNotificationList(data.confirmations || []);
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+    function updateNotificationBadge(count) {
+        const badge = document.getElementById('notificationBadge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count.toString();
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    }
+
+    function updateNotificationList(confirmations) {
+        const list = document.getElementById('notificationList');
+        if (!list) return;
+
+        if (confirmations.length === 0) {
+            list.innerHTML = `
+                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <span class="material-symbols-outlined text-4xl mb-2">notifications_off</span>
+                    <p class="text-sm">No new confirmations</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = confirmations.map(conf => `
+            <div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors" onclick="window.location.href='@Url.Action("RequestManagement", "Admin")?requestId=${conf.requestId}'">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-sm">check_circle</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">${conf.donorName} confirmed</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Request #${conf.requestId} - ${conf.patientName} (${conf.bloodType})</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">${conf.timeAgo}</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
+    });
+</script>
 
 </body></html>

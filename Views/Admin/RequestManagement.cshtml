@@ -49,6 +49,7 @@
     </script>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100">
+<partial name="_NotificationAlert" />
 <div class="relative flex min-h-screen w-full flex-row group/design-root">
 <aside class="flex h-screen min-h-screen w-64 flex-col bg-white dark:bg-background-dark dark:border-r dark:border-white/10 shadow-sm">
 <div class="flex h-full flex-col justify-between p-4">
@@ -96,9 +97,27 @@
 <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Requests Management</h2>
 </div>
 <div class="flex flex-1 justify-end gap-4 items-center">
-<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full size-10 bg-background-light text-blue-700 dark:bg-white/10 dark:text-primary/80">
+<div class="relative">
+<button id="notificationBtn" onclick="toggleNotificationDropdown()" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full size-10 bg-background-light text-blue-700 dark:bg-white/10 dark:text-primary/80 hover:bg-gray-100 dark:hover:bg-white/20 transition-colors relative">
 <span class="material-symbols-outlined">notifications</span>
+<span id="notificationBadge" class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center px-1 hidden">0</span>
 </button>
+<div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-background-dark rounded-lg shadow-xl border border-gray-200 dark:border-white/10 z-50 max-h-96 overflow-y-auto">
+<div class="p-4 border-b border-gray-200 dark:border-white/10">
+<h3 class="text-sm font-bold text-gray-900 dark:text-white">Recent Confirmations</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Donor confirmations from the last 24 hours</p>
+</div>
+<div id="notificationList" class="p-2">
+<div class="text-center py-4 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined animate-spin text-2xl mb-2">sync</span>
+<p class="text-sm">Loading...</p>
+</div>
+</div>
+<div class="p-3 border-t border-gray-200 dark:border-white/10 text-center">
+<a href="@Url.Action("RequestManagement", "Admin")" class="text-xs text-primary hover:underline">View All Requests</a>
+</div>
+</div>
+</div>
 <img src="~/images/BloodDonationLogo.png" alt="Admin user avatar" class="size-10 rounded-full object-cover"/>
 </div>
 </header>
@@ -165,6 +184,7 @@
 <th class="px-6 py-3" scope="col">Blood Type</th>
 <th class="px-6 py-3" scope="col">Location</th>
 <th class="px-6 py-3" scope="col">Contact Number</th>
+<th class="px-6 py-3" scope="col">Requester Email</th>
 <th class="px-6 py-3" scope="col">Hospital</th>
 <th class="px-6 py-3" scope="col">Urgency</th>
 <th class="px-6 py-3" scope="col">Status</th>
@@ -175,7 +195,7 @@
 @if (Model == null || !Model.Any())
 {
     <tr>
-        <td colspan="9" class="px-6 py-8 text-center text-gray-500">No requests found</td>
+        <td colspan="10" class="px-6 py-8 text-center text-gray-500">No requests found</td>
     </tr>
 }
 else
@@ -192,16 +212,22 @@ else
                          request.Status == "Pending" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" :
                          "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
         
-        <tr class="border-b dark:border-white/10 hover:bg-background-light dark:hover:bg-white/5">
+        <tr class="border-b dark:border-white/10 hover:bg-background-light dark:hover:bg-white/5" data-request-id="@request.RequestId">
             <td class="px-6 py-4 font-medium">#REQ-@request.RequestId</td>
             <td class="px-6 py-4 font-bold">@request.PatientName</td>
             <td class="px-6 py-4 font-mono font-bold text-primary">@request.BloodType.Type</td>
             <td class="px-6 py-4">@request.Location.Districts</td>
             <td class="px-6 py-4">@request.ContactNumber</td>
+            <td class="px-6 py-4">
+                <a href="mailto:@request.RequesterEmail" class="text-primary hover:underline">@request.RequesterEmail</a>
+            </td>
             <td class="px-6 py-4">@(request.HospitalName ?? "N/A")</td>
             <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @urgencyClass">@request.UrgencyLevel</span></td>
             <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @statusClass">@request.Status</span></td>
             <td class="px-6 py-4 text-right space-x-2">
+                <button onclick="toggleMatchingDonors(@request.RequestId)" class="p-2 rounded-lg hover:bg-purple-100 dark:hover:bg-white/10 text-purple-600" title="View Matching Donors">
+                    <span class="material-symbols-outlined text-base">people</span>
+                </button>
                 @if (request.Status == "Pending")
                 {
                     <form method="post" action="@Url.Action("UpdateDonorRequestStatus", "Admin")" style="display: inline;">
@@ -229,6 +255,24 @@ else
                         <button type="submit" class="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-white/10 text-red-600" title="Cancel"><span class="material-symbols-outlined text-base">cancel</span></button>
                     </form>
                 }
+            </td>
+        </tr>
+        <tr id="matching-donors-row-@request.RequestId" class="hidden">
+            <td colspan="10" class="px-6 py-4 bg-gray-50 dark:bg-white/5">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Matching Donors</h3>
+                        <button onclick="toggleMatchingDonors(@request.RequestId)" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div id="matching-donors-content-@request.RequestId" class="space-y-3">
+                        <div class="text-center py-4">
+                            <span class="material-symbols-outlined animate-spin text-primary">sync</span>
+                            <p class="text-gray-500 dark:text-gray-400 mt-2">Loading matching donors...</p>
+                        </div>
+                    </div>
+                </div>
             </td>
         </tr>
     }
@@ -272,6 +316,11 @@ else
 <div class="space-y-1">
 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Contact Number *</label>
 <input name="ContactNumber" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="+961 XX XXX XXX" type="tel"/>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Requester Email *</label>
+<input name="RequesterEmail" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="requester@example.com" type="email"/>
+<p class="text-xs text-gray-500 dark:text-gray-400">Email where donor information will be sent when they confirm</p>
 </div>
 <div class="space-y-1">
 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Blood Type *</label>
@@ -320,5 +369,473 @@ else
 </form>
 </div>
 </div>
+
+<script>
+    function toggleMatchingDonors(requestId) {
+        const row = document.getElementById(`matching-donors-row-${requestId}`);
+        const content = document.getElementById(`matching-donors-content-${requestId}`);
+        
+        if (row.classList.contains('hidden')) {
+            row.classList.remove('hidden');
+            loadMatchingDonors(requestId);
+        } else {
+            row.classList.add('hidden');
+        }
+    }
+
+    async function loadMatchingDonors(requestId) {
+        const content = document.getElementById(`matching-donors-content-${requestId}`);
+        
+        try {
+            const response = await fetch(`/Admin/GetMatchingDonors?requestId=${requestId}`);
+            const data = await response.json();
+            
+            if (data.success && data.donors && data.donors.length > 0) {
+                content.innerHTML = `
+                    <div class="bg-white dark:bg-background-dark rounded-lg border border-gray-200 dark:border-white/10 p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Found <strong>${data.donors.length}</strong> matching donor(s)</p>
+                        <div class="flex gap-2">
+                            <button onclick="loadConfirmations(${requestId})" class="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10" title="Refresh Confirmations">
+                                <span class="material-symbols-outlined text-sm align-middle">refresh</span> Refresh
+                            </button>
+                            <button onclick="selectAllDonors(${requestId})" class="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10">Select All</button>
+                            <button onclick="deselectAllDonors(${requestId})" class="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10">Deselect All</button>
+                            <button onclick="sendEmailsToSelected(${requestId})" class="px-3 py-1 text-xs rounded-lg bg-primary text-white hover:bg-primary/90">
+                                <span class="material-symbols-outlined text-sm align-middle">email</span> Send Emails
+                            </button>
+                        </div>
+                    </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100 dark:bg-white/5">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left"><input type="checkbox" id="select-all-${requestId}" onchange="toggleAllDonors(${requestId}, this.checked)"></th>
+                                        <th class="px-4 py-2 text-left">Name</th>
+                                        <th class="px-4 py-2 text-left">Email</th>
+                                        <th class="px-4 py-2 text-left">Phone</th>
+                                        <th class="px-4 py-2 text-left">Blood Type</th>
+                                        <th class="px-4 py-2 text-left">Location</th>
+                                        <th class="px-4 py-2 text-left">Last Donation</th>
+                                        <th class="px-4 py-2 text-left">Status</th>
+                                        <th class="px-4 py-2 text-left">Confirmation</th>
+                                        <th class="px-4 py-2 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.donors.map(donor => {
+                                        // Handle both camelCase and PascalCase property names
+                                        const donorId = donor.donorId || donor.DonorId;
+                                        const donorName = donor.name || donor.Name || `Donor #${donorId}`;
+                                        const donorEmail = donor.email || donor.Email || 'N/A';
+                                        const donorPhone = donor.phoneNumber || donor.PhoneNumber || 'N/A';
+                                        const donorBloodType = donor.bloodType || donor.BloodType || 'N/A';
+                                        const donorLocation = donor.location || donor.Location || 'N/A';
+                                        const lastDonation = donor.lastDonationDate || donor.LastDonationDate || 'Never';
+                                        const isAvailable = donor.isAvailable || donor.IsAvailable || false;
+                                        const isHealthy = donor.isHealthy || donor.IsHealthy || false;
+                                        
+                                        return `
+                                        <tr class="border-b dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5" data-donor-id="${donorId}">
+                                            <td class="px-4 py-2">
+                                                <input type="checkbox" class="donor-checkbox" data-donor-id="${donorId}" data-request-id="${requestId}">
+                                            </td>
+                                            <td class="px-4 py-2 font-medium">${donorName}</td>
+                                            <td class="px-4 py-2">${donorEmail}</td>
+                                            <td class="px-4 py-2">${donorPhone}</td>
+                                            <td class="px-4 py-2 font-mono font-bold text-primary">${donorBloodType}</td>
+                                            <td class="px-4 py-2">${donorLocation}</td>
+                                            <td class="px-4 py-2">${lastDonation}</td>
+                                            <td class="px-4 py-2">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs ${isAvailable && isHealthy ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'}">
+                                                    ${isAvailable && isHealthy ? 'Available' : 'Unavailable'}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2">
+                                                <span class="confirmation-status-${donorId} inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400" data-donor-id="${donorId}">
+                                                    Not Confirmed
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2">
+                                                <button onclick="markDonorConfirmed(${requestId}, ${donorId}, '${donorName.replace(/'/g, "\\'")}')" 
+                                                        class="px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700">
+                                                    Mark Confirmed
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+                // Load existing confirmations after a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    loadConfirmations(requestId);
+                }, 100);
+                
+                // Auto-refresh confirmations every 30 seconds when matching donors are visible
+                const refreshInterval = setInterval(() => {
+                    const row = document.getElementById(`matching-donors-row-${requestId}`);
+                    if (row && !row.classList.contains('hidden')) {
+                        loadConfirmations(requestId);
+                    } else {
+                        clearInterval(refreshInterval);
+                    }
+                }, 30000); // Refresh every 30 seconds
+            } else {
+                content.innerHTML = `
+                    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <span class="material-symbols-outlined text-4xl mb-2">person_off</span>
+                        <p>No matching donors found for this request.</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            content.innerHTML = `
+                <div class="text-center py-8 text-red-500">
+                    <span class="material-symbols-outlined text-4xl mb-2">error</span>
+                    <p>Error loading matching donors: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+
+    function toggleAllDonors(requestId, checked) {
+        const checkboxes = document.querySelectorAll(`input.donor-checkbox[data-request-id="${requestId}"]`);
+        checkboxes.forEach(cb => cb.checked = checked);
+    }
+
+    function selectAllDonors(requestId) {
+        document.getElementById(`select-all-${requestId}`).checked = true;
+        toggleAllDonors(requestId, true);
+    }
+
+    function deselectAllDonors(requestId) {
+        document.getElementById(`select-all-${requestId}`).checked = false;
+        toggleAllDonors(requestId, false);
+    }
+
+    async function loadConfirmations(requestId) {
+        try {
+            console.log(`Loading confirmations for request ${requestId}...`);
+            const response = await fetch(`/Admin/GetDonorConfirmations?requestId=${requestId}`);
+            
+            if (!response.ok) {
+                console.error(`HTTP error! status: ${response.status}`);
+                return;
+            }
+            
+            const data = await response.json();
+            console.log('Confirmations API response for request', requestId, ':', data); // Debug log
+            
+            if (!data.success) {
+                console.error('API returned error:', data.message);
+                return;
+            }
+            
+            if (!data.confirmations || !Array.isArray(data.confirmations)) {
+                console.log('No confirmations array in response:', data);
+                return;
+            }
+            
+            console.log(`Found ${data.confirmations.length} confirmation(s) for request ${requestId}`);
+            
+            let newConfirmations = 0;
+            const matchingDonorsContent = document.getElementById(`matching-donors-content-${requestId}`);
+            
+            if (!matchingDonorsContent) {
+                console.warn(`Matching donors content not found for request ${requestId}. Table may not be loaded yet.`);
+                return;
+            }
+            
+            // Get all donor IDs currently in the table
+            const tableDonorIds = Array.from(matchingDonorsContent.querySelectorAll('tr[data-donor-id]'))
+                .map(row => parseInt(row.getAttribute('data-donor-id')));
+            console.log('Donor IDs in table:', tableDonorIds);
+            
+            data.confirmations.forEach(conf => {
+                // Handle both camelCase (from JSON) and PascalCase (if any)
+                const donorId = conf.donorId || conf.DonorId;
+                const status = conf.status || conf.Status || 'Pending';
+                
+                if (!donorId) {
+                    console.warn('Confirmation missing donorId:', conf);
+                    return;
+                }
+                
+                console.log(`Processing confirmation: DonorId=${donorId}, Status=${status}`, conf);
+                
+                // Find the status element - use data attribute for more reliable selection
+                const statusElement = matchingDonorsContent.querySelector(`span[data-donor-id="${donorId}"].confirmation-status-${donorId}`) ||
+                                     matchingDonorsContent.querySelector(`.confirmation-status-${donorId}`);
+                
+                // Find the row
+                const row = matchingDonorsContent.querySelector(`tr[data-donor-id="${donorId}"]`);
+                
+                console.log(`Donor ${donorId}:`, { 
+                    hasStatusElement: !!statusElement, 
+                    hasRow: !!row,
+                    statusElementClass: statusElement?.className,
+                    statusElementText: statusElement?.textContent,
+                    status: status
+                });
+                
+                if (statusElement) {
+                    const wasNotConfirmed = statusElement.textContent.trim() === 'Not Confirmed' || 
+                                            statusElement.textContent.trim() === '' ||
+                                            !statusElement.textContent.trim();
+                    
+                    const statusClass = status === 'Confirmed' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : status === 'Declined'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+                    
+                    // Update the status element
+                    statusElement.className = `confirmation-status-${donorId} inline-flex items-center px-2 py-0.5 rounded text-xs ${statusClass}`;
+                    statusElement.textContent = status;
+                    statusElement.title = conf.message || conf.adminNotes || conf.confirmedAt || `Status: ${status}`;
+                    
+                    console.log(`Updated status element for donor ${donorId} to: ${status}`);
+                    
+                    // Highlight new confirmations
+                    if (wasNotConfirmed && status === 'Confirmed') {
+                        newConfirmations++;
+                        if (row) {
+                            row.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+                            setTimeout(() => {
+                                row.style.backgroundColor = '';
+                            }, 3000);
+                        }
+                    }
+                } else {
+                    console.warn(`Status element not found for donor ${donorId} in request ${requestId}.`);
+                    console.log('Available confirmation status elements:', 
+                        Array.from(matchingDonorsContent.querySelectorAll('[class*="confirmation-status"]')).map(el => ({
+                            class: el.className,
+                            donorId: el.getAttribute('data-donor-id'),
+                            text: el.textContent
+                        }))
+                    );
+                }
+                
+                // Update or hide the "Mark Confirmed" button
+                if (row) {
+                    const actionCell = row.querySelector('td:last-child');
+                    if (actionCell && status === 'Confirmed') {
+                        const button = actionCell.querySelector('button');
+                        if (button) {
+                            actionCell.innerHTML = `<span class="text-xs text-green-600 dark:text-green-400">✓ Confirmed</span>`;
+                            console.log(`Updated action cell for donor ${donorId}`);
+                        }
+                    }
+                }
+            });
+            
+            if (newConfirmations > 0) {
+                // Show notification for new confirmations
+                showNotification(`🎉 ${newConfirmations} new confirmation(s) detected!`, 'success');
+            }
+            
+            console.log(`Finished processing confirmations for request ${requestId}`);
+        } catch (error) {
+            console.error('Error loading confirmations:', error);
+            console.error('Error stack:', error.stack);
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg ${
+            type === 'success' ? 'bg-green-500 text-white' : 
+            type === 'error' ? 'bg-red-500 text-white' : 
+            'bg-blue-500 text-white'
+        }`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transition = 'opacity 0.3s';
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Notification dropdown and badge functionality
+    let notificationDropdownOpen = false;
+
+    function toggleNotificationDropdown() {
+        const dropdown = document.getElementById('notificationDropdown');
+        if (dropdown) {
+            notificationDropdownOpen = !notificationDropdownOpen;
+            if (notificationDropdownOpen) {
+                dropdown.classList.remove('hidden');
+                loadNotifications();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const btn = document.getElementById('notificationBtn');
+        const dropdown = document.getElementById('notificationDropdown');
+        if (btn && dropdown && !btn.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+            notificationDropdownOpen = false;
+        }
+    });
+
+    async function loadNotifications() {
+        try {
+            const response = await fetch('/Admin/GetNotificationCount');
+            const data = await response.json();
+            
+            if (data.success) {
+                updateNotificationBadge(data.count);
+                updateNotificationList(data.confirmations || []);
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+    function updateNotificationBadge(count) {
+        const badge = document.getElementById('notificationBadge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count.toString();
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    }
+
+    function updateNotificationList(confirmations) {
+        const list = document.getElementById('notificationList');
+        if (!list) return;
+
+        if (confirmations.length === 0) {
+            list.innerHTML = `
+                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <span class="material-symbols-outlined text-4xl mb-2">notifications_off</span>
+                    <p class="text-sm">No new confirmations</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = confirmations.map(conf => `
+            <div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors" onclick="window.location.href='@Url.Action("RequestManagement", "Admin")?requestId=${conf.requestId}'">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-sm">check_circle</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">${conf.donorName} confirmed</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Request #${conf.requestId} - ${conf.patientName} (${conf.bloodType})</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">${conf.timeAgo}</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Load notifications on page load and refresh every 30 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        loadNotifications();
+        setInterval(loadNotifications, 30000); // Refresh every 30 seconds
+    });
+
+    async function markDonorConfirmed(requestId, donorId, donorName) {
+        const message = prompt(`Mark ${donorName} as confirmed?\n\nOptional: Add a message or notes:`, 'Confirmed via email reply: "YES" or "I can help"');
+        
+        if (message === null) return; // User cancelled
+
+        try {
+            const response = await fetch('/Admin/RecordDonorConfirmation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    requestId: requestId,
+                    donorId: donorId,
+                    status: 'Confirmed',
+                    message: message || 'Confirmed by admin',
+                    adminNotes: message
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(`✅ ${donorName} marked as confirmed!`);
+                // Reload confirmations to update the display
+                loadConfirmations(requestId);
+                // Refresh notification badge
+                loadNotifications();
+            } else {
+                alert(`❌ Error: ${data.message}`);
+            }
+        } catch (error) {
+            alert(`❌ Error: ${error.message}`);
+        }
+    }
+
+    async function sendEmailsToSelected(requestId) {
+        const checkboxes = document.querySelectorAll(`input.donor-checkbox[data-request-id="${requestId}"]:checked`);
+        const selectedDonorIds = Array.from(checkboxes).map(cb => parseInt(cb.dataset.donorId));
+        
+        if (selectedDonorIds.length === 0) {
+            alert('Please select at least one donor to send emails.');
+            return;
+        }
+
+        if (!confirm(`Send emails to ${selectedDonorIds.length} selected donor(s)?`)) {
+            return;
+        }
+
+        const sendButton = event.target.closest('button');
+        const originalText = sendButton.innerHTML;
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<span class="material-symbols-outlined text-sm align-middle animate-spin">sync</span> Sending...';
+
+        try {
+            const response = await fetch('/Admin/SendEmailsToSelectedDonors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    requestId: requestId,
+                    donorIds: selectedDonorIds
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(`✅ ${data.message}\n\nSuccess: ${data.successCount}\nFailed: ${data.failCount}`);
+                if (data.errors && data.errors.length > 0) {
+                    console.error('Email errors:', data.errors);
+                }
+            } else {
+                alert(`❌ Error: ${data.message}`);
+            }
+        } catch (error) {
+            alert(`❌ Error sending emails: ${error.message}`);
+        } finally {
+            sendButton.disabled = false;
+            sendButton.innerHTML = originalText;
+        }
+    }
+</script>
 
 </body></html>

@@ -62,6 +62,7 @@
     </script>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100 overflow-hidden">
+<partial name="_NotificationAlert" />
 <div class="relative flex min-h-screen w-full flex-row group/design-root">
 <aside class="flex h-screen min-h-screen w-64 flex-col bg-white dark:bg-background-dark dark:border-r dark:border-white/10 shadow-sm z-20">
 <div class="flex h-full flex-col justify-between p-4">
@@ -110,10 +111,25 @@
 </div>
 <div class="flex flex-1 justify-end gap-4 items-center">
 <div class="relative">
-<button class="flex items-center justify-center rounded-full size-10 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500">
+<button id="notificationBtn" onclick="toggleNotificationDropdown()" class="flex items-center justify-center rounded-full size-10 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500 relative">
 <span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-2 right-2 size-2 bg-primary rounded-full border-2 border-white dark:border-background-dark"></span>
+<span id="notificationBadge" class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center px-1 hidden">0</span>
 </button>
+<div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-background-dark rounded-lg shadow-xl border border-gray-200 dark:border-white/10 z-50 max-h-96 overflow-y-auto">
+<div class="p-4 border-b border-gray-200 dark:border-white/10">
+<h3 class="text-sm font-bold text-gray-900 dark:text-white">Recent Confirmations</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Donor confirmations from the last 24 hours</p>
+</div>
+<div id="notificationList" class="p-2">
+<div class="text-center py-4 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined animate-spin text-2xl mb-2">sync</span>
+<p class="text-sm">Loading...</p>
+</div>
+</div>
+<div class="p-3 border-t border-gray-200 dark:border-white/10 text-center">
+<a href="@Url.Action("RequestManagement", "Admin")" class="text-xs text-primary hover:underline">View All Requests</a>
+</div>
+</div>
 </div>
 <div class="h-8 w-px bg-gray-200 dark:bg-white/10 mx-2"></div>
 <div class="flex items-center gap-3">
@@ -389,5 +405,93 @@ else
 </div>
 </div>
 </div>
+
+<script>
+    // Notification dropdown and badge functionality
+    let notificationDropdownOpen = false;
+
+    function toggleNotificationDropdown() {
+        const dropdown = document.getElementById('notificationDropdown');
+        if (dropdown) {
+            notificationDropdownOpen = !notificationDropdownOpen;
+            if (notificationDropdownOpen) {
+                dropdown.classList.remove('hidden');
+                loadNotifications();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        const btn = document.getElementById('notificationBtn');
+        const dropdown = document.getElementById('notificationDropdown');
+        if (btn && dropdown && !btn.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+            notificationDropdownOpen = false;
+        }
+    });
+
+    async function loadNotifications() {
+        try {
+            const response = await fetch('/Admin/GetNotificationCount');
+            const data = await response.json();
+            
+            if (data.success) {
+                updateNotificationBadge(data.count);
+                updateNotificationList(data.confirmations || []);
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+    function updateNotificationBadge(count) {
+        const badge = document.getElementById('notificationBadge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count.toString();
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    }
+
+    function updateNotificationList(confirmations) {
+        const list = document.getElementById('notificationList');
+        if (!list) return;
+
+        if (confirmations.length === 0) {
+            list.innerHTML = `
+                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <span class="material-symbols-outlined text-4xl mb-2">notifications_off</span>
+                    <p class="text-sm">No new confirmations</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = confirmations.map(conf => `
+            <div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors" onclick="window.location.href='@Url.Action("RequestManagement", "Admin")?requestId=${conf.requestId}'">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-sm">check_circle</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">${conf.donorName} confirmed</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Request #${conf.requestId} - ${conf.patientName} (${conf.bloodType})</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">${conf.timeAgo}</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
+    });
+</script>
 
 </body></html>

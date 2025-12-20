@@ -67,42 +67,192 @@ This guide explains how to configure email and SMS notifications for the BloodCo
 }
 ```
 
-## 📱 SMS Configuration (Twilio)
+## 📱 SMS Configuration
 
-### Step 1: Create a Twilio Account
+### Free SMS Options (Recommended)
 
-1. Sign up at https://www.twilio.com/try-twilio
-2. Verify your phone number
-3. Get a Twilio phone number (free trial includes $15.50 credit)
+Here are several **FREE** alternatives to Twilio for sending SMS:
 
-### Step 2: Get Your Twilio Credentials
+---
 
-1. Go to https://console.twilio.com/
-2. Find your **Account SID** and **Auth Token** on the dashboard
-3. Copy your Twilio phone number (format: +1234567890)
+### Option 1: AWS SNS (Amazon Simple Notification Service) - **FREE TIER**
 
-### Step 3: Install Twilio Package
+**Free Tier**: First 100 SMS messages per month are FREE (then ~$0.00645 per SMS)
 
-Run this command in your project directory:
-```bash
-dotnet add package Twilio
-```
+#### Setup Steps:
 
-### Step 4: Update `appsettings.json`
+1. **Create AWS Account** (if you don't have one):
+   - Go to https://aws.amazon.com/
+   - Sign up for free account (requires credit card but won't charge for free tier)
 
-```json
-"SmsSettings": {
-  "Enabled": true,
-  "Provider": "Twilio",
-  "TwilioAccountSid": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "TwilioAuthToken": "your_auth_token_here",
-  "TwilioPhoneNumber": "+1234567890"
-}
-```
+2. **Get AWS Credentials**:
+   - Go to AWS Console → IAM → Users → Create User
+   - Attach policy: `AmazonSNSFullAccess`
+   - Create Access Key ID and Secret Access Key
 
-### Step 5: Update NotificationService
+3. **Install AWS SDK**:
+   ```bash
+   dotnet add package AWSSDK.SimpleNotificationService
+   ```
 
-The SMS sending code is already prepared in `NotificationService.cs`. Once you add the Twilio package and configure the settings, SMS will work automatically.
+4. **Update `appsettings.json`**:
+   ```json
+   "SmsSettings": {
+     "Enabled": true,
+     "Provider": "AWSSNS",
+     "AwsAccessKeyId": "your_access_key_id",
+     "AwsSecretAccessKey": "your_secret_access_key",
+     "AwsRegion": "us-east-1"
+   }
+   ```
+
+---
+
+### Option 2: Email-to-SMS Gateway - **100% FREE**
+
+**Free**: Completely free, but less reliable (carrier-dependent)
+
+This method uses carrier email-to-SMS gateways. Each carrier has an email address format that forwards to SMS.
+
+#### Common Carrier Email-to-SMS Formats:
+- **AT&T**: `{number}@txt.att.net` (e.g., `1234567890@txt.att.net`)
+- **Verizon**: `{number}@vtext.com`
+- **T-Mobile**: `{number}@tmomail.net`
+- **Sprint**: `{number}@messaging.sprintpcs.com`
+- **US Cellular**: `{number}@email.uscc.net`
+
+#### Setup Steps:
+
+1. **No package installation needed** - uses built-in .NET email
+
+2. **Update `appsettings.json`**:
+   ```json
+   "SmsSettings": {
+     "Enabled": true,
+     "Provider": "EmailToSms",
+     "UseEmailToSms": true
+   }
+   ```
+
+**Note**: You'll need to detect the carrier or try multiple gateways. This method is free but unreliable.
+
+---
+
+### Option 3: Vonage (formerly Nexmo) - **FREE CREDITS**
+
+**Free Tier**: €2.00 free credit when you sign up (approximately 20-30 SMS messages)
+
+#### Setup Steps:
+
+1. **Create Vonage Account**:
+   - Go to https://www.vonage.com/communications-apis/
+   - Sign up for free account
+   - Verify your phone number
+
+2. **Get API Credentials**:
+   - Go to Dashboard → Settings → API Credentials
+   - Copy API Key and API Secret
+
+3. **Install Vonage Package**:
+   ```bash
+   dotnet add package Vonage
+   ```
+
+4. **Update `appsettings.json`**:
+   ```json
+   "SmsSettings": {
+     "Enabled": true,
+     "Provider": "Vonage",
+     "VonageApiKey": "your_api_key",
+     "VonageApiSecret": "your_api_secret",
+     "VonageFromNumber": "Vonage"
+   }
+   ```
+
+---
+
+### Option 4: TextLocal - **FREE TIER**
+
+**Free Tier**: 100 free SMS per month (India), or low-cost international SMS
+
+#### Setup Steps:
+
+1. **Create TextLocal Account**:
+   - Go to https://www.textlocal.in/
+   - Sign up for free account
+
+2. **Get API Key**:
+   - Go to Dashboard → API → Get API Key
+
+3. **Install HTTP Client** (built-in, no package needed)
+
+4. **Update `appsettings.json`**:
+   ```json
+   "SmsSettings": {
+     "Enabled": true,
+     "Provider": "TextLocal",
+     "TextLocalApiKey": "your_api_key",
+     "TextLocalSender": "TXTLCL"
+   }
+   ```
+
+---
+
+### Option 5: Twilio (Original Option)
+
+**Free Trial**: $15.50 credit (approximately 1,550 SMS messages)
+
+#### Setup Steps:
+
+1. **Create a Twilio Account**:
+   - Sign up at https://www.twilio.com/try-twilio
+   - Verify your phone number
+   - Get a Twilio phone number (free trial includes $15.50 credit)
+
+2. **Get Your Twilio Credentials**:
+   - Go to https://console.twilio.com/
+   - Find your **Account SID** and **Auth Token** on the dashboard
+   - Copy your Twilio phone number (format: +1234567890)
+
+3. **Install Twilio Package**:
+   ```bash
+   dotnet add package Twilio
+   ```
+
+4. **Update `appsettings.json`**:
+   ```json
+   "SmsSettings": {
+     "Enabled": true,
+     "Provider": "Twilio",
+     "TwilioAccountSid": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "TwilioAuthToken": "your_auth_token_here",
+     "TwilioPhoneNumber": "+1234567890"
+   }
+   ```
+
+---
+
+### Comparison Table
+
+| Provider | Free Tier | Reliability | Setup Difficulty | Best For |
+|----------|-----------|-------------|------------------|----------|
+| **AWS SNS** | 100 SMS/month | ⭐⭐⭐⭐⭐ | Medium | Production apps |
+| **Email-to-SMS** | Unlimited | ⭐⭐ | Easy | Development/testing |
+| **Vonage** | €2 credit (~20-30 SMS) | ⭐⭐⭐⭐ | Easy | Small projects |
+| **TextLocal** | 100 SMS/month (India) | ⭐⭐⭐⭐ | Easy | India-based apps |
+| **Twilio** | $15.50 credit (~1,550 SMS) | ⭐⭐⭐⭐⭐ | Easy | All use cases |
+
+---
+
+### Recommendation
+
+- **For Development/Testing**: Use **Email-to-SMS** (completely free, easy setup)
+- **For Production (Low Volume)**: Use **AWS SNS** (100 free SMS/month, very reliable)
+- **For Production (Higher Volume)**: Use **Twilio** (best reliability, good free trial)
+
+### Next Steps
+
+After choosing a provider, you'll need to update the `NotificationService.cs` to implement the chosen provider. See the implementation examples in the code comments.
 
 ## 🔒 Security Best Practices
 

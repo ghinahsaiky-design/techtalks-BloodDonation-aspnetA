@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // Get database configuration
-var useMySQL = builder.Configuration.GetValue<bool>("UseMySQL", false);
+var useMySQL = builder.Configuration.GetValue<bool>("UseMySQL", true);
 var databaseProvider = builder.Configuration["DatabaseProvider"] ?? (useMySQL ? "MySQL" : "SQLServer");
 var connectionString = useMySQL 
     ? builder.Configuration.GetConnectionString("BloodDonationDb") 
@@ -59,6 +59,9 @@ builder.Services.AddScoped<DataSeeder>();
 
 // Register NotificationService as scoped service
 builder.Services.AddScoped<NotificationService>();
+
+// Register EmailMonitoringService as hosted service (background service)
+builder.Services.AddHostedService<EmailMonitoringService>();
 
 // Configure cookie settings
 builder.Services.ConfigureApplicationCookie(options =>

@@ -9,6 +9,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\NewFolder\" />
+    <PackageReference Include="MailKit" Version="4.14.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
     
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
