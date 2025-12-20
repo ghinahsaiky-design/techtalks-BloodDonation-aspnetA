@@ -33,6 +33,15 @@ namespace BloodDonation.Controllers
             return View();
         }
 
+        // OwnerOverview tab
+        public async Task<IActionResult> OwnerOverviews()
+        {
+            if (!await IsOwnerAsync())
+                return Forbid();
+
+            return View("~/Views/Owner/OwnerOverview.cshtml");
+        }
+
         // Admins tab
         public async Task<IActionResult> Admins()
         {
@@ -40,6 +49,14 @@ namespace BloodDonation.Controllers
                 return Forbid();
 
             return View("~/Views/Owner/AdminManagement.cshtml");
+        }
+        // Hospital tab
+        public async Task<IActionResult> Hospitals()
+        {
+            if (!await IsOwnerAsync())
+                return Forbid();
+
+            return View("~/Views/Owner/HospitalManagement.cshtml");
         }
 
     }

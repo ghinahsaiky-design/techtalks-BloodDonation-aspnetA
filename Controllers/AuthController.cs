@@ -151,14 +151,20 @@ namespace BloodDonation.Controllers
                 };
 
                 await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
-                
+
                 // Redirect admin users to admin dashboard
-                if (user.Role == "Admin" || user.Role == "Owner")
+                if (user.Role == "Owner")
+                {
+                    return RedirectToAction("OwnerOverviews", "Owner");
+                }
+                else if (user.Role == "Admin")
                 {
                     return RedirectToAction("Index", "Admin");
                 }
-                
-                return RedirectToAction("SearchDonors", "Dashboard");
+                else
+                {
+                    return RedirectToAction("SearchDonors", "Dashboard");
+                }
             }
 
             if (result.IsLockedOut)
