@@ -1,108 +1,9 @@
 @model IEnumerable<BloodDonation.Models.DonorRequest>
 @{
-    Layout = null;
-    ViewData["Title"] = "Admin Request Management";
+    // Layout is already set by Views/Admin/_ViewStart.cshtml
+    ViewData["Title"] = "Request Management";
 }
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>BloodConnect - Request Management</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings:
-                'FILL' 0,
-                'wght' 400,
-                'GRAD' 0,
-                'opsz' 24
-        }
-    </style>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#d70427",
-                        "background-light": "#f8f5f6",
-                        "background-dark": "#230f12",
-                        "blue-700": "#1E40AF",
-                        "gray-100": "#F3F4F6",
-                        "gray-800": "#1F2937",
-                        "gray-500": "#6B7280",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-</head>
-<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100">
-<div class="relative flex min-h-screen w-full flex-row group/design-root">
-<aside class="flex h-screen min-h-screen w-64 flex-col bg-white dark:bg-background-dark dark:border-r dark:border-white/10 shadow-sm">
-<div class="flex h-full flex-col justify-between p-4">
-<div class="flex flex-col gap-4">
-<div class="flex items-center gap-3 px-3 py-2">
-<img src="~/images/BloodDonationLogo.png" alt="BloodConnect logo" class="size-10 rounded-full object-cover"/>
-<div class="flex flex-col">
-<h1 class="text-gray-800 dark:text-white text-base font-bold leading-normal">BloodConnect</h1>
-<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Admin Panel</p>
-</div>
-</div>
-<nav class="flex flex-col gap-2 mt-4">
-<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("Index", "Admin")">
-<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">dashboard</span>
-<p class="text-sm font-medium leading-normal">Dashboard</p>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("DonorManagement", "Admin")">
-<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">group</span>
-<p class="text-sm font-medium leading-normal">Donors</p>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary" href="@Url.Action("RequestManagement", "Admin")">
-<span class="material-symbols-outlined !fill-1">inbox</span>
-<p class="text-sm font-bold leading-normal">Requests</p>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("Settings", "Admin")">
-<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">settings</span>
-<p class="text-sm font-medium leading-normal">Settings</p>
-</a>
-</nav>
-</div>
-<div class="px-3 py-2">
-<form asp-action="Logout" asp-controller="Auth" method="post" class="inline">
-@Html.AntiForgeryToken()
-<button type="submit" class="flex items-center gap-3 text-red-600 hover:text-red-700 transition-colors w-full">
-<span class="material-symbols-outlined">logout</span>
-<p class="text-sm font-medium leading-normal">Sign Out</p>
-</button>
-</form>
-</div>
-</div>
-</aside>
-<div class="flex-1 flex flex-col">
-<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark px-10 py-3 sticky top-0 z-10 shadow-sm">
-<div class="flex items-center gap-4 text-gray-800 dark:text-white">
-<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Requests Management</h2>
-</div>
-<div class="flex flex-1 justify-end gap-4 items-center">
-<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full size-10 bg-background-light text-blue-700 dark:bg-white/10 dark:text-primary/80">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<img src="~/images/BloodDonationLogo.png" alt="Admin user avatar" class="size-10 rounded-full object-cover"/>
-</div>
-</header>
-<main class="flex-1 p-6 md:p-8 lg:p-10">
+
 <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
 <p class="text-gray-800 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em] min-w-72">Incoming Blood Requests</p>
 <button onclick="document.getElementById('createRequestModal').classList.remove('hidden')" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90">
@@ -247,9 +148,6 @@ else
 </div>
 </div>
 </div>
-</main>
-</div>
-</div>
 
 <!-- Create Request Modal -->
 <div id="createRequestModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 hidden">
@@ -320,5 +218,3 @@ else
 </form>
 </div>
 </div>
-
-</body></html>

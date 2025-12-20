@@ -1,80 +1,107 @@
-@using Microsoft.AspNetCore.Identity
-@using BloodDonation.Models
-@inject SignInManager<Users> SignInManager
-@inject UserManager<Users> UserManager
+<aside class="w-64 bg-white dark:bg-background-dark border-r min-h-screen p-4 relative">
 
-@{
-    // Determine panel subtitle based on role
-    var panelSubtitle = "Panel";
-    if (User.IsInRole("Owner"))
-    {
-        panelSubtitle = "Owner Panel";
-    }
-    else if (User.IsInRole("Admin"))
-    {
-        panelSubtitle = "Admin Panel";
-    }
-}
+    <div class="flex items-center gap-3 mb-8">
+        <img src="~/images/BloodDonationLogo.png" alt="BloodConnect logo" class="size-10 rounded-full object-cover" />
 
-<div class="h-full flex flex-col">
-    <!-- Logo Section -->
-    <div class="flex items-center gap-3 px-6 py-6 border-b border-gray-200">
-        <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
-            <img src="~/images/BloodDonationLogo.png" alt="Logo" class="w-6 h-6 object-contain" />
-        </div>
-        <div>
-            <h1 class="text-lg font-bold text-gray-800 leading-tight">BloodConnect</h1>
-            <p class="text-xs text-gray-500">@panelSubtitle</p>
+        <div class="flex flex-col">
+            <span class="text-lg font-extrabold text-gray-900 dark:text-white tracking-tight">
+                BloodConnect
+            </span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+                Admin Panel
+            </span>
         </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        
-        <!-- Home -->
-        <a asp-controller="Home" asp-action="Index"
-           class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
-            <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">home</span>
-            <span class="font-medium">Home</span>
+    @{
+        var action = ViewContext.RouteData.Values["action"]?.ToString();
+    }
+
+    <nav class="flex flex-col gap-2 mt-4">
+
+        <!-- Dashboard -->
+        <a href="@Url.Action("Index", "Admin")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "Index"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "Index" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                dashboard
+            </span>
+            <p class="text-sm leading-normal @(action == "Index" ? "font-bold" : "font-medium")">
+                Dashboard
+            </p>
         </a>
 
-        <!-- Profile -->
-        <a asp-controller="Account" asp-action="Profile"
-           class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
-            <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">person</span>
-            <span class="font-medium">Profile</span>
+        <!-- Donor Management -->
+        <a href="@Url.Action("DonorManagement", "Admin")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "DonorManagement"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "DonorManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                group
+            </span>
+            <p class="text-sm leading-normal @(action == "DonorManagement" ? "font-bold" : "font-medium")">
+                Donors
+            </p>
         </a>
 
-        <!-- Manage Donors (Admin & Owner only) -->
-        @if (User.IsInRole("Admin") || User.IsInRole("Owner"))
-        {
-            <a asp-controller="Donor" asp-action="Index"
-               class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
-                <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">group</span>
-                <span class="font-medium">Manage Donors</span>
-            </a>
-        }
+        <!-- Request Management -->
+        <a href="@Url.Action("RequestManagement", "Admin")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "RequestManagement"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
 
-        <!-- Manage Admins (Owner only) -->
-        @if (User.IsInRole("Owner"))
-        {
-            <a asp-controller="AdminManager" asp-action="Index"
-               class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
-                <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">admin_panel_settings</span>
-                <span class="font-medium">Manage Admins</span>
-            </a>
-        }
+            <span class="material-symbols-outlined @(action == "RequestManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                inbox
+            </span>
+            <p class="text-sm leading-normal @(action == "RequestManagement" ? "font-bold" : "font-medium")">
+                Requests
+            </p>
+        </a>
+
+        <!-- Settings -->
+        <a href="@Url.Action("Settings", "Admin")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "Settings"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "Settings" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                settings
+            </span>
+            <p class="text-sm leading-normal @(action == "Settings" ? "font-bold" : "font-medium")">
+                Settings
+            </p>
+        </a>
+
     </nav>
 
-    <!-- Sidebar Footer / Logout -->
-    <div class="px-4 py-4 border-t border-gray-200">
-        <form asp-action="Logout" asp-controller="Auth" method="post">
+    <div class="fixed bottom-4 left-0 w-64 px-4 z-20">
+
+        <form asp-action="Logout" asp-controller="Auth" method="post" class="inline w-full">
             @Html.AntiForgeryToken()
+
             <button type="submit"
-                    class="flex items-center gap-3 px-4 py-3 w-full text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
-                <span class="material-symbols-outlined text-gray-500 group-hover:text-red-600">logout</span>
-                <span class="font-medium">Logout</span>
+                    class="flex items-center gap-3 w-full
+                       text-red-600 dark:text-red-400
+                       hover:bg-red-50 dark:hover:bg-red-900/20
+                       hover:text-red-700 dark:hover:text-red-300
+                       rounded-lg px-3 py-2 transition">
+
+                <span class="material-symbols-outlined text-[20px]">logout</span>
+
+                <p class="text-sm font-medium leading-normal">
+                    Sign Out
+                </p>
             </button>
         </form>
+
     </div>
-</div>
+
+
+</aside>
