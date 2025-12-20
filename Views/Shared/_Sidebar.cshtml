@@ -1,5 +1,6 @@
 <aside class="w-64 bg-white dark:bg-background-dark border-r min-h-screen p-4 relative">
-
+   
+    <a href="@Url.Action("Index", "Home")">
     <div class="flex items-center gap-3 mb-8">
         <img src="~/images/BloodDonationLogo.png" alt="BloodConnect logo" class="size-10 rounded-full object-cover" />
 
@@ -12,6 +13,7 @@
             </span>
         </div>
     </div>
+    </a>
 
     @{
         var action = ViewContext.RouteData.Values["action"]?.ToString();
@@ -19,7 +21,7 @@
 
     <nav class="flex flex-col gap-2 mt-4">
 
-        <!-- Dashboard -->
+        <!-- Overview -->
         <a href="@Url.Action("Index", "Admin")"
            class="flex items-center gap-3 px-3 py-2 rounded-lg
               @(action == "Index"
@@ -27,12 +29,30 @@
                            : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
 
             <span class="material-symbols-outlined @(action == "Index" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
-                dashboard
+                Overview
             </span>
             <p class="text-sm leading-normal @(action == "Index" ? "font-bold" : "font-medium")">
-                Dashboard
+                Overview
             </p>
         </a>
+        
+        @if (User.IsInRole("Owner"))
+        {
+            <!-- Admin Management -->
+            <a href="@Url.Action("Admins", "Owner")"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg
+                          @(action == "Admins"
+                                      ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                                      : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+                <span class="material-symbols-outlined @(action == "Admins" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                    manage_accounts
+                </span>
+                <p class="text-sm leading-normal @(action == "Admins" ? "font-bold" : "font-medium")">
+                    Admins
+                </p>
+            </a>
+        }
 
         <!-- Donor Management -->
         <a href="@Url.Action("DonorManagement", "Admin")"
@@ -63,6 +83,7 @@
                 Requests
             </p>
         </a>
+
 
         <!-- Settings -->
         <a href="@Url.Action("Settings", "Admin")"

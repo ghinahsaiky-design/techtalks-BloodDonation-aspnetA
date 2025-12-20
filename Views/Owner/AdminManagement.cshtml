@@ -1,0 +1,224 @@
+@{
+    ViewData["Title"] = "Admins Management";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+
+<main class="flex-1 p-6 md:p-8 lg:p-10 overflow-y-auto">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-8">
+        <div>
+            <h1 class="text-gray-900 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">System Administrators</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">Manage admin roles and permissions</p>
+        </div>
+        <button class="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-primary text-white text-sm font-bold shadow-md hover:bg-primary/90 transition-all">
+            <span class="material-symbols-outlined text-lg">add</span>
+            <span>Add New Admin</span>
+        </button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="flex flex-col gap-1 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary">security</span>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Total Admins</p>
+            </div>
+            <p class="text-gray-900 dark:text-white text-3xl font-bold leading-tight">12</p>
+        </div>
+        <div class="flex flex-col gap-1 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-blue-700">group</span>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Total Donors</p>
+            </div>
+            <p class="text-gray-900 dark:text-white text-3xl font-bold leading-tight">1,234</p>
+        </div>
+        <div class="flex flex-col gap-1 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-green-600">verified_user</span>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Active Users</p>
+            </div>
+            <p class="text-gray-900 dark:text-white text-3xl font-bold leading-tight">850</p>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-background-dark rounded-xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden flex flex-col">
+        <div class="flex flex-wrap justify-between items-center gap-4 p-4 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]">
+            <div class="relative w-full max-w-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="material-symbols-outlined text-gray-400 text-[20px]">search</span>
+                </div>
+                <input class="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-white/20 bg-white dark:bg-white/5 focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-gray-400" placeholder="Search administrators by name or email..." type="text" />
+            </div>
+            <div class="flex gap-3">
+                <select class="rounded-lg border border-gray-200 dark:border-white/20 bg-white dark:bg-white/5 py-2 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-700 dark:text-gray-200 cursor-pointer">
+                    <option>All Roles</option>
+                    <option>Super Admin</option>
+                    <option>Manager</option>
+                    <option>Moderator</option>
+                </select>
+                <select class="rounded-lg border border-gray-200 dark:border-white/20 bg-white dark:bg-white/5 py-2 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-700 dark:text-gray-200 cursor-pointer">
+                    <option>Status: All</option>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                </select>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 dark:bg-white/5 text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold border-b border-gray-100 dark:border-white/10">
+                    <tr>
+                        <th class="px-6 py-4" scope="col">ID</th>
+                        <th class="px-6 py-4" scope="col">Administrator</th>
+                        <th class="px-6 py-4" scope="col">Role</th>
+                        <th class="px-6 py-4" scope="col">Last Activity</th>
+                        <th class="px-6 py-4" scope="col">Status</th>
+                        <th class="px-6 py-4 text-right" scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-white/10">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                        <td class="px-6 py-4 font-mono text-xs text-gray-500">#AD-001</td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white">Sarah Jenkins</span>
+                                <span class="text-xs text-gray-500">sarah.jenkins@bloodconnect.com</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                                Super Admin
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">2 mins ago</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="size-2 rounded-full bg-green-500"></div>
+                                <span class="text-gray-700 dark:text-gray-300">Active</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-blue-700 transition-colors" title="Edit Details">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-orange-600 transition-colors" title="Change Role">
+                                    <span class="material-symbols-outlined text-[20px]">published_with_changes</span>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-red-600 transition-colors" title="Delete Account">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                        <td class="px-6 py-4 font-mono text-xs text-gray-500">#AD-004</td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white">David Ross</span>
+                                <span class="text-xs text-gray-500">david.ross@bloodconnect.com</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+                                Manager
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">4 hours ago</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="size-2 rounded-full bg-green-500"></div>
+                                <span class="text-gray-700 dark:text-gray-300">Active</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-blue-700 transition-colors" title="Edit Details">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-orange-600 transition-colors" title="Change Role">
+                                    <span class="material-symbols-outlined text-[20px]">published_with_changes</span>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-red-600 transition-colors" title="Delete Account">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                        <td class="px-6 py-4 font-mono text-xs text-gray-500">#AD-007</td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white">Lisa Chang</span>
+                                <span class="text-xs text-gray-500">lisa.chang@bloodconnect.com</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200 dark:bg-white/10 dark:text-gray-300 dark:border-white/10">
+                                Moderator
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">2 days ago</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="size-2 rounded-full bg-gray-300"></div>
+                                <span class="text-gray-500">Inactive</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-blue-700 transition-colors" title="Edit Details">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-orange-600 transition-colors" title="Change Role">
+                                    <span class="material-symbols-outlined text-[20px]">published_with_changes</span>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-red-600 transition-colors" title="Delete Account">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                        <td class="px-6 py-4 font-mono text-xs text-gray-500">#AD-012</td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900 dark:text-white">James Wilson</span>
+                                <span class="text-xs text-gray-500">james.wilson@bloodconnect.com</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800">
+                                Analyst
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">1 week ago</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="size-2 rounded-full bg-green-500"></div>
+                                <span class="text-gray-700 dark:text-gray-300">Active</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-blue-700 transition-colors" title="Edit Details">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-orange-600 transition-colors" title="Change Role">
+                                    <span class="material-symbols-outlined text-[20px]">published_with_changes</span>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-red-600 transition-colors" title="Delete Account">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="flex justify-between items-center p-4 border-t border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Showing 1 to 4 of 12 admins</span>
+            <div class="inline-flex rounded-lg shadow-sm">
+                <button class="px-3 py-1.5 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 rounded-l-lg hover:bg-gray-50 dark:hover:bg-white/10 disabled:opacity-50">Previous</button>
+                <button class="px-3 py-1.5 text-sm font-medium text-white bg-primary border border-primary z-10">1</button>
+                <button class="px-3 py-1.5 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border border-l-0 border-gray-200 dark:border-white/20 rounded-r-lg hover:bg-gray-50 dark:hover:bg-white/10">Next</button>
+            </div>
+        </div>
+    </div>
+</main>
