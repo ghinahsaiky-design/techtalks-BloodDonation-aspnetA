@@ -328,7 +328,11 @@ namespace BloodDonation.Controllers
             if (!await IsOwnerAsync())
                 return Forbid();
 
-            return View();
+            var hospitals = await _context.Hospitals
+                .OrderByDescending(h => h.CreatedAt)
+                .ToListAsync();
+
+            return View(hospitals);
         }
 
         public async Task<IActionResult> GenerateReport()

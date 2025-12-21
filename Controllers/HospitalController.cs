@@ -32,7 +32,8 @@ namespace BloodDonation.Controllers
                     h.License.ToLower().Contains(lower));
             }
 
-            var model = await list.OrderBy(h => h.Name).ToListAsync();
+            // Order by CreatedAt Descending to match OwnerController
+            var model = await list.OrderByDescending(h => h.CreatedAt).ToListAsync();
             return View("~/Views/Owner/HospitalManagement.cshtml", model);
         }
 
@@ -42,11 +43,10 @@ namespace BloodDonation.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Avoid querying the Hospitals table when DB schema isn't present.
-                // Return a minimal view model so the page can render without throwing.
                 ModelState.AddModelError("", "Validation failed. Please fix errors and try again.");
-                var emptyList = new List<Hospital>();
-                return View("~/Views/Owner/HospitalManagement.cshtml", emptyList);
+                // Retain existing data
+                var list = await _context.Hospitals.OrderByDescending(h => h.CreatedAt).ToListAsync();
+                return View("~/Views/Owner/HospitalManagement.cshtml", list);
             }
 
             var entity = new Hospital
@@ -68,7 +68,31 @@ namespace BloodDonation.Controllers
             _context.Hospitals.Add(entity);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("HospitalManagement", "Owner");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditModal(int id)
+        {
+            var hospital = await _context.Hospitals.FindAsync(id);
+            if (hospital == null) return NotFound();
+
+            // Map for editing
+            var vm = new AddNewHospitalViewModel
+            {
+                Name = hospital.Name,
+                License = hospital.License,
+                ContactPerson = hospital.ContactPerson,
+                Email = hospital.Email,
+                Phone = hospital.Phone,
+                Address = hospital.Address,
+                City = hospital.City,
+                State = hospital.State,
+                Zip = hospital.Zip
+            };
+
+            ViewData["HospitalId"] = id;
+            return PartialView("~/Views/Owner/_EditHospitalModal.cshtml", vm);
         }
 
         [HttpGet]
@@ -93,17 +117,30 @@ namespace BloodDonation.Controllers
             };
 
             ViewData["HospitalId"] = id;
-            return View("~/Views/Owner/Edit.cshtml", vm);
+            return View("~/Views/Owner/EditHospital.cshtml", vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DetailsModal(int id)
+        {
+             var hospital = await _context.Hospitals.FindAsync(id);
+             if (hospital == null) return NotFound();
+
+             return PartialView("~/Views/Owner/_HospitalDetailsModal.cshtml", hospital);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, AddNewHospitalViewModel model)
         {
+            // Password is not required during edit
+            ModelState.Remove("Password");
+
             if (!ModelState.IsValid)
             {
                 ViewData["HospitalId"] = id;
-                return View("~/Views/Owner/Edit.cshtml", model);
+                Response.StatusCode = 400; // Bad Request
+                return PartialView("~/Views/Owner/_EditHospitalModal.cshtml", model);
             }
 
             var hospital = await _context.Hospitals.FindAsync(id);
@@ -127,7 +164,8 @@ namespace BloodDonation.Controllers
             _context.Hospitals.Update(hospital);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            // Return success status so client knows to reload/redirect
+            return Ok();
         }
 
         [HttpPost]
@@ -141,7 +179,7 @@ namespace BloodDonation.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("HospitalManagement", "Owner");
         }
 
         [HttpGet]
@@ -150,7 +188,7 @@ namespace BloodDonation.Controllers
             var h = await _context.Hospitals.FindAsync(id);
             if (h == null) return NotFound();
 
-            return View("~/Views/Owner/Details.cshtml", h);
+            return View("~/Views/Owner/HospitalDetails.cshtml", h);
         }
     }
 }

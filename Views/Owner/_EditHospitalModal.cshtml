@@ -1,0 +1,127 @@
+@model BloodDonation.Models.AddNewHospitalViewModel
+
+@{
+    var hospitalId = ViewData["HospitalId"];
+}
+
+<div id="editHospitalBindingModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 transition-all duration-300 opacity-0" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-surface-dark rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform scale-95 transition-all duration-300" id="editHospitalModalContent">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Edit Hospital Details</h3>
+            <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+
+        <!-- Scrollable Form Content -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <form asp-action="Edit" asp-controller="Hospital" method="post" id="editHospitalForm" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@hospitalId" />
+
+                <!-- Identity Information -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-red-500 uppercase tracking-wider">Identity Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label asp-for="Name" class="text-xs font-semibold text-gray-700 dark:text-gray-300">Hospital Name</label>
+                            <input asp-for="Name" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="e.g. St. Mary's General Hospital" />
+                            <span asp-validation-for="Name" class="text-xs text-red-500"></span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label asp-for="License" class="text-xs font-semibold text-gray-700 dark:text-gray-300">License Number</label>
+                            <div class="relative">
+                                <input asp-for="License" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="e.g. HOSP-NY-2023-004" />
+                                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-lg">check_circle</span>
+                            </div>
+                            <span asp-validation-for="License" class="text-xs text-red-500"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Details -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-red-500 uppercase tracking-wider">Contact Details</h4>
+                    <div class="space-y-1.5">
+                        <label asp-for="ContactPerson" class="text-xs font-semibold text-gray-700 dark:text-gray-300">Contact Person</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">person</span>
+                            <input asp-for="ContactPerson" class="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="Dr. Sarah Bennett" />
+                        </div>
+                        <span asp-validation-for="ContactPerson" class="text-xs text-red-500"></span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label asp-for="Email" class="text-xs font-semibold text-gray-700 dark:text-gray-300">Email Address</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">mail</span>
+                                <input asp-for="Email" class="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="admin@stmarys.org" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-xs text-red-500"></span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label asp-for="Phone" class="text-xs font-semibold text-gray-700 dark:text-gray-300">Phone Number</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">call</span>
+                                <input asp-for="Phone" class="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="+1 (555) 123-4567" />
+                            </div>
+                            <span asp-validation-for="Phone" class="text-xs text-red-500"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-red-500 uppercase tracking-wider">Location</h4>
+                    <div class="space-y-1.5">
+                        <label asp-for="Address" class="text-xs font-semibold text-gray-700 dark:text-gray-300">Street Address</label>
+                        <input asp-for="Address" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="123 Healthcare Blvd, Suite 400" />
+                        <span asp-validation-for="Address" class="text-xs text-red-500"></span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="space-y-1.5">
+                            <label asp-for="City" class="text-xs font-semibold text-gray-700 dark:text-gray-300">City</label>
+                            <input asp-for="City" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="New York" />
+                            <span asp-validation-for="City" class="text-xs text-red-500"></span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label asp-for="State" class="text-xs font-semibold text-gray-700 dark:text-gray-300">State</label>
+                            <input asp-for="State" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="NY" />
+                            <span asp-validation-for="State" class="text-xs text-red-500"></span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label asp-for="Zip" class="text-xs font-semibold text-gray-700 dark:text-gray-300">Postal Code</label>
+                            <input asp-for="Zip" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" placeholder="10001" />
+                            <span asp-validation-for="Zip" class="text-xs text-red-500"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Status -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-red-500 uppercase tracking-wider">Account Status</h4>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Current Status</label>
+                        <select class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all appearance-none cursor-pointer">
+                            <option value="Active" selected>Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Footer / Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex items-center gap-2 px-5 py-2 rounded-lg bg-[#E31C25] hover:bg-[#c41820] text-white text-sm font-medium shadow-md hover:shadow-lg transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-lg">save</span>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

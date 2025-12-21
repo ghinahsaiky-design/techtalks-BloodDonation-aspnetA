@@ -20,7 +20,7 @@ namespace BloodDonation.Data
         public DbSet<TrackedAction> Actions { get; set; }
         public DbSet<DonorRequest> DonorRequests { get; set; }
         public DbSet<DonorConfirmation> DonorConfirmations { get; set; }
-
+        public DbSet<Hospital> Hospitals { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

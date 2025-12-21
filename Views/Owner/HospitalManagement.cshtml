@@ -99,13 +99,13 @@ Active
 </td>
 <td class="py-4 px-6 text-right">
 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<a asp-action="Details" asp-controller="Hospital" asp-route-id="@h.Id" class="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-primary transition-colors" title="View Details">
+<button type="button" onclick="openDetailsModal(@h.Id)" class="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-primary transition-colors" title="View Details">
 <span class="material-symbols-outlined text-xl">visibility</span>
-</a>
+</button>
 
-<a asp-action="Edit" asp-controller="Hospital" asp-route-id="@h.Id" class="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-blue-600 transition-colors" title="Edit">
+<button type="button" onclick="openEditModal(@h.Id)" class="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-blue-600 transition-colors" title="Edit">
 <span class="material-symbols-outlined text-xl">edit</span>
-</a>
+</button>
 
 <form asp-action="Delete" asp-controller="Hospital" method="post" onsubmit="return confirm('Are you sure you want to delete @h.Name?');" class="inline">
     @Html.AntiForgeryToken()
@@ -143,17 +143,141 @@ Active
 </div>
 </main>
 
-@* Render Add Hospital modal partial (keeps layout/design unchanged) *@
-@await Html.PartialAsync("AddNewHospital", new BloodDonation.Models.AddNewHospitalViewModel())
+@* Render Add Hospital modal partial *@
+@await Html.PartialAsync("~/Views/Owner/AddNewHospital.cshtml", new BloodDonation.Models.AddNewHospitalViewModel())
+
+@* Edit modal container *@
+<div id="editHospitalContainer"></div>
+@* Details modal container *@
+<div id="detailsHospitalContainer"></div>
 
 @section Scripts {
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
 
     <script>
+        // Store the function globally so the onclick in the table works
+        window.openEditModal = function(id) {
+            const container = document.getElementById('editHospitalContainer');
+            fetch('/Hospital/EditModal/' + id)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load edit modal');
+                    return response.text();
+                })
+                .then(html => {
+                    container.innerHTML = html;
+                    transitionModal('editHospitalBindingModal', 'show');
+                    bindEditForm();
+                })
+                .catch(err => console.error(err));
+        };
+
+        window.openDetailsModal = function(id) {
+            const container = document.getElementById('detailsHospitalContainer');
+            fetch('/Hospital/DetailsModal/' + id)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load details modal');
+                    return response.text();
+                })
+                .then(html => {
+                    container.innerHTML = html;
+                    transitionModal('detailsHospitalBindingModal', 'show');
+                })
+                .catch(err => console.error(err));
+        };
+
+        function bindEditForm() {
+            const form = document.getElementById('editHospitalForm');
+            if (!form) return;
+
+            // Initialize validation
+            if (typeof $ !== 'undefined' && $.validator && $.validator.unobtrusive) {
+                $.validator.unobtrusive.parse(form);
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Check validation
+                if (typeof $ !== 'undefined' && $(form).valid && !$(form).valid()) {
+                    return;
+                }
+
+                const formData = new FormData(this);
+                
+                // Show loading state if desired, e.g. disable button
+                const btn = form.querySelector('button[type="submit"]');
+                const originalText = btn ? btn.innerHTML : '';
+                if(btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = 'Saving...';
+                }
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Success - reload page to see changes
+                        window.location.reload();
+                    } else {
+                        // Validation error - replace modal content
+                        return response.text().then(html => {
+                            document.getElementById('editHospitalContainer').innerHTML = html;
+                            // Re-show modal and re-bind
+                            transitionModal('editHospitalBindingModal', 'show');
+                            bindEditForm();
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    if(btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                    alert('An error occurred while saving.');
+                });
+            });
+        }
+
+        function transitionModal(modalId, action) {
+             const modal = document.getElementById(modalId);
+             if (!modal) return;
+             
+             if (action === 'show') {
+                 modal.classList.remove('hidden');
+                 modal.classList.add('flex');
+                 setTimeout(() => {
+                     modal.classList.remove('opacity-0');
+                     const content = modal.querySelector('div[class*="transform"]');
+                     if(content) content.classList.remove('scale-95');
+                 }, 10);
+             } else {
+                 modal.classList.add('opacity-0');
+                 const content = modal.querySelector('div[class*="transform"]');
+                 if(content) content.classList.add('scale-95');
+                 setTimeout(() => {
+                     modal.classList.add('hidden');
+                     modal.classList.remove('flex');
+                     // clean up container content if needed
+                     if(modalId === 'editHospitalBindingModal') document.getElementById('editHospitalContainer').innerHTML = '';
+                     if(modalId === 'detailsHospitalBindingModal') document.getElementById('detailsHospitalContainer').innerHTML = '';
+                 }, 300);
+             }
+        }
+
+        window.closeEditModal = function() {
+            transitionModal('editHospitalBindingModal', 'hide');
+        };
+
+        window.closeDetailsModal = function() {
+            transitionModal('detailsHospitalBindingModal', 'hide');
+        };
+
         (function () {
             const openBtn = document.getElementById('openAddHospitalModal');
-            // Modal element id assumed to be 'addHospitalModal' inside AddNewHospital partial
             const modal = document.getElementById('addHospitalModal');
             const closeBtn = document.getElementById('closeAddHospitalModal');
             const cancelBtn = document.getElementById('cancelAddHospital');
@@ -179,15 +303,6 @@ Active
             if (openBtn) openBtn.addEventListener('click', showModal);
             if (closeBtn) closeBtn.addEventListener('click', hideModal);
             if (cancelBtn) cancelBtn.addEventListener('click', hideModal);
-
-            // If the modal form is submitted and server returns validation errors, keep modal open.
-            // This relies on server returning the same view with ModelState errors.
-            if (form) {
-                form.addEventListener('submit', function () {
-                    // allow normal submit; server will redirect on success.
-                    // Optionally you can implement AJAX here to stay on the same page.
-                });
-            }
         })();
     </script>
 }
