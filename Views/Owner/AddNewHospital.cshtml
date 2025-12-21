@@ -1,0 +1,80 @@
+﻿@model BloodDonation.Models.AddNewHospitalViewModel
+
+<div id="addHospitalModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-surface-dark rounded-xl shadow-lg w-full max-w-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-text-main dark:text-white">Add New Hospital</h3>
+            <button type="button" id="closeAddHospitalModal" class="text-gray-500 hover:text-gray-700">×</button>
+        </div>
+
+        <form asp-action="Create" asp-controller="Hospital" method="post" id="addHospitalForm" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm block">Name</label>
+                    <input asp-for="Name" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="Name" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label class="text-sm block">License</label>
+                    <input asp-for="License" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="License" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label class="text-sm block">Contact Person</label>
+                    <input asp-for="ContactPerson" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="ContactPerson" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label class="text-sm block">Email</label>
+                    <input asp-for="Email" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="Email" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label class="text-sm block">Phone</label>
+                    <input asp-for="Phone" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="Phone" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label class="text-sm block">City</label>
+                    <input asp-for="City" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="City" class="text-sm text-red-600"></span>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="text-sm block">Address</label>
+                    <input asp-for="Address" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="Address" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label class="text-sm block">State</label>
+                    <input asp-for="State" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="State" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label class="text-sm block">Zip</label>
+                    <input asp-for="Zip" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="Zip" class="text-sm text-red-600"></span>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="text-sm block">Password</label>
+                    <input asp-for="Password" type="password" class="w-full pl-3 pr-3 py-2.5 bg-background-light dark:bg-gray-800 border-none rounded-lg text-sm text-text-main dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:outline-none" />
+                    <span asp-validation-for="Password" class="text-sm text-red-600"></span>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2">
+                <button type="button" id="cancelAddHospital" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white">Create Hospital</button>
+            </div>
+        </form>
+    </div>
+</div>

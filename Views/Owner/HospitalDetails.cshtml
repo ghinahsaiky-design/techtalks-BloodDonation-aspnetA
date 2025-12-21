@@ -1,0 +1,21 @@
+﻿@model BloodDonation.Models.Hospital
+@{
+    ViewData["Title"] = "Hospital Details";
+}
+<div class="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-sm">
+    <h2 class="text-xl font-semibold mb-4">@Model.Name</h2>
+    <div class="grid grid-cols-1 gap-2 text-sm">
+        <div><strong>License:</strong> @Model.License</div>
+        <div><strong>Contact Person:</strong> @Model.ContactPerson</div>
+        <div><strong>Email:</strong> @Model.Email</div>
+        <div><strong>Phone:</strong> @Model.Phone</div>
+        <div><strong>Address:</strong> @Model.Address</div>
+        <div><strong>City:</strong> @Model.City</div>
+        <div><strong>State:</strong> @Model.State</div>
+        <div><strong>Zip:</strong> @Model.Zip</div>
+        <div><strong>Created:</strong> @Model.CreatedAt.ToLocalTime().ToString("g")</div>
+    </div>
+    <div class="mt-4">
+        <a asp-action="Index" asp-controller="Hospital" class="px-4 py-2 rounded-lg bg-gray-200">Back</a>
+    </div>
+</div>

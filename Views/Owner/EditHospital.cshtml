@@ -1,0 +1,24 @@
+﻿@model BloodDonation.Models.AddNewHospitalViewModel
+@{
+    ViewData["Title"] = "Edit Hospital";
+    var id = ViewData["HospitalId"] ?? 0;
+}
+<div class="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-sm">
+    <h2 class="text-xl font-semibold mb-4">Edit Hospital</h2>
+    <form asp-action="Edit" asp-controller="Hospital" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@id" />
+        <div class="grid grid-cols-1 gap-4">
+            <div>
+                <label class="text-sm block">Name</label>
+                <input asp-for="Name" class="w-full ..." />
+                <span asp-validation-for="Name" class="text-sm text-red-600"></span>
+            </div>
+            <!-- keep inputs consistent with modal; preserve classes -->
+        </div>
+        <div class="mt-4 flex justify-end gap-2">
+            <a asp-action="Index" asp-controller="Hospital" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</a>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white">Save</button>
+        </div>
+    </form>
+</div>
