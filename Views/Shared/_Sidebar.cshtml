@@ -8,9 +8,14 @@
             <span class="text-lg font-extrabold text-gray-900 dark:text-white tracking-tight">
                 BloodConnect
             </span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">
-                Admin Panel
-            </span>
+            @if (User.IsInRole("Admin"))
+            {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Admin Panel</span>
+            }
+            else if(User.IsInRole("Owner"))
+            {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Owner Panel</span>
+            }
         </div>
     </div>
     </a>
@@ -24,13 +29,13 @@
         @if (User.IsInRole("Owner"))
         {
             <!-- Overview -->
-            <a href="@Url.Action("OwnerOverviews", "Owner")"
+            <a href="@Url.Action("Index", "Owner")"
             class="flex items-center gap-3 px-3 py-2 rounded-lg
-                  @(action == "OwnerOverviews"
+                      @(action == "Index"
                            ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
                            : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
 
-                <span class="material-symbols-outlined @(action == "OwnerOverviews" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+            <span class="material-symbols-outlined @(action == "Index" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
                     Overview
                 </span>
                 <p class="text-sm leading-normal @(action == "Index" ? "font-bold" : "font-medium")">
@@ -60,31 +65,31 @@
         @if (User.IsInRole("Owner"))
         {
             <!-- Admin Management -->
-            <a href="@Url.Action("Admins", "Owner")"
+            <a href="@Url.Action("AdminManagement", "Owner")"
             class="flex items-center gap-3 px-3 py-2 rounded-lg
-                          @(action == "Admins"
+                            @(action == "AdminManagement"
                                       ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
                                       : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
 
-                <span class="material-symbols-outlined @(action == "Admins" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                <span class="material-symbols-outlined @(action == "AdminManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
                     manage_accounts
                 </span>
-                <p class="text-sm leading-normal @(action == "Admins" ? "font-bold" : "font-medium")">
+                <p class="text-sm leading-normal @(action == "AdminManagement" ? "font-bold" : "font-medium")">
                     Admins
                 </p>
             </a>
 
             <!-- Hospital Management -->
-            <a href="@Url.Action("Hospitals", "Owner")"
+            <a href="@Url.Action("HospitalManagement", "Owner")"
                class="flex items-center gap-3 px-3 py-2 rounded-lg
-                                  @(action == "Hospitals"
-                                                     ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
-                                                     : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+                            @(action == "HospitalManagement"
+                                            ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                                            : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
 
-                <span class="material-symbols-outlined @(action == "Hospitals" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+            <span class="material-symbols-outlined @(action == "HospitalManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
                     local_hospital
                 </span>
-                <p class="text-sm leading-normal @(action == "Hospitals" ? "font-bold" : "font-medium")">
+            <p class="text-sm leading-normal @(action == "HospitalManagement" ? "font-bold" : "font-medium")">
                     Hospitals
                 </p>
             </a>

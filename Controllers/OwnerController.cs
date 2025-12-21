@@ -21,42 +21,41 @@ namespace BloodDonation.Controllers
             return user != null && user.Role == "Owner";
         }
 
-        // Dashboard
+        // OwnerOverview
         public async Task<IActionResult> Index()
         {
             if (!await IsOwnerAsync())
                 return Forbid();
 
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // All Data Operations will be implemented here
+
             ViewBag.OwnerName = user.FirstName + " " + user.LastName;
 
             return View();
         }
 
-        // OwnerOverview tab
-        public async Task<IActionResult> OwnerOverviews()
-        {
-            if (!await IsOwnerAsync())
-                return Forbid();
-
-            return View("~/Views/Owner/OwnerOverview.cshtml");
-        }
-
         // Admins tab
-        public async Task<IActionResult> Admins()
+        public async Task<IActionResult> AdminManagement()
         {
             if (!await IsOwnerAsync())
                 return Forbid();
 
-            return View("~/Views/Owner/AdminManagement.cshtml");
+            return View();
         }
+
         // Hospital tab
-        public async Task<IActionResult> Hospitals()
+        public async Task<IActionResult> HospitalManagement()
         {
             if (!await IsOwnerAsync())
                 return Forbid();
 
-            return View("~/Views/Owner/HospitalManagement.cshtml");
+            return View();
         }
 
     }

@@ -16,7 +16,7 @@ using QuestPDF.Infrastructure;
 
 namespace BloodDonation.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,Owner")]
     public class AdminController : Controller
     {
         private readonly BloodDonationContext _context;

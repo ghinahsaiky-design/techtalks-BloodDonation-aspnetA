@@ -155,11 +155,15 @@ namespace BloodDonation.Controllers
                 // Redirect admin users to admin dashboard
                 if (user.Role == "Owner")
                 {
-                    return RedirectToAction("OwnerOverviews", "Owner");
+                    return RedirectToAction("Index", "Owner");
                 }
                 else if (user.Role == "Admin")
                 {
                     return RedirectToAction("Index", "Admin");
+                }
+                else if(user.Role == "Hospital")
+                {
+                    return RedirectToAction("Index", "Hospital");
                 }
                 else
                 {
