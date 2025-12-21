@@ -1,0 +1,85 @@
+﻿@model EditDonorProfileViewModel
+
+<div class="profile-box">
+    <h4>Edit Personal Information</h4>
+
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success">@ViewBag.Success</div>
+    }
+
+    <form asp-action="EditProfile"
+          asp-controller="Donor"
+          method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="FirstName"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="LastName"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label>Blood Type</label>
+            <select asp-for="BloodTypeId"
+                    class="form-control"
+                    asp-items="@(new SelectList(ViewBag.BloodTypes, "Id", "Name"))">
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Location</label>
+            <select asp-for="LocationId"
+                    class="form-control"
+                    asp-items="@(new SelectList(ViewBag.Locations, "Id", "Name"))">
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DateOfBirth"></label>
+            <input asp-for="DateOfBirth" type="date" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Gender"></label>
+            <select asp-for="Gender" class="form-control">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </div>
+
+        <div class="form-check mb-2">
+            <input asp-for="IsHealthyForDonation" class="form-check-input" />
+            <label class="form-check-label">Healthy for donation</label>
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="IsIdentityHidden" class="form-check-input" />
+            <label class="form-check-label">Hide my identity</label>
+        </div>
+
+        <button class="btn btn-primary w-100">
+            Save Changes
+        </button>
+    </form>
+</div>
+<!--
+    <div id="profileSection">
+@await Html.ActionAsync("EditProfile", "Donor")
+</div>
+
+<hr />
+
+<div id="changePasswordSection">
+@await Html.PartialAsync("_ChangePasswordPartial", new ChangePasswordViewModel())
+</div>
+
+-->

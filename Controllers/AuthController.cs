@@ -179,5 +179,40 @@ namespace BloodDonation.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return PartialView("_ChangePasswordPartial", model);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return Unauthorized();
+
+            var result = await _userManager.ChangePasswordAsync(
+                user,
+                model.OldPassword,
+                model.NewPassword
+            );
+
+            if (result.Succeeded)
+            {
+                ViewBag.Success = "Password changed successfully.";
+                return PartialView("_ChangePasswordPartial", new ChangePasswordViewModel());
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return PartialView("_ChangePasswordPartial", model);
+        }
+
+
     }
 }
