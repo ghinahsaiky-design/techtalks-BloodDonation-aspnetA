@@ -27,6 +27,9 @@ namespace BloodDonation.Models
         public bool IsIdentityHidden { get; set; }
 
         [Required]
+        public bool IsAvailable { get; set; }
+
+        [Required]
         public DateOnly DateOfBirth { get; set; }
 
         [Required]
