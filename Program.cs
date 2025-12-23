@@ -11,38 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Get database configuration
-var useMySQL = builder.Configuration.GetValue<bool>("UseMySQL", true);
-var databaseProvider = builder.Configuration["DatabaseProvider"] ?? (useMySQL ? "MySQL" : "SQLServer");
-var connectionString = useMySQL 
-    ? builder.Configuration.GetConnectionString("BloodDonationDb") 
-    : builder.Configuration.GetConnectionString("BloodDonationDb_SqlServer") ?? builder.Configuration.GetConnectionString("BloodDonationDb");
+// Always use SQL Server for now
+var connectionString = builder.Configuration.GetConnectionString("BloodDonationDb_SqlServer");
 
-// Register BloodDonationContext with selected database provider
 builder.Services.AddDbContext<BloodDonationContext>(options =>
 {
-    if (useMySQL || databaseProvider.Equals("MySQL", StringComparison.OrdinalIgnoreCase))
-    {
-        // Use MySQL 8.0.33 server version (or specify your MySQL version)
-        // You can also use ServerVersion.AutoDetect(connectionString) if MySQL is running
-        var serverVersion = ServerVersion.Create(8, 0, 33, ServerType.MySql);
-        options.UseMySql(connectionString, serverVersion, mySqlOptions =>
-        {
-            mySqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorNumbersToAdd: null);
-            mySqlOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore);
-        });
-    }
-    else if (databaseProvider.Equals("SQLServer", StringComparison.OrdinalIgnoreCase))
-    {
-        options.UseSqlServer(connectionString);
-    }
-    else
-    {
-        throw new InvalidOperationException($"Unsupported database provider: {databaseProvider}. Supported providers: MySQL, SQLServer");
-    }
+    options.UseSqlServer(connectionString);
 });
 
 builder.Services.AddIdentity<Users, IdentityRole<int>>(options =>
