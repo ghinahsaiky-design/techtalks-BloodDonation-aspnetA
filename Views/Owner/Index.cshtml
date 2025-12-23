@@ -1,6 +1,6 @@
 ﻿@model BloodDonation.Models.OwnerDashboardViewModel
 @{
-    ViewData["Title"] = "Owner Overview";
+    ViewData["Title"] = "Overview";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 
     // Chart Configuration
@@ -19,6 +19,27 @@
     int barWidth = (int)(barGroupWidth * 0.2); // 3 bars + spacing
     int barSpacing = 4;
 }
+
+@section PageHeader {
+    <div class="flex items-center gap-4">
+
+        <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">
+            Overview
+        </h2>
+
+        <div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-red-100/40 dark:from-primary/20 dark:to-primary/10 rounded-lg border border-primary/20 dark:border-primary/30">
+            <span class="material-symbols-outlined text-primary text-lg">waving_hand</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-white">
+                <span class="text-gray-600 dark:text-gray-300">Hi,</span>
+                <span class="text-primary font-bold">
+                    @(ViewBag.OwnerName ?? User?.Identity?.Name ?? "Owner")
+                </span>
+            </span>
+        </div>
+
+    </div>
+}
+
 
 <main class="flex-1 p-6 md:p-8 lg:p-10 bg-background-light/50">
     <div class="flex flex-wrap justify-between items-center gap-3 mb-8">

@@ -21,12 +21,27 @@
 
         <div class="px-8 pb-8">
             <!-- Status Banner -->
-            <div class="mt-4 mb-8 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/50 rounded-xl p-4 flex items-center justify-between">
+            @{
+                var status = Model.User?.Status ?? "Active";
+                var bannerClass = status == "Active" ? "bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50" :
+                                  status == "Inactive" ? "bg-gray-50 dark:bg-gray-800/20 border-gray-100 dark:border-gray-800/50" :
+                                  "bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/50";
+                var iconClass = status == "Active" ? "text-green-600 dark:text-green-400" :
+                                status == "Inactive" ? "text-gray-600 dark:text-gray-400" :
+                                "text-red-600 dark:text-red-400";
+                var iconName = status == "Active" ? "check_circle" :
+                               status == "Inactive" ? "info" :
+                               "error";
+                var textClass = status == "Active" ? "text-green-800 dark:text-green-400" :
+                                status == "Inactive" ? "text-gray-800 dark:text-gray-400" :
+                                "text-red-800 dark:text-red-400";
+            }
+            <div class="mt-4 mb-8 @bannerClass border rounded-xl p-4 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-green-600 dark:text-green-400 filled">check_circle</span>
-                    <span class="font-semibold text-green-800 dark:text-green-400">Account Status: Active</span>
+                    <span class="material-symbols-outlined @iconClass filled">@iconName</span>
+                    <span class="font-semibold @textClass">Account Status: @status</span>
                 </div>
-                <span class="text-xs font-medium text-green-700 dark:text-green-500/80">Verified since @Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")</span>
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Registered since @(Model.User?.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy") ?? "N/A")</span>
             </div>
 
             <!-- Details Grid -->
@@ -43,33 +58,12 @@
                     </div>
                 </div>
 
-                <!-- Last Activity -->
+                <!-- Email (Login Username) -->
                 <div class="space-y-1">
-                    <p class="text-xs font-bold text-red-400 uppercase tracking-wider">LAST ACTIVITY</p>
+                    <p class="text-xs font-bold text-red-400 uppercase tracking-wider">EMAIL (LOGIN USERNAME)</p>
                     <div class="flex items-center gap-2 mt-1">
-                        <span class="material-symbols-outlined text-gray-400 text-[20px]">history</span>
-                        <span class="text-[15px] text-gray-700 dark:text-gray-300">
-                            @if(Model.LastUpdatedAt.HasValue)
-                            {
-                                var diff = DateTime.UtcNow - Model.LastUpdatedAt.Value;
-                                if (diff.TotalMinutes < 60) { <text>@Math.Floor(diff.TotalMinutes) mins ago (Update)</text> }
-                                else if (diff.TotalHours < 24) { <text>@Math.Floor(diff.TotalHours) hours ago (Update)</text> }
-                                else { <text>@Model.LastUpdatedAt.Value.ToLocalTime().ToString("MMM dd") (Update)</text> }
-                            }
-                            else
-                            {
-                                <text>No recent activity</text>
-                            }
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Contact Person -->
-                <div class="space-y-1">
-                    <p class="text-xs font-bold text-red-400 uppercase tracking-wider">CONTACT PERSON</p>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span class="material-symbols-outlined text-gray-400 text-[20px]">person</span>
-                        <span class="text-[15px] font-medium text-gray-900 dark:text-white">@Model.ContactPerson</span>
+                        <span class="material-symbols-outlined text-gray-400 text-[20px]">mail</span>
+                        <span class="text-[15px] text-gray-700 dark:text-gray-300">@(Model.User?.Email ?? "N/A")</span>
                     </div>
                 </div>
 
@@ -78,16 +72,7 @@
                     <p class="text-xs font-bold text-red-400 uppercase tracking-wider">PHONE NUMBER</p>
                     <div class="flex items-center gap-2 mt-1">
                         <span class="material-symbols-outlined text-gray-400 text-[20px]">call</span>
-                        <span class="text-[15px] text-gray-700 dark:text-gray-300">@Model.Phone</span>
-                    </div>
-                </div>
-
-                <!-- Email -->
-                <div class="space-y-1 md:col-span-2">
-                    <p class="text-xs font-bold text-red-400 uppercase tracking-wider">EMAIL ADDRESS</p>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span class="material-symbols-outlined text-gray-400 text-[20px] pt-1">mail</span>
-                        <span class="text-[15px] text-gray-700 dark:text-gray-300 border-b border-gray-300 border-dotted pb-0.5 leading-none">@Model.Email</span>
+                        <span class="text-[15px] text-gray-700 dark:text-gray-300">@(Model.User?.PhoneNumber ?? "N/A")</span>
                     </div>
                 </div>
             </div>
@@ -98,7 +83,6 @@
                 <div class="flex flex-col text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed">
                     <span class="font-medium text-gray-900 dark:text-white">@Model.Address</span>
                     <span>@Model.City, @Model.State @Model.Zip</span>
-                    <span>United States</span>
                 </div>
             </div>
             

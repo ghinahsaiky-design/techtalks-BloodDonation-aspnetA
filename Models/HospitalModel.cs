@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BloodDonation.Models
 {
@@ -14,14 +14,12 @@ namespace BloodDonation.Models
         [MaxLength(100)]
         public string License { get; set; } = string.Empty;
 
-        [MaxLength(150)]
-        public string ContactPerson { get; set; } = string.Empty;
-
-        [EmailAddress, MaxLength(200)]
-        public string Email { get; set; } = string.Empty;
-
-        [MaxLength(50)]
-        public string Phone { get; set; } = string.Empty;
+        // Link to Users table (User with Role = "Hospital")
+        [Required]
+        public int UserId { get; set; }
+        
+        [ForeignKey("UserId")]
+        public virtual Users User { get; set; } = null!;
 
         [MaxLength(400)]
         public string Address { get; set; } = string.Empty;
@@ -34,12 +32,5 @@ namespace BloodDonation.Models
 
         [MaxLength(20)]
         public string Zip { get; set; } = string.Empty;
-
-        // NOTE: in production you should use Identity or hashed secrets.
-        [MaxLength(200)]
-        public string PasswordHash { get; set; } = string.Empty;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? LastUpdatedAt { get; set; }
     }
 }

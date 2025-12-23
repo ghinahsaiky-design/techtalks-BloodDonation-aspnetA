@@ -1,4 +1,4 @@
-<aside class="w-64 bg-white dark:bg-background-dark border-r min-h-screen p-4 relative">
+<aside class="w-64 shrink-0 bg-white dark:bg-background-dark border-r min-h-screen p-4 relative">
    
     <a href="@Url.Action("Index", "Home")">
     <div class="flex items-center gap-3 mb-8">
@@ -8,13 +8,13 @@
             <span class="text-lg font-extrabold text-gray-900 dark:text-white tracking-tight">
                 BloodConnect
             </span>
-            @if (User.IsInRole("Admin"))
-            {
-                <span class="text-xs text-gray-500 dark:text-gray-400">Admin Panel</span>
-            }
-            else if(User.IsInRole("Owner"))
+            @if (User.IsInRole("Owner"))
             {
                 <span class="text-xs text-gray-500 dark:text-gray-400">Owner Panel</span>
+            }
+            else if (User.IsInRole("Admin"))
+            {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Admin Panel</span>
             }
         </div>
     </div>

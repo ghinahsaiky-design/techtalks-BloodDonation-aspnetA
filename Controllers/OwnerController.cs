@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -329,7 +329,8 @@ namespace BloodDonation.Controllers
                 return Forbid();
 
             var hospitals = await _context.Hospitals
-                .OrderByDescending(h => h.CreatedAt)
+                .Include(h => h.User)
+                .OrderByDescending(h => h.User.CreatedAt)
                 .ToListAsync();
 
             return View(hospitals);
