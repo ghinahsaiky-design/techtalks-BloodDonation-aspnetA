@@ -19,6 +19,44 @@ namespace BloodDonation.Data
             _context = context;
         }
 
+        public async Task ReseedOwnerUsersAsync()
+        {
+            Console.WriteLine("Reseeding owner users...");
+            
+            // Get all owner users
+            var ownerUsers = await _context.Users
+                .Where(u => u.Role == "Owner")
+                .ToListAsync();
+
+            Console.WriteLine($"Found {ownerUsers.Count} existing owner users to delete.");
+
+            // Delete all owner users
+            foreach (var user in ownerUsers)
+            {
+                // Remove all claims first
+                var claims = await _userManager.GetClaimsAsync(user);
+                foreach (var claim in claims)
+                {
+                    await _userManager.RemoveClaimAsync(user, claim);
+                }
+                
+                // Delete the user
+                var deleteResult = await _userManager.DeleteAsync(user);
+                if (deleteResult.Succeeded)
+                {
+                    Console.WriteLine($"✓ Deleted owner user: {user.Email}");
+                }
+                else
+                {
+                    Console.WriteLine($"✗ Failed to delete owner user {user.Email}: {string.Join(", ", deleteResult.Errors.Select(e => e.Description))}");
+                }
+            }
+
+            // Now seed the owner users fresh
+            await SeedOwnerUserAsync();
+            Console.WriteLine("Owner users reseeding completed!");
+        }
+
         public async Task SeedOwnerUserAsync()
         {
             var ownerUsers = new[]
@@ -46,6 +84,7 @@ namespace BloodDonation.Data
                         UserName = ownerData.Email,
                         EmailConfirmed = true,
                         Role = "Owner",
+                        Status = "Active",
                         CreatedAt = DateTime.UtcNow
                     };
 

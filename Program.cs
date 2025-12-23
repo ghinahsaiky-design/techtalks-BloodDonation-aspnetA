@@ -98,7 +98,7 @@ app.UseAuthorization();
 using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-    await seeder.SeedOwnerUserAsync();
+    await seeder.ReseedOwnerUsersAsync();
     await seeder.SeedDemoDataAsync();
 }
 
