@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 
 namespace BloodDonation.Models
 {
@@ -21,6 +22,11 @@ namespace BloodDonation.Models
         public int LocationId { get; set; }
 
         [Required]
+        public string Email { get; set; } = "";
+
+        public string Phone { get; set; } = "";
+
+        [Required]
         public bool IsHealthyForDonation { get; set; }
 
         [Required]
@@ -32,7 +38,6 @@ namespace BloodDonation.Models
         [Required]
         public DateOnly DateOfBirth { get; set; }
 
-        [Required]
         [MaxLength(10)]
         public string Gender { get; set; } = "";
     }

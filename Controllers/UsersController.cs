@@ -2,6 +2,7 @@
 using BloodDonation.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using System.Security.Claims;
 
 namespace BloodDonation.Controllers
@@ -14,6 +15,7 @@ namespace BloodDonation.Controllers
         {
             _context = context;
         }
+
 
         //GET: Load donor profile into form
         [HttpGet("Users/DonorProfile/{id}")]
@@ -32,6 +34,8 @@ namespace BloodDonation.Controllers
                 LastName = donor.User.LastName,
                 BloodTypeId = donor.BloodTypeId,
                 LocationId = donor.LocationId,
+                Email = donor.User.Email,
+                Phone = donor.User.PhoneNumber,
                 IsHealthyForDonation = donor.IsHealthyForDonation,
                 IsIdentityHidden = donor.IsIdentityHidden,
                 IsAvailable = donor.IsAvailable,
@@ -45,17 +49,47 @@ namespace BloodDonation.Controllers
             return View("DonorProfile", model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> EditProfilePartial()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var donor = await _context.DonorProfile
+                .Include(d => d.User)
+                .FirstOrDefaultAsync(d => d.DonorId == userId);
+
+            if (donor == null)
+                return NotFound();
+
+            var model = new EditDonorProfileViewModel
+            {
+                FirstName = donor.User.FirstName,
+                LastName = donor.User.LastName,
+                BloodTypeId = donor.BloodTypeId,
+                Email = donor.User.Email,
+                LocationId = donor.LocationId,
+                DateOfBirth = donor.DateOfBirth,
+                IsHealthyForDonation = donor.IsHealthyForDonation,
+                IsIdentityHidden = donor.IsIdentityHidden,
+                IsAvailable = donor.IsAvailable
+            };
+
+            ViewBag.BloodTypes = _context.BloodTypes.ToList() ?? new List<BloodTypes>();
+            ViewBag.Locations = _context.Locations.ToList() ?? new List<Locations>();
+
+            return PartialView("~/Views/Shared/_EditDonorProfile.cshtml", model);
+        }
 
         // ✅ POST: Save profile changes
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditDonorProfile(EditDonorProfileViewModel model)
+        public async Task<IActionResult> EditProfile(EditDonorProfileViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 ViewBag.BloodTypes = _context.BloodTypes.ToList();
                 ViewBag.Locations = _context.Locations.ToList();
-                return View(model);
+                return PartialView("_EditDonorProfile", model);
             }
 
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -67,27 +101,24 @@ namespace BloodDonation.Controllers
             if (donor == null)
                 return NotFound();
 
-            // Update user fields
             donor.User.FirstName = model.FirstName;
             donor.User.LastName = model.LastName;
-
-            // Update donor fields
+            donor.User.Email = model.Email;
             donor.BloodTypeId = model.BloodTypeId;
             donor.LocationId = model.LocationId;
             donor.IsHealthyForDonation = model.IsHealthyForDonation;
             donor.IsIdentityHidden = model.IsIdentityHidden;
             donor.IsAvailable = model.IsAvailable;
             donor.DateOfBirth = model.DateOfBirth;
-            donor.Gender = model.Gender;
 
             await _context.SaveChangesAsync();
 
-            ViewBag.Success = "Profile updated successfully.";
-            ViewBag.BloodTypes = _context.BloodTypes.ToList();
-            ViewBag.Locations = _context.Locations.ToList();
+            ViewBag.BloodTypes = _context.BloodTypes.ToList() ?? new List<BloodTypes>();
+            ViewBag.Locations = _context.Locations.ToList() ?? new List<Locations>();
 
-            return View(model);
+            return RedirectToAction(nameof(DonorProfile), new { id = donor.DonorId });
         }
+
 
         // ✅ TOGGLE: Availability (Available ↔ Unavailable)
         [HttpPost]
@@ -104,11 +135,7 @@ namespace BloodDonation.Controllers
             donor.IsAvailable = !donor.IsAvailable;
             await _context.SaveChangesAsync();
 
-            TempData["ProfileMessage"] = donor.IsAvailable
-                ? "✅ You are now available to donate."
-                : "❌ You are now marked as unavailable.";
-
-            return RedirectToAction(nameof(EditDonorProfile));
+            return RedirectToAction(nameof(DonorProfile), new { id = donor.DonorId });
         }
 
         // ✅ TOGGLE: Identity Visibility (Hidden ↔ Visible)
@@ -125,12 +152,7 @@ namespace BloodDonation.Controllers
 
             donor.IsIdentityHidden = !donor.IsIdentityHidden;
             await _context.SaveChangesAsync();
-
-            TempData["ProfileMessage"] = donor.IsIdentityHidden
-                ? "🕵️ Your identity is now hidden."
-                : "👤 Your identity is now visible.";
-
-            return RedirectToAction(nameof(EditDonorProfile));
+            return RedirectToAction(nameof(DonorProfile), new { id = donor.DonorId });
         }
     }
 }

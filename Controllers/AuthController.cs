@@ -2,6 +2,7 @@
 using BloodDonation.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 
@@ -179,6 +180,11 @@ namespace BloodDonation.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
+        public IActionResult ChangePasswordPartial()
+        { 
+            return PartialView("_ChangePasswordPartial");
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -193,18 +199,26 @@ namespace BloodDonation.Controllers
             if (user == null)
                 return Unauthorized();
 
-            var result = await _userManager.ChangePasswordAsync(
-                user,
-                model.OldPassword,
-                model.NewPassword
-            );
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
 
             if (result.Succeeded)
             {
-                ViewBag.Success = "Password changed successfully.";
-                return PartialView("_ChangePasswordPartial", new ChangePasswordViewModel());
+                // Refresh sign-in so the new security stamp is applied
+                await _signInManager.RefreshSignInAsync(user);
+
+                // Optional: add/update custom claims
+                var claims = new List<Claim>
+        {
+            new Claim("FirstName", user.FirstName ?? "")
+        };
+                await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, claims);
+
+                // For AJAX/partial view, return JSON with success and redirect URL
+                var donor = await _context.DonorProfile.FirstOrDefaultAsync(d => d.DonorId == user.Id);
+                return RedirectToAction("DonorProfile", "Users", new { id = donor?.DonorId });
             }
 
+            // Handle errors
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
