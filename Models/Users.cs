@@ -29,6 +29,7 @@ namespace BloodDonation.Models
         [MaxLength(20)]
         public string Role { get; set; } // "Donor", "Admin", "Owner"
 
+        public string? ProfileImagePath { get; set; } // Path to profile image
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

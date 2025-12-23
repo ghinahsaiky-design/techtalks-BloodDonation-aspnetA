@@ -883,8 +883,8 @@ namespace BloodDonation.Controllers
                     return Json(new { success = false, message = "Request not found" });
                 }
 
-                // Find matching donors: same blood type, same location, available and healthy
-                var matchingDonors = await _context.DonorProfile
+                // First, try to find matching donors: same blood type AND same location, available and healthy
+                var matchingDonorsByLocation = await _context.DonorProfile
                     .Include(d => d.User)
                     .Include(d => d.BloodType)
                     .Include(d => d.Location)
@@ -903,11 +903,51 @@ namespace BloodDonation.Controllers
                         Location = d.Location.Districts,
                         LastDonationDate = d.LastDonationDate.HasValue ? d.LastDonationDate.Value.ToString("yyyy-MM-dd") : "Never",
                         IsAvailable = d.IsAvailable,
-                        IsHealthy = d.IsHealthyForDonation
+                        IsHealthy = d.IsHealthyForDonation,
+                        MatchesLocation = true
                     })
                     .ToListAsync();
 
-                return Json(new { success = true, donors = matchingDonors });
+                // If no donors found with matching location, fall back to matching by blood type only
+                if (matchingDonorsByLocation.Count == 0)
+                {
+                    var matchingDonorsByBloodType = await _context.DonorProfile
+                        .Include(d => d.User)
+                        .Include(d => d.BloodType)
+                        .Include(d => d.Location)
+                        .Where(d => 
+                            d.BloodTypeId == request.BloodTypeId &&
+                            d.IsAvailable &&
+                            d.IsHealthyForDonation)
+                        .Select(d => new
+                        {
+                            DonorId = d.DonorId,
+                            Name = d.IsIdentityHidden ? $"Donor #{d.DonorId}" : $"{d.User.FirstName} {d.User.LastName}",
+                            Email = d.User.Email,
+                            PhoneNumber = d.User.PhoneNumber ?? "N/A",
+                            BloodType = d.BloodType.Type,
+                            Location = d.Location.Districts,
+                            LastDonationDate = d.LastDonationDate.HasValue ? d.LastDonationDate.Value.ToString("yyyy-MM-dd") : "Never",
+                            IsAvailable = d.IsAvailable,
+                            IsHealthy = d.IsHealthyForDonation,
+                            MatchesLocation = false
+                        })
+                        .ToListAsync();
+
+                    return Json(new { 
+                        success = true, 
+                        donors = matchingDonorsByBloodType,
+                        locationMatched = false,
+                        message = $"No donors found in {request.Location.Districts}. Showing all available donors with blood type {request.BloodType.Type}."
+                    });
+                }
+
+                return Json(new { 
+                    success = true, 
+                    donors = matchingDonorsByLocation,
+                    locationMatched = true,
+                    message = $"Found {matchingDonorsByLocation.Count} donor(s) matching blood type and location."
+                });
             }
             catch (Exception ex)
             {
@@ -1389,26 +1429,26 @@ namespace BloodDonation.Controllers
             if (user == null)
             {
                 TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction("Settings");
+                return RedirectToAction("Profile");
             }
 
             // Validate inputs
             if (string.IsNullOrWhiteSpace(CurrentPassword))
             {
                 TempData["ErrorMessage"] = "Current password is required.";
-                return RedirectToAction("Settings");
+                return RedirectToAction("Profile");
             }
 
             if (string.IsNullOrWhiteSpace(NewPassword) || NewPassword.Length < 6)
             {
                 TempData["ErrorMessage"] = "New password must be at least 6 characters long.";
-                return RedirectToAction("Settings");
+                return RedirectToAction("Profile");
             }
 
             if (NewPassword != ConfirmPassword)
             {
                 TempData["ErrorMessage"] = "New password and confirmation password do not match.";
-                return RedirectToAction("Settings");
+                return RedirectToAction("Profile");
             }
 
             // Verify current password
@@ -1416,7 +1456,7 @@ namespace BloodDonation.Controllers
             if (!passwordValid)
             {
                 TempData["ErrorMessage"] = "Current password is incorrect.";
-                return RedirectToAction("Settings");
+                return RedirectToAction("Profile");
             }
 
             // Change password
@@ -1442,7 +1482,7 @@ namespace BloodDonation.Controllers
                 _logger.LogWarning($"Failed to change password for admin {user.Id}: {errors}");
             }
 
-            return RedirectToAction("Settings");
+            return RedirectToAction("Profile");
         }
 
         // GET: Admin/AddDonor
@@ -1759,6 +1799,179 @@ namespace BloodDonation.Controllers
             }
 
             return RedirectToAction("DonorManagement");
+        }
+
+        // GET: Admin/Profile
+        public async Task<IActionResult> Profile()
+        {
+            if (!await IsAdminAsync())
+            {
+                return Forbid();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // Get recent activities for this admin (last 10)
+            var recentActivities = await _context.Actions
+                .Where(a => a.PerformedByUserId == user.Id)
+                .OrderByDescending(a => a.PerformedAt)
+                .Take(10)
+                .Select(a => new RecentActivityViewModel
+                {
+                    ActionName = a.Name,
+                    Description = a.Description,
+                    Type = a.Type,
+                    PerformedAt = a.PerformedAt
+                })
+                .ToListAsync();
+
+            // Calculate time ago for each activity
+            foreach (var activity in recentActivities)
+            {
+                var timeSpan = DateTime.UtcNow - activity.PerformedAt;
+                if (timeSpan.TotalMinutes < 60)
+                {
+                    activity.TimeAgo = $"{(int)timeSpan.TotalMinutes} minutes ago";
+                }
+                else if (timeSpan.TotalHours < 24)
+                {
+                    activity.TimeAgo = $"{(int)timeSpan.TotalHours} hours ago";
+                }
+                else if (timeSpan.TotalDays < 7)
+                {
+                    activity.TimeAgo = $"{(int)timeSpan.TotalDays} days ago";
+                }
+                else
+                {
+                    activity.TimeAgo = activity.PerformedAt.ToString("MMM dd, yyyy");
+                }
+            }
+
+            // Get total actions count
+            var totalActions = await _context.Actions
+                .Where(a => a.PerformedByUserId == user.Id)
+                .CountAsync();
+
+            var viewModel = new ProfileViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email ?? "",
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role,
+                ProfileImagePath = user.ProfileImagePath,
+                CreatedAt = user.CreatedAt,
+                RecentActivities = recentActivities,
+                TotalActions = totalActions
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Admin/UploadProfileImage
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadProfileImage(IFormFile profileImage)
+        {
+            if (!await IsAdminAsync())
+            {
+                return Forbid();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Profile");
+            }
+
+            // Validate file
+            if (profileImage == null || profileImage.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select an image file.";
+                return RedirectToAction("Profile");
+            }
+
+            // Validate file type
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(profileImage.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                TempData["ErrorMessage"] = "Invalid file type. Please upload a JPG, PNG, GIF, or WEBP image.";
+                return RedirectToAction("Profile");
+            }
+
+            // Validate file size (max 5MB)
+            const long maxFileSize = 5 * 1024 * 1024; // 5MB
+            if (profileImage.Length > maxFileSize)
+            {
+                TempData["ErrorMessage"] = "File size exceeds 5MB limit. Please upload a smaller image.";
+                return RedirectToAction("Profile");
+            }
+
+            try
+            {
+                // Create profiles directory if it doesn't exist
+                var profilesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "profiles");
+                if (!Directory.Exists(profilesDirectory))
+                {
+                    Directory.CreateDirectory(profilesDirectory);
+                }
+
+                // Generate unique filename
+                var fileName = $"admin_{user.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}{fileExtension}";
+                var filePath = Path.Combine(profilesDirectory, fileName);
+                var relativePath = $"/images/profiles/{fileName}";
+
+                // Delete old profile image if exists
+                if (!string.IsNullOrEmpty(user.ProfileImagePath))
+                {
+                    var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.ProfileImagePath.TrimStart('/'));
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, $"Failed to delete old profile image: {oldImagePath}");
+                        }
+                    }
+                }
+
+                // Save new image
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await profileImage.CopyToAsync(stream);
+                }
+
+                // Update user profile image path
+                user.ProfileImagePath = relativePath;
+                await _userManager.UpdateAsync(user);
+
+                // Record tracked action
+                await RecordActionAsync(
+                    "Upload Profile Image",
+                    ActionType.Update,
+                    "Admin uploaded a new profile image",
+                    targetUserId: user.Id
+                );
+
+                TempData["SuccessMessage"] = "Profile image uploaded successfully!";
+                _logger.LogInformation($"Admin {user.Id} uploaded profile image: {relativePath}");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Failed to upload profile image: {ex.Message}";
+                _logger.LogError(ex, $"Error uploading profile image for admin {user.Id}");
+            }
+
+            return RedirectToAction("Profile");
         }
     }
 

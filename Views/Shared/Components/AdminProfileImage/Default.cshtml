@@ -1,0 +1,11 @@
+@model string?
+
+@if (!string.IsNullOrEmpty(Model))
+{
+    <img src="@Model" alt="Admin profile" class="size-10 rounded-full object-cover" />
+}
+else
+{
+    <img src="~/images/BloodDonationLogo.png" alt="Admin user avatar" class="size-10 rounded-full object-cover" />
+}
+

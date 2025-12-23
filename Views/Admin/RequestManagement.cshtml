@@ -1,127 +1,11 @@
 @model IEnumerable<BloodDonation.Models.DonorRequest>
 @{
-    Layout = null;
-    ViewData["Title"] = "Admin Request Management";
+    ViewData["Title"] = "Requests Management";
 }
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>BloodConnect - Request Management</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings:
-                'FILL' 0,
-                'wght' 400,
-                'GRAD' 0,
-                'opsz' 24
-        }
-    </style>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#d70427",
-                        "background-light": "#f8f5f6",
-                        "background-dark": "#230f12",
-                        "blue-700": "#1E40AF",
-                        "gray-100": "#F3F4F6",
-                        "gray-800": "#1F2937",
-                        "gray-500": "#6B7280",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-</head>
-<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100">
+
 <partial name="_NotificationAlert" />
-<div class="relative flex min-h-screen w-full flex-row group/design-root">
-<aside class="flex h-screen min-h-screen w-64 flex-col bg-white dark:bg-background-dark dark:border-r dark:border-white/10 shadow-sm">
-<div class="flex h-full flex-col justify-between p-4">
-<div class="flex flex-col gap-4">
-<div class="flex items-center gap-3 px-3 py-2">
-<img src="~/images/BloodDonationLogo.png" alt="BloodConnect logo" class="size-10 rounded-full object-cover"/>
-<div class="flex flex-col">
-<h1 class="text-gray-800 dark:text-white text-base font-bold leading-normal">BloodConnect</h1>
-<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Admin Panel</p>
-</div>
-</div>
-<nav class="flex flex-col gap-2 mt-4">
-<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("Index", "Admin")">
-<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">dashboard</span>
-<p class="text-sm font-medium leading-normal">Dashboard</p>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("DonorManagement", "Admin")">
-<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">group</span>
-<p class="text-sm font-medium leading-normal">Donors</p>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary" href="@Url.Action("RequestManagement", "Admin")">
-<span class="material-symbols-outlined !fill-1">inbox</span>
-<p class="text-sm font-bold leading-normal">Requests</p>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-background-light dark:hover:bg-white/5" href="@Url.Action("Settings", "Admin")">
-<span class="material-symbols-outlined text-blue-700 dark:text-primary/80">settings</span>
-<p class="text-sm font-medium leading-normal">Settings</p>
-</a>
-</nav>
-</div>
-<div class="px-3 py-2">
-<form asp-action="Logout" asp-controller="Auth" method="post" class="inline">
-@Html.AntiForgeryToken()
-<button type="submit" class="flex items-center gap-3 text-red-600 hover:text-red-700 transition-colors w-full">
-<span class="material-symbols-outlined">logout</span>
-<p class="text-sm font-medium leading-normal">Sign Out</p>
-</button>
-</form>
-</div>
-</div>
-</aside>
-<div class="flex-1 flex flex-col">
-<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark px-10 py-3 sticky top-0 z-10 shadow-sm">
-<div class="flex items-center gap-4 text-gray-800 dark:text-white">
-<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Requests Management</h2>
-</div>
-<div class="flex flex-1 justify-end gap-4 items-center">
-<div class="relative">
-<button id="notificationBtn" onclick="toggleNotificationDropdown()" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full size-10 bg-background-light text-blue-700 dark:bg-white/10 dark:text-primary/80 hover:bg-gray-100 dark:hover:bg-white/20 transition-colors relative">
-<span class="material-symbols-outlined">notifications</span>
-<span id="notificationBadge" class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center px-1 hidden">0</span>
-</button>
-<div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-background-dark rounded-lg shadow-xl border border-gray-200 dark:border-white/10 z-50 max-h-96 overflow-y-auto">
-<div class="p-4 border-b border-gray-200 dark:border-white/10">
-<h3 class="text-sm font-bold text-gray-900 dark:text-white">Recent Confirmations</h3>
-<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Donor confirmations from the last 24 hours</p>
-</div>
-<div id="notificationList" class="p-2">
-<div class="text-center py-4 text-gray-500 dark:text-gray-400">
-<span class="material-symbols-outlined animate-spin text-2xl mb-2">sync</span>
-<p class="text-sm">Loading...</p>
-</div>
-</div>
-<div class="p-3 border-t border-gray-200 dark:border-white/10 text-center">
-<a href="@Url.Action("RequestManagement", "Admin")" class="text-xs text-primary hover:underline">View All Requests</a>
-</div>
-</div>
-</div>
-<img src="~/images/BloodDonationLogo.png" alt="Admin user avatar" class="size-10 rounded-full object-cover"/>
-</div>
-</header>
-<main class="flex-1 p-6 md:p-8 lg:p-10">
+
+<div class="max-w-7xl mx-auto space-y-6">
 <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
 <p class="text-gray-800 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em] min-w-72">Incoming Blood Requests</p>
 <button onclick="document.getElementById('createRequestModal').classList.remove('hidden')" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90">
@@ -290,9 +174,7 @@ else
 <button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 rounded-r-lg hover:bg-gray-100 dark:hover:bg-white/10">Next</button>
 </div>
 </div>
-</div>
-</main>
-</div>
+    </div>
 </div>
 
 <!-- Create Request Modal -->
@@ -391,10 +273,22 @@ else
             const data = await response.json();
             
             if (data.success && data.donors && data.donors.length > 0) {
+                const locationMatched = data.locationMatched !== false; // Default to true if not specified
+                const message = data.message || (locationMatched ? `Found ${data.donors.length} matching donor(s)` : `Found ${data.donors.length} donor(s) with matching blood type`);
+                
                 content.innerHTML = `
                     <div class="bg-white dark:bg-background-dark rounded-lg border border-gray-200 dark:border-white/10 p-4">
+                    ${!locationMatched ? `
+                    <div class="mb-4 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 flex items-start gap-3">
+                        <span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400 flex-shrink-0">warning</span>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Location Match Not Found</p>
+                            <p class="text-xs text-yellow-700 dark:text-yellow-400 mt-1">${message}</p>
+                        </div>
+                    </div>
+                    ` : ''}
                     <div class="flex items-center justify-between mb-4">
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Found <strong>${data.donors.length}</strong> matching donor(s)</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">${locationMatched ? `Found <strong>${data.donors.length}</strong> matching donor(s)` : `Showing <strong>${data.donors.length}</strong> donor(s) with matching blood type`}</p>
                         <div class="flex gap-2">
                             <button onclick="loadConfirmations(${requestId})" class="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10" title="Refresh Confirmations">
                                 <span class="material-symbols-outlined text-sm align-middle">refresh</span> Refresh
@@ -434,9 +328,10 @@ else
                                         const lastDonation = donor.lastDonationDate || donor.LastDonationDate || 'Never';
                                         const isAvailable = donor.isAvailable || donor.IsAvailable || false;
                                         const isHealthy = donor.isHealthy || donor.IsHealthy || false;
+                                        const matchesLocation = donor.matchesLocation !== false; // Default to true if not specified
                                         
                                         return `
-                                        <tr class="border-b dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5" data-donor-id="${donorId}">
+                                        <tr class="border-b dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 ${!matchesLocation ? 'bg-yellow-50/50 dark:bg-yellow-900/10' : ''}" data-donor-id="${donorId}">
                                             <td class="px-4 py-2">
                                                 <input type="checkbox" class="donor-checkbox" data-donor-id="${donorId}" data-request-id="${requestId}">
                                             </td>
@@ -444,7 +339,9 @@ else
                                             <td class="px-4 py-2">${donorEmail}</td>
                                             <td class="px-4 py-2">${donorPhone}</td>
                                             <td class="px-4 py-2 font-mono font-bold text-primary">${donorBloodType}</td>
-                                            <td class="px-4 py-2">${donorLocation}</td>
+                                            <td class="px-4 py-2">
+                                                ${!matchesLocation ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-xs text-yellow-600 dark:text-yellow-400" title="Different location">location_off</span>${donorLocation}</span>` : donorLocation}
+                                            </td>
                                             <td class="px-4 py-2">${lastDonation}</td>
                                             <td class="px-4 py-2">
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs ${isAvailable && isHealthy ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'}">
@@ -837,5 +734,3 @@ else
         }
     }
 </script>
-
-</body></html>

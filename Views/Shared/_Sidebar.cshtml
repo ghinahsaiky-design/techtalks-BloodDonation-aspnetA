@@ -64,6 +64,21 @@
             </p>
         </a>
 
+        <!-- Profile -->
+        <a href="@Url.Action("Profile", "Admin")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "Profile"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "Profile" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                person
+            </span>
+            <p class="text-sm leading-normal @(action == "Profile" ? "font-bold" : "font-medium")">
+                Profile
+            </p>
+        </a>
+
         <!-- Settings -->
         <a href="@Url.Action("Settings", "Admin")"
            class="flex items-center gap-3 px-3 py-2 rounded-lg

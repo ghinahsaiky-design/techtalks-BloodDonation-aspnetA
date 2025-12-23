@@ -113,9 +113,7 @@
                         </div>
                     </div>
 
-                    <img src="~/images/BloodDonationLogo.png"
-                         alt="Admin user avatar"
-                         class="size-10 rounded-full object-cover" />
+                    @await Component.InvokeAsync("AdminProfileImage")
                 </div>
             </header>
 
