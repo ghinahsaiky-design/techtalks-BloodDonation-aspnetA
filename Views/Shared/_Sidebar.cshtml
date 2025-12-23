@@ -1,5 +1,6 @@
-<aside class="w-64 bg-white dark:bg-background-dark border-r min-h-screen p-4 relative">
-
+<aside class="w-64 shrink-0 bg-white dark:bg-background-dark border-r min-h-screen p-4 relative">
+   
+    <a href="@Url.Action("Index", "Home")">
     <div class="flex items-center gap-3 mb-8">
         <img src="~/images/BloodDonationLogo.png" alt="BloodConnect logo" class="size-10 rounded-full object-cover" />
 
@@ -7,11 +8,17 @@
             <span class="text-lg font-extrabold text-gray-900 dark:text-white tracking-tight">
                 BloodConnect
             </span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">
-                Admin Panel
-            </span>
+            @if (User.IsInRole("Owner"))
+            {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Owner Panel</span>
+            }
+            else if (User.IsInRole("Admin"))
+            {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Admin Panel</span>
+            }
         </div>
     </div>
+    </a>
 
     @{
         var action = ViewContext.RouteData.Values["action"]?.ToString();
@@ -19,20 +26,74 @@
 
     <nav class="flex flex-col gap-2 mt-4">
 
-        <!-- Dashboard -->
-        <a href="@Url.Action("Index", "Admin")"
-           class="flex items-center gap-3 px-3 py-2 rounded-lg
-              @(action == "Index"
+        @if (User.IsInRole("Owner"))
+        {
+            <!-- Overview -->
+            <a href="@Url.Action("Index", "Owner")"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg
+                      @(action == "Index"
                            ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
                            : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
 
             <span class="material-symbols-outlined @(action == "Index" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
-                dashboard
-            </span>
-            <p class="text-sm leading-normal @(action == "Index" ? "font-bold" : "font-medium")">
-                Dashboard
-            </p>
-        </a>
+                    Overview
+                </span>
+                <p class="text-sm leading-normal @(action == "Index" ? "font-bold" : "font-medium")">
+                    Overview
+                </p>
+            </a>
+        }
+        else
+        {
+            <a href="@Url.Action("Index", "Admin")"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "Index"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+                <span class="material-symbols-outlined @(action == "Index" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                    Overview
+                </span>
+                <p class="text-sm leading-normal @(action == "Index" ? "font-bold" : "font-medium")">
+                    Overview
+                </p>
+            </a>
+        }
+
+
+
+        @if (User.IsInRole("Owner"))
+        {
+            <!-- Admin Management -->
+            <a href="@Url.Action("AdminManagement", "Owner")"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg
+                            @(action == "AdminManagement"
+                                      ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                                      : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+                <span class="material-symbols-outlined @(action == "AdminManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                    manage_accounts
+                </span>
+                <p class="text-sm leading-normal @(action == "AdminManagement" ? "font-bold" : "font-medium")">
+                    Admins
+                </p>
+            </a>
+
+            <!-- Hospital Management -->
+            <a href="@Url.Action("HospitalManagement", "Owner")"
+               class="flex items-center gap-3 px-3 py-2 rounded-lg
+                            @(action == "HospitalManagement"
+                                            ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                                            : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "HospitalManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                    local_hospital
+                </span>
+            <p class="text-sm leading-normal @(action == "HospitalManagement" ? "font-bold" : "font-medium")">
+                    Hospitals
+                </p>
+            </a>
+        }
 
         <!-- Donor Management -->
         <a href="@Url.Action("DonorManagement", "Admin")"

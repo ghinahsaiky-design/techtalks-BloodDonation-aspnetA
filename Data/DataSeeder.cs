@@ -19,9 +19,9 @@ namespace BloodDonation.Data
             _context = context;
         }
 
-        public async Task SeedAdminUserAsync()
+        public async Task SeedOwnerUserAsync()
         {
-            var adminUsers = new[]
+            var ownerUsers = new[]
             {
                 new { Email = "nourh2235@gmail.com", FirstName = "Nour", LastName = "Hammoud", Password = "Admin@123" },
                 new { Email = "Lewaamalaeb122@gmail.com", FirstName = "Liwaa", LastName = "Aljaramani", Password = "Admin@123" },
@@ -31,101 +31,101 @@ namespace BloodDonation.Data
                 new { Email = "akhdarmohammad01@gmail.com", FirstName = "Mohammad", LastName = "Akhdar", Password = "Admin@123" }
             };
 
-            foreach (var adminData in adminUsers)
+            foreach (var ownerData in ownerUsers)
             {
-                // Check if admin already exists
-                var adminUser = await _userManager.FindByEmailAsync(adminData.Email);
+                // Check if owner already exists
+                var ownerUser = await _userManager.FindByEmailAsync(ownerData.Email);
 
-                if (adminUser == null)
+                if (ownerUser == null)
                 {
-                    adminUser = new Users
+                    ownerUser = new Users
                     {
-                        FirstName = adminData.FirstName,
-                        LastName = adminData.LastName,
-                        Email = adminData.Email,
-                        UserName = adminData.Email,
+                        FirstName = ownerData.FirstName,
+                        LastName = ownerData.LastName,
+                        Email = ownerData.Email,
+                        UserName = ownerData.Email,
                         EmailConfirmed = true,
-                        Role = "Admin",
+                        Role = "Owner",
                         CreatedAt = DateTime.UtcNow
                     };
 
-                    var result = await _userManager.CreateAsync(adminUser, adminData.Password);
+                    var result = await _userManager.CreateAsync(ownerUser, ownerData.Password);
 
                     if (result.Succeeded)
                     {
                         // Add role claim
-                        var roleClaimResult = await _userManager.AddClaimAsync(adminUser, new Claim(ClaimTypes.Role, "Admin"));
-                        var customRoleClaimResult = await _userManager.AddClaimAsync(adminUser, new Claim("Role", "Admin"));
+                        var roleClaimResult = await _userManager.AddClaimAsync(ownerUser, new Claim(ClaimTypes.Role, "Owner"));
+                        var customRoleClaimResult = await _userManager.AddClaimAsync(ownerUser, new Claim("Role", "Owner"));
                         
                         if (roleClaimResult.Succeeded && customRoleClaimResult.Succeeded)
                         {
-                            Console.WriteLine($"✓ Admin user '{adminData.Email}' (ID: {adminUser.Id}) created successfully with password: {adminData.Password} and role claims added");
+                            Console.WriteLine($"✓ Owner user '{ownerData.Email}' (ID: {ownerUser.Id}) created successfully with password: {ownerData.Password} and role claims added");
                         }
                         else
                         {
                             var errors = roleClaimResult.Errors.Concat(customRoleClaimResult.Errors);
-                            Console.WriteLine($"✗ Admin user '{adminData.Email}' created but failed to add claims: {string.Join(", ", errors.Select(e => e.Description))}");
+                            Console.WriteLine($"✗ Owner user '{ownerData.Email}' created but failed to add claims: {string.Join(", ", errors.Select(e => e.Description))}");
                         }
                     }
                     else
                     {
-                        Console.WriteLine($"Failed to create admin user '{adminData.Email}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                        Console.WriteLine($"Failed to create owner user '{ownerData.Email}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
                     }
                 }
                 else
                 {
                     // Check if user already has role claims, if not add them
-                    var existingClaims = await _userManager.GetClaimsAsync(adminUser);
+                    var existingClaims = await _userManager.GetClaimsAsync(ownerUser);
                     var hasRoleClaim = existingClaims.Any(c => c.Type == ClaimTypes.Role && (c.Value == "Admin" || c.Value == "Owner"));
                     
                     if (!hasRoleClaim)
                     {
-                        var userRole = adminUser.Role ?? "Admin";
-                        var roleClaimResult = await _userManager.AddClaimAsync(adminUser, new Claim(ClaimTypes.Role, userRole));
-                        var customRoleClaimResult = await _userManager.AddClaimAsync(adminUser, new Claim("Role", userRole));
+                        var userRole = ownerUser.Role ?? "Owner";
+                        var roleClaimResult = await _userManager.AddClaimAsync(ownerUser, new Claim(ClaimTypes.Role, userRole));
+                        var customRoleClaimResult = await _userManager.AddClaimAsync(ownerUser, new Claim("Role", userRole));
                         
                         if (roleClaimResult.Succeeded && customRoleClaimResult.Succeeded)
                         {
-                            Console.WriteLine($"✓ Added role claims to existing admin user '{adminData.Email}' (ID: {adminUser.Id}) with role '{userRole}'");
+                            Console.WriteLine($"✓ Added role claims to existing owner user '{ownerData.Email}' (ID: {ownerUser.Id}) with role '{userRole}'");
                         }
                         else
                         {
                             var errors = roleClaimResult.Errors.Concat(customRoleClaimResult.Errors);
-                            Console.WriteLine($"✗ Failed to add claims to existing admin user '{adminData.Email}': {string.Join(", ", errors.Select(e => e.Description))}");
+                            Console.WriteLine($"✗ Failed to add claims to existing owner user '{ownerData.Email}': {string.Join(", ", errors.Select(e => e.Description))}");
                         }
                     }
                     else
                     {
-                        Console.WriteLine($"Admin user '{adminData.Email}' already exists with role claims.");
+                        Console.WriteLine($"Owner user '{ownerData.Email}' already exists with role claims.");
                     }
                 }
             }
 
-            // Ensure all existing Admin and Owner users have role claims
-            await EnsureAdminAndOwnerClaimsAsync();
+            // Ensure all existing Owner users have role claims
+            await EnsureOwnerClaimsAsync();
         }
 
         /// <summary>
-        /// Ensures all users with Role = "Admin" or "Owner" have the appropriate role claims
+        /// Ensures all users with Role = "Owner" have the appropriate role claims
         /// </summary>
-        private async Task EnsureAdminAndOwnerClaimsAsync()
+        private async Task EnsureOwnerClaimsAsync()
         {
             try
             {
-                var adminAndOwnerUsers = await _context.Users
-                    .Where(u => u.Role == "Admin" || u.Role == "Owner")
+                var ownerUsersToProcess = await _context.Users
+                    .Where(u => u.Role == "Owner")
                     .ToListAsync();
 
-                Console.WriteLine($"Found {adminAndOwnerUsers.Count} Admin/Owner users to process for claims.");
+                Console.WriteLine($"Found {ownerUsersToProcess.Count} Owner users to process for claims.");
 
-                foreach (var user in adminAndOwnerUsers)
+                foreach (var user in ownerUsersToProcess)
                 {
                     try
                     {
                         var existingClaims = await _userManager.GetClaimsAsync(user);
                         var hasRoleClaim = existingClaims.Any(c => 
                             (c.Type == ClaimTypes.Role || c.Type == "Role") && 
-                            (c.Value == "Admin" || c.Value == "Owner"));
+                            (c.Value == "Owner"));
 
                         if (!hasRoleClaim)
                         {
@@ -156,19 +156,19 @@ namespace BloodDonation.Data
 
                 // Verify claims were saved
                 var totalUsersWithClaims = 0;
-                foreach (var user in adminAndOwnerUsers)
+                foreach (var user in ownerUsersToProcess)
                 {
                     var claims = await _userManager.GetClaimsAsync(user);
-                    if (claims.Any(c => (c.Type == ClaimTypes.Role || c.Type == "Role") && (c.Value == "Admin" || c.Value == "Owner")))
+                    if (claims.Any(c => (c.Type == ClaimTypes.Role || c.Type == "Role") && (c.Value == "Owner")))
                     {
                         totalUsersWithClaims++;
                     }
                 }
-                Console.WriteLine($"Claims verification: {totalUsersWithClaims}/{adminAndOwnerUsers.Count} Admin/Owner users have role claims.");
+                Console.WriteLine($"Claims verification: {totalUsersWithClaims}/{ownerUsersToProcess.Count} Owner users have role claims.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"✗ Error in EnsureAdminAndOwnerClaimsAsync: {ex.Message}");
+                Console.WriteLine($"✗ Error in EnsureOwnerClaimsAsync: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
         }

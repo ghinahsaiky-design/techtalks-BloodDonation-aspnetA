@@ -27,7 +27,10 @@ namespace BloodDonation.Models
 
         [Required]
         [MaxLength(20)]
-        public string Role { get; set; } // "Donor", "Admin", "Owner"
+        public string Role { get; set; } // "Donor", "Admin", "Owner", "Hospital"
+
+        [MaxLength(20)]
+        public string Status { get; set; } = "Active";
 
         public string? ProfileImagePath { get; set; } // Path to profile image
 

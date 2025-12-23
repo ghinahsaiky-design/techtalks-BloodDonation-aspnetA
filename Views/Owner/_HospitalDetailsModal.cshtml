@@ -1,0 +1,97 @@
+@model BloodDonation.Models.Hospital
+
+<div id="detailsHospitalBindingModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 transition-all duration-300 opacity-0" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-surface-dark rounded-2xl shadow-2xl w-full max-w-2xl transform scale-95 transition-all duration-300 overflow-hidden" id="detailsHospitalModalContent">
+        
+        <!-- Header -->
+        <div class="px-8 pt-8 pb-4 flex items-start justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-3xl font-bold">
+                    @((!string.IsNullOrEmpty(Model.Name) ? Model.Name.Substring(0, 1).ToUpper() : "H"))
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">@Model.Name</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Hospital Details View</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+        </div>
+
+        <div class="px-8 pb-8">
+            <!-- Status Banner -->
+            @{
+                var status = Model.User?.Status ?? "Active";
+                var bannerClass = status == "Active" ? "bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50" :
+                                  status == "Inactive" ? "bg-gray-50 dark:bg-gray-800/20 border-gray-100 dark:border-gray-800/50" :
+                                  "bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/50";
+                var iconClass = status == "Active" ? "text-green-600 dark:text-green-400" :
+                                status == "Inactive" ? "text-gray-600 dark:text-gray-400" :
+                                "text-red-600 dark:text-red-400";
+                var iconName = status == "Active" ? "check_circle" :
+                               status == "Inactive" ? "info" :
+                               "error";
+                var textClass = status == "Active" ? "text-green-800 dark:text-green-400" :
+                                status == "Inactive" ? "text-gray-800 dark:text-gray-400" :
+                                "text-red-800 dark:text-red-400";
+            }
+            <div class="mt-4 mb-8 @bannerClass border rounded-xl p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined @iconClass filled">@iconName</span>
+                    <span class="font-semibold @textClass">Account Status: @status</span>
+                </div>
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Registered since @(Model.User?.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy") ?? "N/A")</span>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                
+                <!-- ID / License -->
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-red-400 uppercase tracking-wider">HOSPITAL ID / LICENSE</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="material-symbols-outlined text-gray-400 text-[20px]">badge</span>
+                        <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono text-sm font-medium text-gray-700 dark:text-gray-300">
+                            @(!string.IsNullOrEmpty(Model.License) ? Model.License : $"#HOSP-{Model.Id:D3}")
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Email (Login Username) -->
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-red-400 uppercase tracking-wider">EMAIL (LOGIN USERNAME)</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="material-symbols-outlined text-gray-400 text-[20px]">mail</span>
+                        <span class="text-[15px] text-gray-700 dark:text-gray-300">@(Model.User?.Email ?? "N/A")</span>
+                    </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-red-400 uppercase tracking-wider">PHONE NUMBER</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="material-symbols-outlined text-gray-400 text-[20px]">call</span>
+                        <span class="text-[15px] text-gray-700 dark:text-gray-300">@(Model.User?.PhoneNumber ?? "N/A")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Address -->
+            <div class="mt-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 flex gap-3">
+                <span class="material-symbols-outlined text-gray-400 mt-1">location_on</span>
+                <div class="flex flex-col text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed">
+                    <span class="font-medium text-gray-900 dark:text-white">@Model.Address</span>
+                    <span>@Model.City, @Model.State @Model.Zip</span>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="mt-8 flex justify-end">
+                <button type="button" onclick="closeDetailsModal()" class="px-6 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
