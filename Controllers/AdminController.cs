@@ -105,17 +105,24 @@ namespace BloodDonation.Controllers
                 HasDonated = d.LastDonationDate.HasValue
             }).ToList();
 
-            // Calculate blood type distribution
-            var bloodTypeDistribution = await _context.DonorProfile
-                .GroupBy(d => d.BloodType.Type)
-                .Select(g => new BloodTypeDistributionViewModel
-                {
-                    Type = g.Key,
-                    Count = g.Count(),
-                    Percentage = totalDonors > 0 ? (double)g.Count() / totalDonors * 100 : 0
-                })
-                .OrderByDescending(x => x.Count)
+            // Calculate blood type distribution for all types
+            var allBloodTypes = await _context.BloodTypes.ToListAsync();
+            var donorGroups = await _context.DonorProfile
+                .GroupBy(d => d.BloodTypeId)
+                .Select(g => new { BloodTypeId = g.Key, Count = g.Count() })
                 .ToListAsync();
+
+            var bloodTypeDistribution = allBloodTypes.Select(bt => new BloodTypeDistributionViewModel
+            {
+                Type = bt.Type,
+                Count = donorGroups.FirstOrDefault(dg => dg.BloodTypeId == bt.BloodTypeId)?.Count ?? 0,
+                Percentage = totalDonors > 0 
+                    ? (double)(donorGroups.FirstOrDefault(dg => dg.BloodTypeId == bt.BloodTypeId)?.Count ?? 0) / totalDonors * 100 
+                    : 0
+            })
+            .OrderByDescending(x => x.Count)
+            .ThenBy(x => x.Type)
+            .ToList();
 
             // Calculate donation trends (last 6 months)
             var donationTrends = new List<DonationTrendViewModel>();

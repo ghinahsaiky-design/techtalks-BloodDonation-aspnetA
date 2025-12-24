@@ -208,44 +208,71 @@
     <div class="rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm p-6 flex flex-col">
         <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-6">Blood Type Distribution</h4>
         <div class="flex flex-col items-center justify-center flex-1">
-            <div class="relative w-48 h-48 rounded-full mb-8" style="background: conic-gradient(
-                                #d70427 0% 35%,
-                                #1E40AF 35% 60%,
-                                #F59E0B 60% 80%,
-                                #10B981 80% 100%
-                             );">
-                <div class="absolute inset-0 m-auto w-32 h-32 bg-white dark:bg-background-dark rounded-full flex flex-col items-center justify-center">
-                    <span class="text-gray-400 text-xs font-medium">Total Units</span>
-                    <span class="text-2xl font-bold text-gray-800 dark:text-white">@ViewBag.TotalDonors.ToString("N0")</span>
+            @{
+                var distributions = ViewBag.BloodTypeDistribution as List<BloodTypeDistributionViewModel> ?? new List<BloodTypeDistributionViewModel>();
+                var totalDonors = (int)ViewBag.TotalDonors;
+                var colors = new Dictionary<string, string>
+                {
+                    { "A+", "#d70427" },
+                    { "O+", "#1E40AF" },
+                    { "B+", "#F59E0B" },
+                    { "AB+", "#8B5CF6" },
+                    { "A-", "#EF4444" },
+                    { "O-", "#3B82F6" },
+                    { "B-", "#FBBF24" },
+                    { "AB-", "#A78BFA" }
+                };
+
+                var gradientParts = new List<string>();
+                double currentPercent = 0;
+                
+                if (distributions.Any())
+                {
+                    foreach (var dist in distributions)
+                    {
+                        var color = colors.ContainsKey(dist.Type) ? colors[dist.Type] : "#10B981";
+                        var nextPercent = currentPercent + dist.Percentage;
+                        gradientParts.Add($"{color} {currentPercent.ToString("F1")}% {nextPercent.ToString("F1")}%");
+                        currentPercent = nextPercent;
+                    }
+                }
+                else
+                {
+                    gradientParts.Add("#e5e7eb 0% 100%");
+                }
+                
+                var gradientStyle = string.Join(", ", gradientParts);
+            }
+            <div class="relative w-48 h-48 rounded-full mb-8 shadow-inner" style="background: conic-gradient(@gradientStyle);">
+                <div class="absolute inset-0 m-auto w-32 h-32 bg-white dark:bg-background-dark rounded-full flex flex-col items-center justify-center shadow-sm">
+                    <span class="text-gray-400 text-xs font-medium">Total Donors</span>
+                    <span class="text-2xl font-bold text-gray-800 dark:text-white">@totalDonors.ToString("N0")</span>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-x-8 gap-y-3 w-full px-4">
                 @{
-                    var distributions = ViewBag.BloodTypeDistribution as List<BloodTypeDistributionViewModel> ?? new List<BloodTypeDistributionViewModel>();
-                    var colors = new Dictionary<string, string>
-                                {
-                                { "A+", "bg-primary" },
-                                { "O+", "bg-blue-700" },
-                                { "B+", "bg-amber-500" },
-                                { "AB+", "bg-purple-500" },
-                                { "A-", "bg-red-600" },
-                                { "O-", "bg-indigo-600" },
-                                { "B-", "bg-yellow-600" },
-                                { "AB-", "bg-pink-500" }
-                                };
-                    var displayCount = 0;
+                    var bgColors = new Dictionary<string, string>
+                    {
+                        { "A+", "bg-primary" },
+                        { "O+", "bg-blue-700" },
+                        { "B+", "bg-amber-500" },
+                        { "AB+", "bg-purple-500" },
+                        { "A-", "bg-red-500" },
+                        { "O-", "bg-blue-500" },
+                        { "B-", "bg-yellow-500" },
+                        { "AB-", "bg-purple-400" }
+                    };
                 }
-                @foreach (var dist in distributions.Take(4))
+                @foreach (var dist in distributions)
                 {
-                    var color = colors.ContainsKey(dist.Type) ? colors[dist.Type] : "bg-emerald-500";
+                    var colorClass = bgColors.ContainsKey(dist.Type) ? bgColors[dist.Type] : "bg-emerald-500";
                     <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full @color"></div>
+                        <div class="w-3 h-3 rounded-full @colorClass"></div>
                         <div class="flex flex-col">
                             <span class="text-xs text-gray-500">Type @dist.Type</span>
-                            <span class="text-sm font-bold">@dist.Percentage.ToString("F0")%</span>
+                            <span class="text-sm font-bold">@dist.Percentage.ToString("F1")%</span>
                         </div>
                     </div>
-                    displayCount++;
                 }
             </div>
         </div>

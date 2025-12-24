@@ -120,7 +120,7 @@
             </div>
             <div class="flex items-center gap-2 mt-auto">
                 <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
-                    <span class="material-symbols-outlined text-xs">add</span> 3 New
+                    <span class="material-symbols-outlined text-xs">add</span> @Model.NewHospitalsThisMonth New
                 </span>
                 <span class="text-gray-400 text-xs">this month</span>
             </div>
@@ -175,22 +175,28 @@
                         // Donations Bar
                         var donationHeight = (double)Model.DailyDonations[i] / globalMax * 250;
                         var donationY = 250 - donationHeight;
-                        <rect x="@xBase" y="@donationY" width="@barWidth" height="@donationHeight" fill="#d70427" rx="2" class="opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
-                            <title>@Model.DaysLabels[i]: @Model.DailyDonations[i] Donations</title>
+                        <rect x="@xBase" y="@donationY" width="@barWidth" height="@donationHeight" fill="#d70427" rx="2" 
+                              class="opacity-80 hover:opacity-100 transition-all duration-75 cursor-pointer chart-bar"
+                              data-tooltip="@Model.DaysLabels[i]: @Model.DailyDonations[i] Donations">
+
                         </rect>
 
                         // Registrations Bar
                         var regHeight = (double)Model.DailyRegistrations[i] / globalMax * 250;
                         var regY = 250 - regHeight;
-                        <rect x="@(xBase + barWidth + barSpacing)" y="@regY" width="@barWidth" height="@regHeight" fill="#3b82f6" rx="2" class="opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
-                            <title>@Model.DaysLabels[i]: @Model.DailyRegistrations[i] Registrations</title>
+                        <rect x="@(xBase + barWidth + barSpacing)" y="@regY" width="@barWidth" height="@regHeight" fill="#3b82f6" rx="2" 
+                              class="opacity-80 hover:opacity-100 transition-all duration-75 cursor-pointer chart-bar"
+                              data-tooltip="@Model.DaysLabels[i]: @Model.DailyRegistrations[i] Registrations">
+
                         </rect>
 
                         // Requests Bar
                         var reqHeight = (double)Model.DailyRequests[i] / globalMax * 250;
                         var reqY = 250 - reqHeight;
-                        <rect x="@(xBase + (barWidth + barSpacing) * 2)" y="@reqY" width="@barWidth" height="@reqHeight" fill="#d1d5db" rx="2" class="opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
-                            <title>@Model.DaysLabels[i]: @Model.DailyRequests[i] Requests</title>
+                        <rect x="@(xBase + (barWidth + barSpacing) * 2)" y="@reqY" width="@barWidth" height="@reqHeight" fill="#d1d5db" rx="2" 
+                              class="opacity-80 hover:opacity-100 transition-all duration-75 cursor-pointer chart-bar"
+                              data-tooltip="@Model.DaysLabels[i]: @Model.DailyRequests[i] Requests">
+
                         </rect>
                     }
                 </svg>
@@ -205,11 +211,21 @@
         <div class="rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm p-6 flex flex-col">
             <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-6">User Role Distribution</h4>
             <div class="flex flex-col items-center justify-center flex-1">
+                @{
+                    double total = Model.TotalUsers > 0 ? Model.TotalUsers : 1;
+                    double pDonor = (Model.TotalDonors * 100.0) / total;
+                    double pHospital = (Model.TotalHospitals * 100.0) / total;
+                    double pAdmin = (Model.TotalAdmins * 100.0) / total;
+
+                    double c1 = pDonor;
+                    double c2 = c1 + pHospital;
+                    double c3 = c2 + pAdmin;
+                }
                 <div class="relative w-48 h-48 rounded-full mb-8 shadow-inner" style="background: conic-gradient(
-                                #d70427 0% 65%,
-                                #2563EB 65% 85%,
-                                #F59E0B 85% 95%,
-                                #6B7280 95% 100%
+                                #d70427 0% @c1.ToString("F1")%,
+                                #2563EB @c1.ToString("F1")% @c2.ToString("F1")%,
+                                #F59E0B @c2.ToString("F1")% @c3.ToString("F1")%,
+                                #6B7280 @c3.ToString("F1")% 100%
                              );">
                     <div class="absolute inset-0 m-auto w-32 h-32 bg-white dark:bg-background-dark rounded-full flex flex-col items-center justify-center shadow-sm">
                         <span class="text-gray-400 text-xs font-medium">Total Users</span>
@@ -222,7 +238,7 @@
                         <div class="flex flex-col">
                             <span class="text-xs text-gray-500">Donors</span>
                             @{
-                                var donorPercent = Model.TotalUsers > 0 ? (Model.TotalDonors * 100 / Model.TotalUsers) : 0;
+                                var donorPercent = Model.TotalUsers > 0 ? Math.Round((Model.TotalDonors * 100.0 / Model.TotalUsers), 1) : 0;
                             }
                             <span class="text-sm font-bold">@donorPercent%</span>
                         </div>
@@ -232,7 +248,7 @@
                         <div class="flex flex-col">
                             <span class="text-xs text-gray-500">Hospitals</span>
                             @{
-                                var hospitalPercent = Model.TotalUsers > 0 ? (Model.TotalHospitals * 100 / Model.TotalUsers) : 0;
+                                var hospitalPercent = Model.TotalUsers > 0 ? Math.Round((Model.TotalHospitals * 100.0 / Model.TotalUsers), 1) : 0;
                             }
                             <span class="text-sm font-bold">@hospitalPercent%</span>
                         </div>
@@ -242,7 +258,7 @@
                         <div class="flex flex-col">
                             <span class="text-xs text-gray-500">Admins</span>
                             @{
-                                var adminPercent = Model.TotalUsers > 0 ? (Model.TotalAdmins * 100 / Model.TotalUsers) : 0;
+                                var adminPercent = Model.TotalUsers > 0 ? Math.Round((Model.TotalAdmins * 100.0 / Model.TotalUsers), 1) : 0;
                             }
                             <span class="text-sm font-bold">@adminPercent%</span>
                         </div>
@@ -252,7 +268,7 @@
                         <div class="flex flex-col">
                             <span class="text-xs text-gray-500">Owners</span>
                             @{
-                                var ownerPercent = Model.TotalUsers > 0 ? (Model.TotalOwners * 100 / Model.TotalUsers) : 0;
+                                var ownerPercent = Model.TotalUsers > 0 ? Math.Round((Model.TotalOwners * 100.0 / Model.TotalUsers), 1) : 0;
                             }
                             <span class="text-sm font-bold">@ownerPercent%</span>
                         </div>
@@ -318,3 +334,48 @@
     </div>
 
 </main>
+
+<!-- Custom Fast Tooltip -->
+<div id="chart-tooltip" class="fixed hidden z-[9999] pointer-events-none bg-gray-900/95 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-bold shadow-2xl transform -translate-x-1/2 -translate-y-full mb-3 opacity-0 transition-opacity duration-75">
+    <div id="tooltip-content"></div>
+    <!-- Arrow -->
+    <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900/95"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('chart-tooltip');
+        const tooltipContent = document.getElementById('tooltip-content');
+        let hideTimeout;
+
+        document.querySelectorAll('.chart-bar').forEach(rect => {
+            rect.addEventListener('mouseenter', (e) => {
+                clearTimeout(hideTimeout);
+                const text = rect.getAttribute('data-tooltip');
+                tooltipContent.textContent = text;
+                tooltip.classList.remove('hidden');
+                // Force reflow
+                tooltip.offsetHeight;
+                tooltip.style.opacity = '1';
+                
+                updatePosition(e);
+            });
+            
+            rect.addEventListener('mousemove', (e) => {
+                updatePosition(e);
+            });
+            
+            rect.addEventListener('mouseleave', () => {
+                tooltip.style.opacity = '0';
+                hideTimeout = setTimeout(() => {
+                    tooltip.classList.add('hidden');
+                }, 75);
+            });
+        });
+
+        function updatePosition(e) {
+            tooltip.style.left = e.clientX + 'px';
+            tooltip.style.top = (e.clientY - 5) + 'px';
+        }
+    });
+</script>
