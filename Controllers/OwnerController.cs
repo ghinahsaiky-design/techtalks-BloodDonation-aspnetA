@@ -150,15 +150,20 @@ namespace BloodDonation.Controllers
                                          u.Email.Contains(searchString));
             }
 
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(u => u.Status == status);
+            }
+
             var admins = await query.OrderByDescending(u => u.CreatedAt).ToListAsync();
 
             var viewModel = new AdminListViewModel
             {
                 Admins = admins,
                 TotalAdmins = await _context.Users.CountAsync(u => u.Role == "Admin"),
-                ActiveAdmins = await _context.Users.CountAsync(u => u.Role == "Admin"), 
-                PendingAdmins = 0,
-                InactiveAdmins = 0
+                ActiveAdmins = await _context.Users.CountAsync(u => u.Role == "Admin" && u.Status == "Active"), 
+                PendingAdmins = await _context.Users.CountAsync(u => u.Role == "Admin" && u.Status == "Pending"),
+                InactiveAdmins = await _context.Users.CountAsync(u => u.Role == "Admin" && u.Status == "Inactive")
             };
 
             ViewBag.CurrentFilter = searchString;
@@ -323,14 +328,44 @@ namespace BloodDonation.Controllers
         }
 
         // Hospital tab
-        public async Task<IActionResult> HospitalManagement()
+        public async Task<IActionResult> HospitalManagement(string q, string status, string location)
         {
             if (!await IsOwnerAsync())
                 return Forbid();
 
-            var hospitals = await _context.Hospitals
+            var query = _context.Hospitals
                 .Include(h => h.User)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(q))
+            {
+                query = query.Where(h => h.Name.Contains(q) || 
+                                         h.User.Email.Contains(q) || 
+                                         h.Id.ToString().Contains(q));
+            }
+
+            if (!string.IsNullOrEmpty(status) && status != "All")
+            {
+                query = query.Where(h => h.User.Status == status);
+            }
+
+            if (!string.IsNullOrEmpty(location) && location != "All")
+            {
+                query = query.Where(h => h.City == location || h.State == location);
+            }
+
+            var hospitals = await query
                 .OrderByDescending(h => h.User.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.SearchQuery = q;
+            ViewBag.CurrentStatus = status ?? "All";
+            ViewBag.CurrentLocation = location ?? "All";
+            
+            // Get all locations from the database for the filter
+            ViewBag.Locations = await _context.Locations
+                .Select(l => l.Districts)
+                .OrderBy(d => d)
                 .ToListAsync();
 
             return View(hospitals);

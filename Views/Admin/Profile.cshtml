@@ -10,9 +10,9 @@
 <div class="max-w-6xl mx-auto space-y-6 pb-10">
     <!-- Breadcrumbs -->
     <div class="flex flex-wrap gap-2 px-1">
-        <a class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors text-sm font-medium leading-normal" href="@Url.Action("Index", "Admin")">Home</a>
+        <a class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors text-sm font-medium leading-normal" href="@Url.Action("Index", "Home")">Home</a>
         <span class="text-gray-500 dark:text-gray-500 text-sm font-medium leading-normal">/</span>
-        <a class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors text-sm font-medium leading-normal" href="@Url.Action("Index", "Admin")">Dashboard</a>
+        <a class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors text-sm font-medium leading-normal" href="@(User.IsInRole("Owner") ? Url.Action("Index", "Owner") : Url.Action("Index", "Admin"))">Dashboard</a>
         <span class="text-gray-500 dark:text-gray-500 text-sm font-medium leading-normal">/</span>
         <span class="text-primary text-sm font-medium leading-normal">My Profile</span>
     </div>
@@ -67,7 +67,7 @@
                         }
                     </div>
                     <div class="flex gap-3 mt-2 md:mt-0">
-                        <a href="@Url.Action("Settings", "Admin")" class="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors shadow-sm shadow-red-200 dark:shadow-none min-w-[120px]">
+                        <a href="@Url.Action("Settings", "Account")" class="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors shadow-sm shadow-red-200 dark:shadow-none min-w-[120px]">
                             <span class="material-symbols-outlined text-[18px]">edit</span>
                             Edit Profile
                         </a>
