@@ -33,10 +33,10 @@
         transition: .2s ease;
     }
 
-    .input-group:focus-within {
-        border-color: #E94E4E;
-        box-shadow: 0 0 0 3px rgba(233,78,78,.18);
-    }
+        .input-group:focus-within {
+            border-color: #E94E4E;
+            box-shadow: 0 0 0 3px rgba(233,78,78,.18);
+        }
 
     .input-group.error {
         border-color: #dc3545;
@@ -94,8 +94,8 @@
             <!-- First Name -->
             <div class="mb-3">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                    <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input asp-for="FirstName" class="form-control" placeholder="First Name" />
                 </div>
                 <span asp-validation-for="FirstName" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -103,8 +103,8 @@
             <!-- Last Name -->
             <div class="mb-3">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                    <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input asp-for="LastName" class="form-control" placeholder="Last Name" />
                 </div>
                 <span asp-validation-for="LastName" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -112,8 +112,8 @@
             <!-- Email -->
             <div class="mb-3">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-at"></i></span>
-                    <input asp-for="Email" type="email" class="form-control" placeholder="Email Address" />
+                <span class="input-group-text"><i class="bi bi-at"></i></span>
+                <input asp-for="Email" type="email" class="form-control" placeholder="Email Address" />
                 </div>
                 <span asp-validation-for="Email" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -121,7 +121,7 @@
             <!-- Password -->
             <div class="mb-3">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
                     <input asp-for="Password" type="password" class="form-control" placeholder="Password (min 6 characters)" />
                 </div>
                 <span asp-validation-for="Password" class="text-danger small d-block mt-1 ms-2"></span>
@@ -130,8 +130,8 @@
             <!-- Confirm Password -->
             <div class="mb-3">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm Password" />
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm Password" />
                 </div>
                 <span asp-validation-for="ConfirmPassword" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -139,7 +139,7 @@
             <!-- Phone -->
             <div class="mb-3">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
                     <input asp-for="Phone" class="form-control" placeholder="Phone Number (optional)" />
                 </div>
                 <span asp-validation-for="Phone" class="text-danger small d-block mt-1 ms-2"></span>
@@ -148,7 +148,7 @@
             <!-- Date of Birth -->
             <div class="mb-3">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
                     <input asp-for="DateOfBirth" type="date" class="form-control" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 </div>
                 <span asp-validation-for="DateOfBirth" class="text-danger small d-block mt-1 ms-2"></span>
@@ -157,12 +157,12 @@
             <!-- Gender -->
             <div class="mb-3">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
-                    <select asp-for="Gender" class="form-select">
-                        <option value="">Select Gender</option>
-                        <option>Male</option>
-                        <option>Female</option>
-                    </select>
+                <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                <select asp-for="Gender" class="form-select">
+                    <option value="">Select Gender</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                </select>
                 </div>
                 <span asp-validation-for="Gender" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
