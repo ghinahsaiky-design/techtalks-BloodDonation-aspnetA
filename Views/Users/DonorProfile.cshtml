@@ -195,6 +195,30 @@
                                     <div id="changePasswordContainer"></div>
                                 </div>
                             </div>
+                            <button id="deleteAccountBtn"
+                                    class="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-red-600 text-white text-base font-medium leading-normal shadow-sm hover:bg-red-700 transition-colors">
+                                <span class="material-symbols-outlined mr-2">delete</span>
+                                <span class="truncate">Delete Account</span>
+                            </button>
+                            <div id="deleteAccountBackdrop"
+                                 class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-40">
+                            </div>
+                            <div id="deleteAccountModal"
+                                 class="fixed inset-0 flex items-center justify-center hidden z-50">
+
+                                <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-lg p-4 relative">
+
+                                    <!-- CLOSE BUTTON -->
+                                    <button id="closeDeleteAccountModal"
+                                            class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-lg">
+                                        ✕
+                                    </button>
+
+                                    <!-- PARTIAL VIEW LOADS HERE -->
+                                    <div id="deleteAccountContainer"></div>
+                                </div>
+                            </div>
+
 
                         </div>
                         <div class="bg-surface dark:bg-gray-800 rounded-xl shadow-soft p-6 text-center">
@@ -244,28 +268,28 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
+            /* ===============================
+               EDIT PROFILE MODAL
+            =============================== */
             const openBtn = document.getElementById("editProfileBtn");
             const closeBtn = document.getElementById("closeModal");
             const modal = document.getElementById("editProfileModal");
             const backdrop = document.getElementById("modalBackdrop");
             const container = document.getElementById("editProfileContainer");
 
-            if (!openBtn) {
-                console.error("Edit Profile button NOT found");
-                return;
+            if (openBtn) {
+                openBtn.addEventListener("click", function () {
+                    fetch('/Users/EditProfilePartial')
+                        .then(res => res.text())
+                        .then(html => {
+                            container.innerHTML = html;
+                            modal.classList.remove("hidden");
+                            backdrop.classList.remove("hidden");
+                            document.body.style.overflow = "hidden";
+                        })
+                        .catch(console.error);
+                });
             }
-
-            openBtn.addEventListener("click", function () {
-                fetch('/Users/EditProfilePartial')
-                    .then(res => res.text())
-                    .then(html => {
-                        container.innerHTML = html;
-                        modal.classList.remove("hidden");
-                        backdrop.classList.remove("hidden");
-                        document.body.style.overflow = "hidden";
-                    })
-                    .catch(err => console.error(err));
-            });
 
             function closeModal() {
                 modal.classList.add("hidden");
@@ -274,31 +298,31 @@
                 document.body.style.overflow = "auto";
             }
 
-            closeBtn.addEventListener("click", closeModal);
-            backdrop.addEventListener("click", closeModal);
+            if (closeBtn) closeBtn.addEventListener("click", closeModal);
+            if (backdrop) backdrop.addEventListener("click", closeModal);
 
+            /* ===============================
+               CHANGE PASSWORD MODAL
+            =============================== */
             const openBtnPass = document.getElementById("changePasswordBtn");
             const closeBtnPass = document.getElementById("closeChangePasswordModal");
             const modalPass = document.getElementById("changePasswordModal");
             const backdropPass = document.getElementById("changePasswordBackdrop");
             const containerPass = document.getElementById("changePasswordContainer");
 
-            if (!openBtnPass) {
-                console.error("Change Password button NOT found");
-                return;
+            if (openBtnPass) {
+                openBtnPass.addEventListener("click", function () {
+                    fetch('/Auth/ChangePasswordPartial')
+                        .then(res => res.text())
+                        .then(html => {
+                            containerPass.innerHTML = html;
+                            modalPass.classList.remove("hidden");
+                            backdropPass.classList.remove("hidden");
+                            document.body.style.overflow = "hidden";
+                        })
+                        .catch(console.error);
+                });
             }
-
-            openBtnPass.addEventListener("click", function () {
-                fetch('/Auth/ChangePasswordPartial') // Make sure this returns your _ChangePasswordPartial
-                    .then(res => res.text())
-                    .then(html => {
-                        containerPass.innerHTML = html;
-                        modalPass.classList.remove("hidden");
-                        backdropPass.classList.remove("hidden");
-                        document.body.style.overflow = "hidden";
-                    })
-                    .catch(err => console.error(err));
-            });
 
             function closeModalPass() {
                 modalPass.classList.add("hidden");
@@ -307,9 +331,89 @@
                 document.body.style.overflow = "auto";
             }
 
-            closeBtnPass.addEventListener("click", closeModalPass);
-            backdropPass.addEventListener("click", closeModalPass);
+            if (closeBtnPass) closeBtnPass.addEventListener("click", closeModalPass);
+            if (backdropPass) backdropPass.addEventListener("click", closeModalPass);
+
+            /* ===============================
+               DELETE ACCOUNT MODAL
+            =============================== */
+            const openBtnDelete = document.getElementById("deleteAccountBtn");
+            const closeBtnDelete = document.getElementById("closeDeleteAccountModal");
+            const modalDelete = document.getElementById("deleteAccountModal");
+            const backdropDelete = document.getElementById("deleteAccountBackdrop");
+            const containerDelete = document.getElementById("deleteAccountContainer");
+
+            if (openBtnDelete) {
+                openBtnDelete.addEventListener("click", function () {
+                    fetch('/Auth/DeleteAccountPartial')
+                        .then(res => res.text())
+                        .then(html => {
+                            containerDelete.innerHTML = html;
+                            modalDelete.classList.remove("hidden");
+                            backdropDelete.classList.remove("hidden");
+                            document.body.style.overflow = "hidden";
+                        })
+                        .catch(console.error);
+                });
+            }
+
+            function closeModalDelete() {
+                modalDelete.classList.add("hidden");
+                backdropDelete.classList.add("hidden");
+                containerDelete.innerHTML = "";
+                document.body.style.overflow = "auto";
+            }
+
+            if (closeBtnDelete) closeBtnDelete.addEventListener("click", closeModalDelete);
+            if (backdropDelete) backdropDelete.addEventListener("click", closeModalDelete);
+
+            /* ===============================
+               GLOBAL AJAX FORM SUBMIT HANDLER
+               (THIS IS THE KEY FIX)
+            =============================== */
+            document.addEventListener("submit", function (e) {
+
+                const form = e.target;
+
+                if (
+                    form.id !== "editProfileForm" &&
+                    form.id !== "changePasswordForm" &&
+                    form.id !== "deleteAccountForm"
+                ) return;
+
+                e.preventDefault();
+
+                fetch(form.action, {
+                    method: "POST",
+                    body: new FormData(form),
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                })
+                .then(res => {
+                    const type = res.headers.get("content-type");
+                    return type && type.includes("application/json")
+                        ? res.json()
+                        : res.text();
+                })
+                .then(data => {
+                    if (typeof data === "object" && data.success) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        if (form.id === "editProfileForm") {
+                            container.innerHTML = data;
+                        }
+                        else if (form.id === "changePasswordForm") {
+                            containerPass.innerHTML = data;
+                        }
+                        else {
+                            containerDelete.innerHTML = data;
+                        }
+                    }
+                })
+                .catch(console.error);
+            });
+
         });
     </script>
+
 </body>
 </html>
