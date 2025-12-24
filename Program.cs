@@ -11,13 +11,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Always use SQL Server for now
-var connectionString = builder.Configuration.GetConnectionString("BloodDonationDb_SqlServer");
+// Configure database provider based on settings
+var useMySQL = builder.Configuration.GetValue<bool>("UseMySQL");
+var databaseProvider = builder.Configuration.GetValue<string>("DatabaseProvider");
 
-builder.Services.AddDbContext<BloodDonationContext>(options =>
+if (useMySQL || databaseProvider == "MySQL")
 {
-    options.UseSqlServer(connectionString);
-});
+    var connectionString = builder.Configuration.GetConnectionString("BloodDonationDb");
+    builder.Services.AddDbContext<BloodDonationContext>(options =>
+    {
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+    });
+}
+else
+{
+    var connectionString = builder.Configuration.GetConnectionString("BloodDonationDb_SqlServer");
+    builder.Services.AddDbContext<BloodDonationContext>(options =>
+    {
+        options.UseSqlServer(connectionString);
+    });
+}
 
 builder.Services.AddIdentity<Users, IdentityRole<int>>(options =>
 {
