@@ -13,6 +13,7 @@ namespace BloodDonation.Models
         [Required]
         [MaxLength(100)]
         public string LastName { get; set; } = "";
+        public string? ProfileImagePath { get; set; }
 
         // DONOR INFO
         [Required]
@@ -22,6 +23,8 @@ namespace BloodDonation.Models
         public int LocationId { get; set; }
 
         [Required]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; } = "";
 
         public string Phone { get; set; } = "";

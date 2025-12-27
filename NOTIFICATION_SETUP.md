@@ -215,20 +215,20 @@ This method uses carrier email-to-SMS gateways. Each carrier has an email addres
    - Copy your Twilio phone number (format: +1234567890)
 
 3. **Install Twilio Package**:
-   ```bash
-   dotnet add package Twilio
-   ```
+```bash
+dotnet add package Twilio
+```
 
 4. **Update `appsettings.json`**:
-   ```json
-   "SmsSettings": {
-     "Enabled": true,
-     "Provider": "Twilio",
-     "TwilioAccountSid": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-     "TwilioAuthToken": "your_auth_token_here",
-     "TwilioPhoneNumber": "+1234567890"
-   }
-   ```
+```json
+"SmsSettings": {
+  "Enabled": true,
+  "Provider": "Twilio",
+  "TwilioAccountSid": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "TwilioAuthToken": "your_auth_token_here",
+  "TwilioPhoneNumber": "+1234567890"
+}
+```
 
 ---
 

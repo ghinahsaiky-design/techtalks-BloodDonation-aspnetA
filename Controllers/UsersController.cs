@@ -1,5 +1,6 @@
 ﻿using BloodDonation.Data;
 using BloodDonation.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -10,10 +11,12 @@ namespace BloodDonation.Controllers
     public class UsersController : Controller
     {
         private readonly BloodDonationContext _context;
+        private readonly UserManager<Users> _userManager;
 
-        public UsersController(BloodDonationContext context)
+        public UsersController(BloodDonationContext context, UserManager<Users> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
 
@@ -32,6 +35,7 @@ namespace BloodDonation.Controllers
             {
                 FirstName = donor.User.FirstName,
                 LastName = donor.User.LastName,
+                ProfileImagePath = donor.User.ProfileImagePath,
                 BloodTypeId = donor.BloodTypeId,
                 LocationId = donor.LocationId,
                 Email = donor.User.Email,
@@ -80,11 +84,25 @@ namespace BloodDonation.Controllers
             return PartialView("~/Views/Shared/_EditDonorProfile.cshtml", model);
         }
 
-        // ✅ POST: Save profile changes
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProfile(EditDonorProfileViewModel model)
         {
+            // 1️⃣ Get current user ID as int
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+                return Unauthorized();
+
+            // 2️⃣ Check email uniqueness in Identity
+            var emailExists = await _userManager.Users
+                .AnyAsync(u => u.Email == model.Email && u.Id != userId);
+
+            if (emailExists)
+            {
+                ModelState.AddModelError("Email", "This email is already in use.");
+            }
+
+            // 3️⃣ Return partial if validation fails
             if (!ModelState.IsValid)
             {
                 ViewBag.BloodTypes = _context.BloodTypes.ToList();
@@ -92,18 +110,23 @@ namespace BloodDonation.Controllers
                 return PartialView("_EditDonorProfile", model);
             }
 
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            // 4️⃣ Update Identity user
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null) return NotFound();
 
+            user.Email = model.Email;
+            user.UserName = model.Email; // optional: if username = email
+            await _userManager.UpdateAsync(user);
+
+            // 5️⃣ Update donor profile
             var donor = await _context.DonorProfile
                 .Include(d => d.User)
                 .FirstOrDefaultAsync(d => d.DonorId == userId);
 
-            if (donor == null)
-                return NotFound();
+            if (donor == null) return NotFound();
 
             donor.User.FirstName = model.FirstName;
             donor.User.LastName = model.LastName;
-            donor.User.Email = model.Email;
             donor.BloodTypeId = model.BloodTypeId;
             donor.LocationId = model.LocationId;
             donor.IsHealthyForDonation = model.IsHealthyForDonation;
@@ -113,11 +136,15 @@ namespace BloodDonation.Controllers
 
             await _context.SaveChangesAsync();
 
-            ViewBag.BloodTypes = _context.BloodTypes.ToList() ?? new List<BloodTypes>();
-            ViewBag.Locations = _context.Locations.ToList() ?? new List<Locations>();
-
-            return RedirectToAction(nameof(DonorProfile), new { id = donor.DonorId });
+            // 6️⃣ Return JSON for AJAX redirect
+            return Json(new
+            {
+                success = true,
+                redirectUrl = Url.Action(nameof(DonorProfile), new { id = donor.DonorId })
+            });
         }
+
+
 
 
         // ✅ TOGGLE: Availability (Available ↔ Unavailable)
@@ -154,5 +181,60 @@ namespace BloodDonation.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(DonorProfile), new { id = donor.DonorId });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadProfileImage(IFormFile profileImage)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            if (profileImage == null || profileImage.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select an image.";
+                return RedirectToAction(nameof(DonorProfile), new { id = user.Id });
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var extension = Path.GetExtension(profileImage.FileName).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                TempData["ErrorMessage"] = "Invalid image format.";
+                return RedirectToAction(nameof(DonorProfile), new { id = user.Id });
+            }
+
+            if (profileImage.Length > 5 * 1024 * 1024)
+            {
+                TempData["ErrorMessage"] = "Image must be under 5MB.";
+                return RedirectToAction(nameof(DonorProfile), new { id = user.Id });
+            }
+
+            var folder = Path.Combine("wwwroot", "images", "profiles");
+            Directory.CreateDirectory(folder);
+
+            var fileName = $"user_{user.Id}_{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(folder, fileName);
+
+            // Delete old image
+            if (!string.IsNullOrEmpty(user.ProfileImagePath))
+            {
+                var oldPath = Path.Combine("wwwroot", user.ProfileImagePath.TrimStart('/'));
+                if (System.IO.File.Exists(oldPath))
+                    System.IO.File.Delete(oldPath);
+            }
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await profileImage.CopyToAsync(stream);
+
+            user.ProfileImagePath = $"/images/profiles/{fileName}";
+            await _userManager.UpdateAsync(user);
+
+            TempData["SuccessMessage"] = "Profile image updated successfully.";
+
+            return RedirectToAction(nameof(DonorProfile), new { id = user.Id });
+        }
+
     }
 }

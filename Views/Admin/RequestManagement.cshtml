@@ -175,7 +175,7 @@ else
 </div>
 </div>
 <<<<<<< HEAD
-    </div>
+</div>
 =======
 >>>>>>> d40bfb6205993d358ad4d45ddff15f8b14af77e5
 </div>
@@ -565,93 +565,7 @@ else
         }, 3000);
     }
 
-    // Notification dropdown and badge functionality
-    let notificationDropdownOpen = false;
-
-    function toggleNotificationDropdown() {
-        const dropdown = document.getElementById('notificationDropdown');
-        if (dropdown) {
-            notificationDropdownOpen = !notificationDropdownOpen;
-            if (notificationDropdownOpen) {
-                dropdown.classList.remove('hidden');
-                loadNotifications();
-            } else {
-                dropdown.classList.add('hidden');
-            }
-        }
-    }
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(event) {
-        const btn = document.getElementById('notificationBtn');
-        const dropdown = document.getElementById('notificationDropdown');
-        if (btn && dropdown && !btn.contains(event.target) && !dropdown.contains(event.target)) {
-            dropdown.classList.add('hidden');
-            notificationDropdownOpen = false;
-        }
-    });
-
-    async function loadNotifications() {
-        try {
-            const response = await fetch('/Admin/GetNotificationCount');
-            const data = await response.json();
-            
-            if (data.success) {
-                updateNotificationBadge(data.count);
-                updateNotificationList(data.confirmations || []);
-            }
-        } catch (error) {
-            console.error('Error loading notifications:', error);
-        }
-    }
-
-    function updateNotificationBadge(count) {
-        const badge = document.getElementById('notificationBadge');
-        if (badge) {
-            if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : count.toString();
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-    }
-
-    function updateNotificationList(confirmations) {
-        const list = document.getElementById('notificationList');
-        if (!list) return;
-
-        if (confirmations.length === 0) {
-            list.innerHTML = `
-                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <span class="material-symbols-outlined text-4xl mb-2">notifications_off</span>
-                    <p class="text-sm">No new confirmations</p>
-                </div>
-            `;
-            return;
-        }
-
-        list.innerHTML = confirmations.map(conf => `
-            <div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors" onclick="window.location.href='@Url.Action("RequestManagement", "Admin")?requestId=${conf.requestId}'">
-                <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-sm">check_circle</span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">${conf.donorName} confirmed</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Request #${conf.requestId} - ${conf.patientName} (${conf.bloodType})</p>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">${conf.timeAgo}</p>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // Load notifications on page load and refresh every 30 seconds
-    document.addEventListener('DOMContentLoaded', function() {
-        loadNotifications();
-        setInterval(loadNotifications, 30000); // Refresh every 30 seconds
-    });
+    // Notification functionality is now in _DashboardLayout.cshtml and available on all pages
 
     async function markDonorConfirmed(requestId, donorId, donorName) {
         const message = prompt(`Mark ${donorName} as confirmed?\n\nOptional: Add a message or notes:`, 'Confirmed via email reply: "YES" or "I can help"');

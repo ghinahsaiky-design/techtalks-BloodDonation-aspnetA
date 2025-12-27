@@ -78,7 +78,30 @@
                         </div>
                         <div class="bg-surface dark:bg-gray-800 rounded-xl shadow-soft p-6 md:p-8">
                             <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
-                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-32 h-32 shrink-0 border-4 border-white dark:border-gray-700 shadow-md" data-alt="User profile picture of Alex Hunter" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDGCQ2GqLz7m7VhEo87odmmZsOEndK26IyB9c2aAo0WuM-S6JGr0qd1M5fgEBgeS7nE6qCZyulcXJiZF8v8NjysZCboFm4c_-esEU1i6uWo77l_fXKtf2N9BBE-eYlu2Gl7WxwPi_Xd2HS-ZFtwFkAy5zkyeO4IU4EgQV5-Q9cuo0GT7RWWBTpKpckoUWo3AinGuAFCliwD0hcg7hhlzNrqQ0DsM6UgXsi-TzYnhwva9G1cIR9ECoKJqGCZSIS3HHiVjw631npX5ik");'></div>
+                                <div class="relative group">
+                                    @if (!string.IsNullOrEmpty(Model.ProfileImagePath))
+                                    {
+                                        <img id="profileImagePreview" src="@Model.ProfileImagePath" alt="Profile Image" class="aspect-square rounded-full h-32 w-32 md:h-40 md:w-40 shadow-md ring-4 ring-gray-100 dark:ring-gray-800 object-cover" />
+                                    }
+                                    else
+                                    {
+                                        <div id="profileImagePlaceholder" class="bg-gradient-to-br from-primary/20 to-red-200/30 dark:from-primary/30 dark:to-red-900/30 aspect-square rounded-full h-32 w-32 md:h-40 md:w-40 shadow-md ring-4 ring-gray-100 dark:ring-gray-800 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-6xl text-primary">account_circle</span>
+                                        </div>
+                                    }
+                                    <form id="profileImageForm" asp-action="UploadProfileImage" asp-controller="Users" method="post" enctype="multipart/form-data" style="display: none;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="file"
+                                               id="profileImageInput"
+                                               name="profileImage"
+                                               accept="image/*"
+                                               onchange="submitProfileImage()" />
+
+                                    </form>
+                                    <label for="profileImageInput" class="absolute bottom-1 right-1 bg-primary hover:bg-red-700 text-white p-2 rounded-full shadow-lg transition-transform hover:scale-105 cursor-pointer" title="Change Avatar">
+                                        <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+                                    </label>
+                                </div>
                                 <div class="flex flex-col gap-4 w-full">
                                     <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-2">
                                         <div class="flex flex-col">
@@ -195,6 +218,30 @@
                                     <div id="changePasswordContainer"></div>
                                 </div>
                             </div>
+                            <button id="deleteAccountBtn"
+                                    class="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-red-600 text-white text-base font-medium leading-normal shadow-sm hover:bg-red-700 transition-colors">
+                                <span class="material-symbols-outlined mr-2">delete</span>
+                                <span class="truncate">Delete Account</span>
+                            </button>
+                            <div id="deleteAccountBackdrop"
+                                 class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-40">
+                            </div>
+                            <div id="deleteAccountModal"
+                                 class="fixed inset-0 flex items-center justify-center hidden z-50">
+
+                                <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-lg p-4 relative">
+
+                                    <!-- CLOSE BUTTON -->
+                                    <button id="closeDeleteAccountModal"
+                                            class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-lg">
+                                        ✕
+                                    </button>
+
+                                    <!-- PARTIAL VIEW LOADS HERE -->
+                                    <div id="deleteAccountContainer"></div>
+                                </div>
+                            </div>
+
 
                         </div>
                         <div class="bg-surface dark:bg-gray-800 rounded-xl shadow-soft p-6 text-center">
@@ -244,28 +291,28 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
+            /* ===============================
+               EDIT PROFILE MODAL
+            =============================== */
             const openBtn = document.getElementById("editProfileBtn");
             const closeBtn = document.getElementById("closeModal");
             const modal = document.getElementById("editProfileModal");
             const backdrop = document.getElementById("modalBackdrop");
             const container = document.getElementById("editProfileContainer");
 
-            if (!openBtn) {
-                console.error("Edit Profile button NOT found");
-                return;
+            if (openBtn) {
+                openBtn.addEventListener("click", function () {
+                    fetch('/Users/EditProfilePartial')
+                        .then(res => res.text())
+                        .then(html => {
+                            container.innerHTML = html;
+                            modal.classList.remove("hidden");
+                            backdrop.classList.remove("hidden");
+                            document.body.style.overflow = "hidden";
+                        })
+                        .catch(console.error);
+                });
             }
-
-            openBtn.addEventListener("click", function () {
-                fetch('/Users/EditProfilePartial')
-                    .then(res => res.text())
-                    .then(html => {
-                        container.innerHTML = html;
-                        modal.classList.remove("hidden");
-                        backdrop.classList.remove("hidden");
-                        document.body.style.overflow = "hidden";
-                    })
-                    .catch(err => console.error(err));
-            });
 
             function closeModal() {
                 modal.classList.add("hidden");
@@ -274,31 +321,31 @@
                 document.body.style.overflow = "auto";
             }
 
-            closeBtn.addEventListener("click", closeModal);
-            backdrop.addEventListener("click", closeModal);
+            if (closeBtn) closeBtn.addEventListener("click", closeModal);
+            if (backdrop) backdrop.addEventListener("click", closeModal);
 
+            /* ===============================
+               CHANGE PASSWORD MODAL
+            =============================== */
             const openBtnPass = document.getElementById("changePasswordBtn");
             const closeBtnPass = document.getElementById("closeChangePasswordModal");
             const modalPass = document.getElementById("changePasswordModal");
             const backdropPass = document.getElementById("changePasswordBackdrop");
             const containerPass = document.getElementById("changePasswordContainer");
 
-            if (!openBtnPass) {
-                console.error("Change Password button NOT found");
-                return;
+            if (openBtnPass) {
+                openBtnPass.addEventListener("click", function () {
+                    fetch('/Auth/ChangePasswordPartial')
+                        .then(res => res.text())
+                        .then(html => {
+                            containerPass.innerHTML = html;
+                            modalPass.classList.remove("hidden");
+                            backdropPass.classList.remove("hidden");
+                            document.body.style.overflow = "hidden";
+                        })
+                        .catch(console.error);
+                });
             }
-
-            openBtnPass.addEventListener("click", function () {
-                fetch('/Auth/ChangePasswordPartial') // Make sure this returns your _ChangePasswordPartial
-                    .then(res => res.text())
-                    .then(html => {
-                        containerPass.innerHTML = html;
-                        modalPass.classList.remove("hidden");
-                        backdropPass.classList.remove("hidden");
-                        document.body.style.overflow = "hidden";
-                    })
-                    .catch(err => console.error(err));
-            });
 
             function closeModalPass() {
                 modalPass.classList.add("hidden");
@@ -307,9 +354,94 @@
                 document.body.style.overflow = "auto";
             }
 
-            closeBtnPass.addEventListener("click", closeModalPass);
-            backdropPass.addEventListener("click", closeModalPass);
+            if (closeBtnPass) closeBtnPass.addEventListener("click", closeModalPass);
+            if (backdropPass) backdropPass.addEventListener("click", closeModalPass);
+
+            /* ===============================
+               DELETE ACCOUNT MODAL
+            =============================== */
+            const openBtnDelete = document.getElementById("deleteAccountBtn");
+            const closeBtnDelete = document.getElementById("closeDeleteAccountModal");
+            const modalDelete = document.getElementById("deleteAccountModal");
+            const backdropDelete = document.getElementById("deleteAccountBackdrop");
+            const containerDelete = document.getElementById("deleteAccountContainer");
+
+            if (openBtnDelete) {
+                openBtnDelete.addEventListener("click", function () {
+                    fetch('/Auth/DeleteAccountPartial')
+                        .then(res => res.text())
+                        .then(html => {
+                            containerDelete.innerHTML = html;
+                            modalDelete.classList.remove("hidden");
+                            backdropDelete.classList.remove("hidden");
+                            document.body.style.overflow = "hidden";
+                        })
+                        .catch(console.error);
+                });
+            }
+
+            function closeModalDelete() {
+                modalDelete.classList.add("hidden");
+                backdropDelete.classList.add("hidden");
+                containerDelete.innerHTML = "";
+                document.body.style.overflow = "auto";
+            }
+
+            if (closeBtnDelete) closeBtnDelete.addEventListener("click", closeModalDelete);
+            if (backdropDelete) backdropDelete.addEventListener("click", closeModalDelete);
+
+            /* ===============================
+               GLOBAL AJAX FORM SUBMIT HANDLER
+               (THIS IS THE KEY FIX)
+            =============================== */
+            document.addEventListener("submit", function (e) {
+
+                const form = e.target;
+
+                if (
+                    form.id !== "editProfileForm" &&
+                    form.id !== "changePasswordForm" &&
+                    form.id !== "deleteAccountForm"
+                ) return;
+
+                e.preventDefault();
+
+                fetch(form.action, {
+                    method: "POST",
+                    body: new FormData(form),
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                })
+                .then(res => {
+                    const type = res.headers.get("content-type");
+                    return type && type.includes("application/json")
+                        ? res.json()
+                        : res.text();
+                })
+                .then(data => {
+                    if (typeof data === "object" && data.success) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        if (form.id === "editProfileForm") {
+                            container.innerHTML = data;
+                        }
+                        else if (form.id === "changePasswordForm") {
+                            containerPass.innerHTML = data;
+                        }
+                        else {
+                            containerDelete.innerHTML = data;
+                        }
+                    }
+                })
+                .catch(console.error);
+            });
+
         });
+
+        function submitProfileImage() {
+            document.getElementById("profileImageForm").submit();
+        }
+
     </script>
+
 </body>
 </html>

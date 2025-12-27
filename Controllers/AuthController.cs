@@ -3,6 +3,7 @@ using BloodDonation.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing;
 using System.Security.Claims;
 
 
@@ -218,33 +219,81 @@ namespace BloodDonation.Controllers
             if (user == null)
                 return Unauthorized();
 
+            // Check old password first
+            var passwordValid = await _userManager.CheckPasswordAsync(user, model.OldPassword);
+            if (!passwordValid)
+            {
+                ModelState.AddModelError("OldPassword", "Incorrect password.");
+                return PartialView("_ChangePasswordPartial", model);
+            }
+
+            // Attempt to change password
             var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
 
             if (result.Succeeded)
             {
-                // Refresh sign-in so the new security stamp is applied
                 await _signInManager.RefreshSignInAsync(user);
 
-                // Optional: add/update custom claims
                 var claims = new List<Claim>
         {
             new Claim("FirstName", user.FirstName ?? "")
         };
-                await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, claims);
+                await _signInManager.SignInWithClaimsAsync(user, false, claims);
 
-                // For AJAX/partial view, return JSON with success and redirect URL
-                var donor = await _context.DonorProfile.FirstOrDefaultAsync(d => d.DonorId == user.Id);
-                return RedirectToAction("DonorProfile", "Users", new { id = donor?.DonorId });
+                var donor = await _context.DonorProfile
+                    .FirstOrDefaultAsync(d => d.DonorId == user.Id);
+
+                return Json(new
+                {
+                    success = true,
+                    redirectUrl = Url.Action("DonorProfile", "Users", new { id = donor?.DonorId })
+                });
             }
 
-            // Handle errors
+            // Add any Identity errors
             foreach (var error in result.Errors)
-            {
                 ModelState.AddModelError(string.Empty, error.Description);
-            }
 
             return PartialView("_ChangePasswordPartial", model);
         }
+
+
+
+        public IActionResult DeleteAccountPartial()
+        {
+            return PartialView("_DeleteAccountPartial");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount(DeleteAccountViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return PartialView("_DeleteAccountPartial", model);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            var passwordValid =
+                await _userManager.CheckPasswordAsync(user, model.Password);
+
+            if (!passwordValid)
+            {
+                ModelState.AddModelError("Password", "Incorrect password.");
+                return PartialView("_DeleteAccountPartial", model);
+            }
+
+            await _signInManager.SignOutAsync();
+            await _userManager.DeleteAsync(user);
+
+            return Json(new
+            {
+                success = true,
+                redirectUrl = Url.Action("Index", "Home")
+            });
+        }
+
 
 
     }
