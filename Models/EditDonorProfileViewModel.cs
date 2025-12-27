@@ -13,6 +13,7 @@ namespace BloodDonation.Models
         [Required]
         [MaxLength(100)]
         public string LastName { get; set; } = "";
+        public string? ProfileImagePath { get; set; }
 
         // DONOR INFO
         [Required]

@@ -35,6 +35,7 @@ namespace BloodDonation.Controllers
             {
                 FirstName = donor.User.FirstName,
                 LastName = donor.User.LastName,
+                ProfileImagePath = donor.User.ProfileImagePath,
                 BloodTypeId = donor.BloodTypeId,
                 LocationId = donor.LocationId,
                 Email = donor.User.Email,
@@ -180,5 +181,60 @@ namespace BloodDonation.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(DonorProfile), new { id = donor.DonorId });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadProfileImage(IFormFile profileImage)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            if (profileImage == null || profileImage.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select an image.";
+                return RedirectToAction(nameof(DonorProfile), new { id = user.Id });
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var extension = Path.GetExtension(profileImage.FileName).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                TempData["ErrorMessage"] = "Invalid image format.";
+                return RedirectToAction(nameof(DonorProfile), new { id = user.Id });
+            }
+
+            if (profileImage.Length > 5 * 1024 * 1024)
+            {
+                TempData["ErrorMessage"] = "Image must be under 5MB.";
+                return RedirectToAction(nameof(DonorProfile), new { id = user.Id });
+            }
+
+            var folder = Path.Combine("wwwroot", "images", "profiles");
+            Directory.CreateDirectory(folder);
+
+            var fileName = $"user_{user.Id}_{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(folder, fileName);
+
+            // Delete old image
+            if (!string.IsNullOrEmpty(user.ProfileImagePath))
+            {
+                var oldPath = Path.Combine("wwwroot", user.ProfileImagePath.TrimStart('/'));
+                if (System.IO.File.Exists(oldPath))
+                    System.IO.File.Delete(oldPath);
+            }
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await profileImage.CopyToAsync(stream);
+
+            user.ProfileImagePath = $"/images/profiles/{fileName}";
+            await _userManager.UpdateAsync(user);
+
+            TempData["SuccessMessage"] = "Profile image updated successfully.";
+
+            return RedirectToAction(nameof(DonorProfile), new { id = user.Id });
+        }
+
     }
 }
