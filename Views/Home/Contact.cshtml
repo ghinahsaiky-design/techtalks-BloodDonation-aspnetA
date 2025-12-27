@@ -1,14 +1,15 @@
-﻿@{
+﻿@model BloodDonation.Models.ContactViewModel
+
+@{
     ViewData["Title"] = "Contact Us";
 }
 
 <div class="container mt-5 mb-5">
-
     <div class="row justify-content-center">
         <div class="col-lg-10">
 
             <div class="text-center mb-5">
-                <h2 class="fw-bold">Get in Touch</h2>
+                <h2 class="fw-bold text-center mb-3 display-4  text-danger">Get in Touch</h2>
                 <p class="text-muted">
                     Whether you have questions, need support, or want to share feedback about BloodConnect,
                     we're here to help.
@@ -17,7 +18,7 @@
 
             <div class="row g-4">
 
-                <!-- Left: Contact Form -->
+                <!-- LEFT: FORM -->
                 <div class="col-md-7">
                     <div class="card shadow-sm border-0 rounded-3">
                         <div class="card-body p-4">
@@ -25,59 +26,74 @@
                             <h5 class="mb-4 fw-semibold">Send us a message</h5>
 
                             <form asp-action="Contact" method="post">
+
+                                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
                                 <div class="mb-3">
-                                    <label class="form-label">Full Name</label>
-                                    <input type="text" class="form-control form-control-lg" placeholder="Your full name">
+                                    <label asp-for="FullName" class="form-label"></label>
+                                    <input asp-for="FullName" class="form-control form-control-lg" />
+                                    <span asp-validation-for="FullName" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control form-control-lg" placeholder="you@example.com">
+                                    <label asp-for="Email" class="form-label"></label>
+                                    <input asp-for="Email" class="form-control form-control-lg" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Phone (optional)</label>
-                                    <input type="text" class="form-control form-control-lg" placeholder="+961 70 000 000">
+                                    <label asp-for="Phone" class="form-label"></label>
+                                    <input asp-for="Phone" class="form-control form-control-lg" />
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Message</label>
-                                    <textarea class="form-control form-control-lg" rows="4" placeholder="Write your message here..."></textarea>
+                                    <label asp-for="Message" class="form-label"></label>
+                                    <textarea asp-for="Message" class="form-control form-control-lg" rows="4"></textarea>
+                                    <span asp-validation-for="Message" class="text-danger"></span>
                                 </div>
+
                                 <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill">
                                     Send Message
                                 </button>
+
+                                @if (ViewBag.Success != null)
+                                {
+                                    <div class="alert alert-success mt-3">
+                                        @ViewBag.Success
+                                    </div>
+                                }
+
                             </form>
 
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Info Section -->
+                <!-- RIGHT: INFO -->
                 <div class="col-md-5">
                     <div class="card shadow-sm border-0 rounded-3 h-100">
                         <div class="card-body p-4">
 
                             <h5 class="fw-semibold mb-3">Why contact us?</h5>
-                            <p class="text-muted mb-4 small">
+                            <p class="text-muted small">
                                 • Learn more about how BloodConnect works<br />
                                 • Report incorrect donor information<br />
                                 • Request new features or improvements<br />
-                                • Get technical support or help navigating the platform
+                                • Get technical support
                             </p>
 
                             <hr />
 
                             <h5 class="fw-semibold mb-2">Support Info</h5>
-                            <p class="text-muted small mb-1">Email:  BloodConnect.web@gmail.com</p>
+                            <p class="text-muted small mb-1">Email: BloodConnect.web@gmail.com</p>
                             <p class="text-muted small mb-3">Working hours: 9:00 AM – 6:00 PM</p>
 
                             <hr />
 
                             <h5 class="fw-semibold mb-2">Emergency Notice</h5>
                             <p class="text-muted small">
-                                BloodConnect helps you find blood donors quickly, but we are not a medical
-                                emergency service. In urgent cases, please contact your nearest hospital immediately.
+                                BloodConnect is not an emergency service.
+                                Please contact a hospital in urgent cases.
                             </p>
 
                         </div>
@@ -88,5 +104,8 @@
 
         </div>
     </div>
-
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
