@@ -585,8 +585,9 @@ namespace BloodDonation.Controllers
 
             // Get all requests
             var requests = await query
-                .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
+             .OrderBy(r => r.Status == "Completed")
+             .ThenByDescending(r => r.CreatedAt)
+             .ToListAsync();
 
             // Calculate statistics
             var totalRequests = await _context.DonorRequests.CountAsync();

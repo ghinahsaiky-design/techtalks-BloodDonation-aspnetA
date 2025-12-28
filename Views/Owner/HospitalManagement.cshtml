@@ -166,37 +166,7 @@
                 
                 <!-- Improved Pagination & Total Text -->
                 <div class="bg-gray-50/50 dark:bg-gray-800/30 px-6 py-5 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="flex -space-x-2">
-                            @foreach (var h in items.Take(3))
-                            {
-                                <div class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                                    @((!string.IsNullOrEmpty(h.Name) ? h.Name.Substring(0, 1).ToUpper() : ""))
-                                </div>
-                            }
-                            @if (items.Count() > 3)
-                            {
-                                <div class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-900 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-500">
-                                    +@(items.Count() - 3)
-                                </div>
-                            }
-                        </div>
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            Total: <span class="text-gray-900 dark:text-white font-bold">@items.Count()</span> partner hospitals
-                        </p>
-                    </div>
                     
-                    <div class="flex items-center gap-2">
-                        <button class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 rounded-xl hover:bg-white dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 disabled:opacity-50 transition-all" disabled="">
-                            Previous
-                        </button>
-                        <div class="flex items-center gap-1">
-                            <button class="w-10 h-10 flex items-center justify-center text-sm rounded-xl bg-primary text-white font-bold shadow-sm shadow-primary/20">1</button>
-                        </div>
-                        <button class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 rounded-xl hover:bg-white dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
-                            Next
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>

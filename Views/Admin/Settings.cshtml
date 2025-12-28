@@ -21,7 +21,16 @@
         <div class="p-6 border-b border-gray-100 dark:border-white/10">
             <div class="flex items-center gap-3 mb-1">
                 <span class="material-symbols-outlined text-blue-700 dark:text-primary">account_circle</span>
-                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Admin Profile</h2>
+
+                    @if (User.IsInRole("Owner"))
+                    {
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Owner Profile</h2>
+                    }else
+                    {
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Admin Profile</h2>
+                    }
+
+                
             </div>
             <p class="text-sm text-gray-500 dark:text-gray-400 pl-9">Your account information and role.</p>
         </div>
