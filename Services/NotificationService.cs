@@ -781,12 +781,43 @@ namespace BloodDonation.Services
                     {
                         // Send email notification
                         var emailSent = await SendEmailNotificationAsync(donor.User, request);
-                        if (emailSent) emailCount++;
+                        if (emailSent)
+                        {
+                            emailCount++;
+                            
+                            // Track that this donor was notified (create DonorConfirmation with Status="Notified")
+                            var existingNotification = await _context.DonorConfirmations
+                                .FirstOrDefaultAsync(c => c.RequestId == request.RequestId && c.DonorId == donor.DonorId);
+                            
+                            if (existingNotification == null)
+                            {
+                                var notification = new DonorConfirmation
+                                {
+                                    RequestId = request.RequestId,
+                                    DonorId = donor.DonorId,
+                                    Status = "Notified", // Track that email was sent
+                                    ContactedAt = DateTime.UtcNow
+                                };
+                                _context.DonorConfirmations.Add(notification);
+                            }
+                            else if (existingNotification.Status != "Notified" && existingNotification.Status != "Confirmed")
+                            {
+                                // Update to Notified if it was in a different state
+                                existingNotification.Status = "Notified";
+                                existingNotification.ContactedAt = DateTime.UtcNow;
+                            }
+                        }
 
                         // Send SMS notification
                         var smsSent = await SendSmsNotificationAsync(donor.User, request);
                         if (smsSent) smsCount++;
                     }
+                }
+                
+                // Save notification tracking
+                if (emailCount > 0)
+                {
+                    await _context.SaveChangesAsync();
                 }
 
                 _logger.LogInformation($"Notifications sent for request {request.RequestId}: {emailCount} emails, {smsCount} SMS");

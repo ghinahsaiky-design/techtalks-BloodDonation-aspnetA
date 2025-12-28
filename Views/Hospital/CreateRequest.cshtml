@@ -1,0 +1,163 @@
+@model BloodDonation.Models.CreateBloodRequestViewModel
+@{
+    Layout = "_HospitalLayout";
+    ViewData["Title"] = "Create Blood Request";
+}
+
+<main class="flex-1 overflow-y-auto p-8">
+    <div class="max-w-5xl mx-auto">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <p class="text-green-800 dark:text-green-200">@TempData["SuccessMessage"]</p>
+            </div>
+        }
+        
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <div asp-validation-summary="All" class="text-red-800 dark:text-red-200"></div>
+            </div>
+        }
+        
+        <form asp-action="CreateRequest" method="post" class="flex flex-col gap-6">
+            @Html.AntiForgeryToken()
+            
+            <div class="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800 rounded-xl p-4 flex gap-4 items-start">
+                <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 mt-0.5">info</span>
+                <div>
+                    <h3 class="text-sm font-bold text-orange-900 dark:text-orange-200">Before you proceed</h3>
+                    <p class="text-sm text-orange-800 dark:text-orange-300 mt-1">
+                        For life-threatening emergencies requiring immediate release (Uncrossmatched O-Negative), please call the Emergency Hotline at <strong>555-0199</strong> immediately after submitting this form.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div class="p-8 border-b border-gray-100 dark:border-gray-800">
+                    <h3 class="text-lg font-bold text-[#181112] dark:text-white mb-6 flex items-center gap-2">
+                        <div class="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                            <span class="material-symbols-outlined text-lg">hematology</span>
+                        </div>
+                        Blood Specifications
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="space-y-2">
+                            <label asp-for="BloodTypeId" class="text-sm font-medium text-gray-700 dark:text-gray-300">Blood Type</label>
+                            <select asp-for="BloodTypeId" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary">
+                                <option value="">Select type</option>
+                                @foreach (var bloodType in Model.BloodTypes)
+                                {
+                                    <option value="@bloodType.BloodTypeId">@bloodType.Type</option>
+                                }
+                            </select>
+                            <span asp-validation-for="BloodTypeId" class="text-red-600 text-xs"></span>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label asp-for="Component" class="text-sm font-medium text-gray-700 dark:text-gray-300">Component</label>
+                            <select asp-for="Component" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary">
+                                <option value="whole">Whole Blood</option>
+                                <option value="rbc" selected>Red Blood Cells (Packed)</option>
+                                <option value="platelets">Platelets</option>
+                                <option value="plasma">Fresh Frozen Plasma</option>
+                                <option value="cryo">Cryoprecipitate</option>
+                            </select>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label asp-for="Quantity" class="text-sm font-medium text-gray-700 dark:text-gray-300">Quantity (Units)</label>
+                            <input asp-for="Quantity" type="number" min="1" max="50" placeholder="e.g. 2" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary"/>
+                            <span asp-validation-for="Quantity" class="text-red-600 text-xs"></span>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label asp-for="UrgencyLevel" class="text-sm font-medium text-gray-700 dark:text-gray-300">Urgency Level</label>
+                            <select asp-for="UrgencyLevel" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary">
+                                <option value="routine">Routine (Standard)</option>
+                                <option value="urgent">Urgent (Within 4 hrs)</option>
+                                <option value="critical" class="text-red-600 font-bold">Critical / Life Threatening</option>
+                            </select>
+                            <span asp-validation-for="UrgencyLevel" class="text-red-600 text-xs"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
+                    <h3 class="text-lg font-bold text-[#181112] dark:text-white mb-6 flex items-center gap-2">
+                        <div class="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                            <span class="material-symbols-outlined text-lg">schedule</span>
+                        </div>
+                        Delivery Requirements
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label asp-for="DateRequired" class="text-sm font-medium text-gray-700 dark:text-gray-300">Date Required</label>
+                            <input asp-for="DateRequired" type="date" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary"/>
+                            <span asp-validation-for="DateRequired" class="text-red-600 text-xs"></span>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label asp-for="TimeRequired" class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Required</label>
+                            <input asp-for="TimeRequired" type="time" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary"/>
+                            <span asp-validation-for="TimeRequired" class="text-red-600 text-xs"></span>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label asp-for="DeliveryLocation" class="text-sm font-medium text-gray-700 dark:text-gray-300">Delivery Location</label>
+                            <input asp-for="DeliveryLocation" type="text" placeholder="e.g. Ward 4, Bed 12" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary"/>
+                            <p class="text-xs text-gray-500">Specify ward, ICU, or operating theater.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-[#181112] dark:text-white flex items-center gap-2">
+                            <div class="size-8 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-lg">person</span>
+                            </div>
+                            Patient Information
+                        </h3>
+                        <span class="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Optional</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label asp-for="PatientMRN" class="text-sm font-medium text-gray-700 dark:text-gray-300">Patient MRN / ID</label>
+                            <input asp-for="PatientMRN" type="text" placeholder="Medical Record Number" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary"/>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label asp-for="Diagnosis" class="text-sm font-medium text-gray-700 dark:text-gray-300">Diagnosis / Clinical Indication</label>
+                            <input asp-for="Diagnosis" type="text" placeholder="Reason for transfusion" class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary"/>
+                        </div>
+                        
+                        <div class="md:col-span-2 space-y-2">
+                            <label asp-for="AdditionalNotes" class="text-sm font-medium text-gray-700 dark:text-gray-300">Additional Notes</label>
+                            <textarea asp-for="AdditionalNotes" rows="3" placeholder="Any special requirements, antibodies, or specific instructions for the blood bank..." class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-black/20 px-8 py-6 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        By submitting, you certify this request matches patient needs.
+                    </p>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <a asp-action="Dashboard" class="w-full sm:w-auto px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-center">
+                            Cancel
+                        </a>
+                        <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold shadow-md shadow-primary/20 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">send</span>
+                            Submit Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

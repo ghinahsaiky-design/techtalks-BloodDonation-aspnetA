@@ -1,0 +1,53 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+
+<div class="w-64 flex-shrink-0 border-r border-gray-200 bg-white dark:bg-[#1a1a1a] dark:border-gray-800 flex flex-col h-full overflow-y-auto">
+    <div class="p-6">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="rounded-full size-10 bg-white dark:bg-[#1a1a1a] flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700">
+                <img src="~/images/BloodDonationLogo.png" alt="BloodConnect Logo" class="w-full h-full object-contain p-1" />
+            </div>
+            <div class="flex flex-col">
+                <h1 class="text-[#181112] dark:text-white text-base font-bold leading-normal">BloodConnect</h1>
+                <p class="text-[#8c5f66] dark:text-gray-400 text-xs font-normal leading-normal">Hospital Portal</p>
+            </div>
+        </div>
+        <div class="flex flex-col gap-2">
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg @(currentAction == "Dashboard" ? "bg-primary/10 text-primary" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5") group transition-colors" asp-controller="Hospital" asp-action="Dashboard">
+                <span class="material-symbols-outlined @(currentAction == "Dashboard" ? "filled" : "")">dashboard</span>
+                <p class="text-sm font-medium leading-normal">Dashboard</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg @(currentAction == "CreateRequest" ? "bg-primary/10 text-primary" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5") group transition-colors" asp-controller="Hospital" asp-action="CreateRequest">
+                <span class="material-symbols-outlined @(currentAction == "CreateRequest" ? "filled" : "")">water_drop</span>
+                <p class="text-sm font-medium leading-normal">Request Blood</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg @(currentAction == "ViewRequests" ? "bg-primary/10 text-primary" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5") group transition-colors" asp-controller="Hospital" asp-action="ViewRequests">
+                <span class="material-symbols-outlined @(currentAction == "ViewRequests" ? "filled" : "")">assignment</span>
+                <p class="text-sm font-medium leading-normal">My Requests</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" href="#">
+                <span class="material-symbols-outlined">chat_bubble</span>
+                <p class="text-sm font-medium leading-normal">Donor Communications</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" href="#">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <p class="text-sm font-medium leading-normal">Statistics</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" href="#">
+                <span class="material-symbols-outlined">settings</span>
+                <p class="text-sm font-medium leading-normal">Settings</p>
+            </a>
+        </div>
+    </div>
+    <div class="mt-auto p-6 border-t border-gray-100 dark:border-gray-800">
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" href="#" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+            <span class="material-symbols-outlined">logout</span>
+            <p class="text-sm font-medium leading-normal">Log Out</p>
+        </a>
+        <form id="logoutForm" asp-controller="Auth" asp-action="Logout" method="post" class="hidden">
+            @Html.AntiForgeryToken()
+        </form>
+    </div>
+</div>
+

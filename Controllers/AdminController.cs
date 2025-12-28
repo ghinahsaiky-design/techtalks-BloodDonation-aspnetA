@@ -841,9 +841,12 @@ namespace BloodDonation.Controllers
                 return Forbid();
             }
 
-            var request = await _context.DonorRequests.FindAsync(requestId);
+            var request = await _context.DonorRequests
+                .Include(r => r.RequestedByUser)
+                .FirstOrDefaultAsync(r => r.RequestId == requestId);
             if (request != null)
             {
+                var oldStatus = request.Status;
                 request.Status = status;
                 if (status == "Completed")
                 {
@@ -851,6 +854,22 @@ namespace BloodDonation.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+                
+                // Create notification for hospital if request belongs to a hospital
+                if (request.RequestedByUserId.HasValue && request.RequestedByUser != null && request.RequestedByUser.Role == "Hospital")
+                {
+                    var notification = new HospitalNotification
+                    {
+                        HospitalUserId = request.RequestedByUserId.Value,
+                        RequestId = requestId,
+                        Message = $"Request #{requestId} status changed from {oldStatus} to {status}",
+                        Status = "Unread",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.HospitalNotifications.Add(notification);
+                    await _context.SaveChangesAsync();
+                }
+                
                 TempData["SuccessMessage"] = $"Request #{requestId} status updated to '{status}' successfully.";
 
                 // Record tracked action
@@ -1008,6 +1027,29 @@ namespace BloodDonation.Controllers
                         if (emailSent)
                         {
                             successCount++;
+                            
+                            // Track that this donor was notified (create DonorConfirmation with Status="Notified")
+                            var existingNotification = await _context.DonorConfirmations
+                                .FirstOrDefaultAsync(c => c.RequestId == model.RequestId && c.DonorId == donor.DonorId);
+                            
+                            if (existingNotification == null)
+                            {
+                                var notification = new DonorConfirmation
+                                {
+                                    RequestId = model.RequestId,
+                                    DonorId = donor.DonorId,
+                                    Status = "Notified", // Track that email was sent
+                                    ConfirmedAt = DateTime.UtcNow, // Required field, but status is "Notified"
+                                    ContactedAt = DateTime.UtcNow // Track when email was sent
+                                };
+                                _context.DonorConfirmations.Add(notification);
+                            }
+                            else if (existingNotification.Status != "Notified" && existingNotification.Status != "Confirmed")
+                            {
+                                // Update to Notified if it was in a different state
+                                existingNotification.Status = "Notified";
+                                existingNotification.ContactedAt = DateTime.UtcNow;
+                            }
                         }
                         else
                         {
@@ -1020,6 +1062,12 @@ namespace BloodDonation.Controllers
                         failCount++;
                         errors.Add($"Donor {donor.DonorId} has no email address");
                     }
+                }
+                
+                // Save notification tracking
+                if (successCount > 0)
+                {
+                    await _context.SaveChangesAsync();
                 }
 
                 var message = $"Emails sent successfully to {successCount} donor(s).";

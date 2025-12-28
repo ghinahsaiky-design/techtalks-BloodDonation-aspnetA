@@ -136,6 +136,20 @@ namespace BloodDonation.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            // Check user status before attempting login (for Hospital/Admin users)
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null && (user.Role == "Hospital" || user.Role == "Admin") && user.Status == "Pending")
+            {
+                // Don't reveal whether the password is correct if account is pending
+                // This prevents information disclosure
+                ModelState.Remove(nameof(LoginViewModel.Email));
+                ModelState.Remove(nameof(LoginViewModel.Password));
+                model.Email = string.Empty;
+                model.Password = string.Empty;
+                ModelState.AddModelError("", "Your account is pending approval. Please wait for administrator approval before logging in.");
+                return View(model);
+            }
+
             var result = await _signInManager.PasswordSignInAsync(
                 model.Email,
                 model.Password,
@@ -144,7 +158,8 @@ namespace BloodDonation.Controllers
 
             if (result.Succeeded)
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                    user = await _userManager.FindByEmailAsync(model.Email);
 
                 var claims = new List<Claim>
                 {
@@ -154,7 +169,7 @@ namespace BloodDonation.Controllers
 
                 await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
 
-                // Redirect admin users to admin dashboard
+                // Redirect based on user role
                 if (user.Role == "Owner")
                 {
                     return RedirectToAction("Index", "Owner");
@@ -165,7 +180,7 @@ namespace BloodDonation.Controllers
                 }
                 else if(user.Role == "Hospital")
                 {
-                    return RedirectToAction("Index", "Hospital");
+                    return RedirectToAction("Dashboard", "Hospital");
                 }
                 else
                 {

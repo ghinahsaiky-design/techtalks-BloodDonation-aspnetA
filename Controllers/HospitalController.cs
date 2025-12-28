@@ -8,22 +8,28 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BloodDonation.Controllers
 {
-    [Authorize(Roles = "Owner")]
     public class HospitalController : Controller
     {
         private readonly BloodDonationContext _context;
         private readonly UserManager<Users> _userManager;
+        private readonly SignInManager<Users> _signInManager;
 
-        public HospitalController(BloodDonationContext context, UserManager<Users> userManager)
+        public HospitalController(BloodDonationContext context, UserManager<Users> userManager, SignInManager<Users> signInManager)
         {
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
-        // Hospital Management List
+        // ============================================
+        // OWNER ACTIONS - Hospital Management
+        // ============================================
+        
+        [Authorize(Roles = "Owner")]
         [HttpGet]
         public async Task<IActionResult> Index(string? q)
         {
@@ -44,6 +50,7 @@ namespace BloodDonation.Controllers
             return View("~/Views/Owner/HospitalManagement.cshtml", model);
         }
 
+        [Authorize(Roles = "Owner")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AddNewHospitalViewModel model)
@@ -101,6 +108,7 @@ namespace BloodDonation.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Owner")]
         [HttpGet]
         public async Task<IActionResult> EditModal(int id)
         {
@@ -124,6 +132,7 @@ namespace BloodDonation.Controllers
             return PartialView("~/Views/Owner/_EditHospitalModal.cshtml", vm);
         }
 
+        [Authorize(Roles = "Owner")]
         [HttpGet]
         public async Task<IActionResult> DetailsModal(int id)
         {
@@ -133,6 +142,7 @@ namespace BloodDonation.Controllers
             return PartialView("~/Views/Owner/_HospitalDetailsModal.cshtml", hospital);
         }
 
+        [Authorize(Roles = "Owner")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, AddNewHospitalViewModel model)
@@ -176,6 +186,7 @@ namespace BloodDonation.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Owner")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -196,5 +207,533 @@ namespace BloodDonation.Controllers
 
             return RedirectToAction("HospitalManagement", "Owner");
         }
+
+        // ============================================
+        // HOSPITAL USER ACTIONS
+        // ============================================
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Registration()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Registration(HospitalRegistrationViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (!model.AgreeToTerms)
+            {
+                ModelState.AddModelError("AgreeToTerms", "You must agree to the terms and conditions");
+                return View(model);
+            }
+
+            // Check if email already exists
+            if (await _userManager.FindByEmailAsync(model.Email) != null)
+            {
+                ModelState.AddModelError("Email", "Email is already registered.");
+                return View(model);
+            }
+
+            // Create User Account
+            var user = new Users
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FirstName = model.ContactName,
+                LastName = "Hospital",
+                PhoneNumber = model.Phone,
+                Role = "Hospital",
+                Status = "Pending", // Awaiting approval
+                CreatedAt = DateTime.UtcNow,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+                return View(model);
+            }
+
+            // Add role claims
+            await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Hospital"));
+            await _userManager.AddClaimAsync(user, new Claim("Role", "Hospital"));
+
+            // Create Hospital Entity
+            var hospital = new Hospital
+            {
+                Name = model.HospitalName,
+                License = model.License,
+                UserId = user.Id,
+                Address = model.Address,
+                City = model.City,
+                State = model.State,
+                Zip = model.Zip
+            };
+
+            _context.Hospitals.Add(hospital);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Registration successful! Your account is pending approval.";
+            return RedirectToAction("Login", "Auth");
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpGet]
+        public async Task<IActionResult> Dashboard()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var hospital = await _context.Hospitals
+                .Include(h => h.User)
+                .FirstOrDefaultAsync(h => h.UserId == user.Id);
+
+            if (hospital == null) return NotFound();
+
+            var hospitalRequests = await _context.DonorRequests
+                .Include(r => r.BloodType)
+                .Where(r => r.RequestedByUserId == user.Id)
+                .ToListAsync();
+
+            var totalRequested = hospitalRequests.Count;
+            var fulfilled = hospitalRequests.Count(r => r.Status == "Completed" || r.Status == "Approved");
+            var pending = hospitalRequests.Count(r => r.Status == "Pending");
+
+            // Calculate request trends for last 30 days
+            var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+            var last30DaysRequests = hospitalRequests.Where(r => r.CreatedAt >= thirtyDaysAgo).ToList();
+            
+            // Group by date for trend chart
+            var trends = last30DaysRequests
+                .GroupBy(r => r.CreatedAt.Date)
+                .Select(g => new DailyRequestCount
+                {
+                    Date = g.Key,
+                    Count = g.Count()
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            // Fill in missing days with 0
+            var allDates = Enumerable.Range(0, 30)
+                .Select(i => DateTime.UtcNow.Date.AddDays(-29 + i))
+                .ToList();
+            
+            var trendsDict = trends.ToDictionary(t => t.Date.Date);
+            var completeTrends = allDates.Select(date => new DailyRequestCount
+            {
+                Date = date,
+                Count = trendsDict.ContainsKey(date) ? trendsDict[date].Count : 0
+            }).ToList();
+
+            // Calculate previous 30 days for growth comparison
+            var previous30DaysStart = DateTime.UtcNow.AddDays(-60);
+            var previous30DaysEnd = DateTime.UtcNow.AddDays(-30);
+            var previous30DaysCount = hospitalRequests.Count(r => 
+                r.CreatedAt >= previous30DaysStart && r.CreatedAt < previous30DaysEnd);
+            
+            var last30DaysTotal = last30DaysRequests.Count;
+            var growth = previous30DaysCount > 0 
+                ? ((last30DaysTotal - previous30DaysCount) * 100.0 / previous30DaysCount)
+                : (last30DaysTotal > 0 ? 100.0 : 0);
+
+            // Calculate blood type demand percentages
+            var allBloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
+            var bloodTypeCounts = new Dictionary<string, int>();
+            var totalBloodTypeRequests = hospitalRequests.Where(r => r.BloodType != null).Count();
+            
+            foreach (var request in hospitalRequests.Where(r => r.BloodType != null))
+            {
+                var bloodType = request.BloodType.Type;
+                if (!bloodTypeCounts.ContainsKey(bloodType))
+                    bloodTypeCounts[bloodType] = 0;
+                bloodTypeCounts[bloodType]++;
+            }
+
+            var bloodTypePercentages = new Dictionary<string, double>();
+            foreach (var bloodType in allBloodTypes)
+            {
+                var count = bloodTypeCounts.GetValueOrDefault(bloodType.Type, 0);
+                var percentage = totalBloodTypeRequests > 0 
+                    ? (count * 100.0 / totalBloodTypeRequests) 
+                    : 0;
+                bloodTypePercentages[bloodType.Type] = percentage;
+            }
+
+            var model = new HospitalDashboardViewModel
+            {
+                Hospital = hospital,
+                TotalRequested = totalRequested,
+                TotalReceived = fulfilled,
+                PendingRequests = pending,
+                SuccessRate = totalRequested > 0 ? (fulfilled * 100.0 / totalRequested) : 0,
+                RecentRequests = hospitalRequests.OrderByDescending(r => r.CreatedAt).Take(5).ToList(),
+                RequestTrends = completeTrends,
+                BloodTypePercentages = bloodTypePercentages,
+                Last30DaysTotal = last30DaysTotal,
+                Last30DaysGrowth = growth
+            };
+
+            // Calculate blood type demand (for legacy support)
+            foreach (var request in hospitalRequests)
+            {
+                var bloodType = request.BloodType?.Type ?? "Unknown";
+                if (!model.BloodTypeDemand.ContainsKey(bloodType))
+                    model.BloodTypeDemand[bloodType] = 0;
+                model.BloodTypeDemand[bloodType]++;
+            }
+
+            return View(model);
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpGet]
+        public async Task<IActionResult> CreateRequest()
+        {
+            var model = new CreateBloodRequestViewModel
+            {
+                BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync(),
+                DateRequired = DateTime.Now,
+                TimeRequired = DateTime.Now.TimeOfDay
+            };
+
+            return View(model);
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRequest(CreateBloodRequestViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var hospital = await _context.Hospitals
+                .Include(h => h.User)
+                .FirstOrDefaultAsync(h => h.UserId == user.Id);
+
+            if (hospital == null) return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                model.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
+                return View(model);
+            }
+
+            // Get hospital location (default to first location if not set)
+            var location = await _context.Locations.FirstOrDefaultAsync();
+            if (location == null)
+            {
+                ModelState.AddModelError("", "No locations available in the system.");
+                model.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
+                return View(model);
+            }
+
+            // Map urgency level from view model to database values
+            var urgencyLevel = model.UrgencyLevel?.ToLower() switch
+            {
+                "routine" => "Normal",
+                "urgent" => "High",
+                "critical" => "Critical",
+                _ => "Normal"
+            };
+
+            // Create request
+            var request = new DonorRequest
+            {
+                PatientName = $"Request for {model.Quantity} units", // Store quantity in patient name temporarily
+                BloodTypeId = model.BloodTypeId,
+                LocationId = location.LocationId,
+                UrgencyLevel = urgencyLevel,
+                ContactNumber = hospital.User.PhoneNumber ?? "",
+                RequesterEmail = hospital.User.Email ?? "",
+                HospitalName = hospital.Name,
+                AdditionalNotes = BuildAdditionalNotes(model),
+                RequestedByUserId = user.Id,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.DonorRequests.Add(request);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Blood request submitted successfully!";
+            return RedirectToAction("ViewRequests");
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpGet]
+        public async Task<IActionResult> ViewRequests(string? searchQuery, string? statusFilter, int page = 1)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var query = _context.DonorRequests
+                .Include(r => r.BloodType)
+                .Where(r => r.RequestedByUserId == user.Id)
+                .AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                query = query.Where(r => 
+                    r.RequestId.ToString().Contains(searchQuery) ||
+                    r.BloodType.Type.Contains(searchQuery));
+            }
+
+            // Apply status filter
+            if (!string.IsNullOrWhiteSpace(statusFilter) && statusFilter != "All")
+            {
+                query = query.Where(r => r.Status == statusFilter);
+            }
+
+            // Calculate status counts
+            var statusCounts = new Dictionary<string, int>
+            {
+                { "All", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id) },
+                { "Pending", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id && r.Status == "Pending") },
+                { "Approved", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id && r.Status == "Approved") },
+                { "Completed", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id && r.Status == "Completed") },
+                { "Cancelled", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id && r.Status == "Cancelled") }
+            };
+
+            var totalCount = await query.CountAsync();
+            var pageSize = 10;
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var requests = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var viewModel = new HospitalRequestsViewModel
+            {
+                Requests = requests,
+                SearchQuery = searchQuery,
+                StatusFilter = statusFilter ?? "All",
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalCount = totalCount,
+                StatusCounts = statusCounts
+            };
+
+            return View(viewModel);
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpGet]
+        public async Task<IActionResult> ViewMatchedDonors(int requestId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            // Verify the request belongs to this hospital
+            var request = await _context.DonorRequests
+                .Include(r => r.BloodType)
+                .Include(r => r.Location)
+                .FirstOrDefaultAsync(r => r.RequestId == requestId && r.RequestedByUserId == user.Id);
+
+            if (request == null)
+            {
+                TempData["ErrorMessage"] = "Request not found or you don't have permission to view it.";
+                return RedirectToAction("ViewRequests");
+            }
+
+            // Get all donors who were sent emails for this request
+            // If there's a DonorConfirmation record, it means an email was sent
+            // Load data first, then project to handle nulls properly
+            var confirmationsData = await _context.DonorConfirmations
+                .Include(c => c.Donor)
+                    .ThenInclude(d => d.User)
+                .Include(c => c.Donor)
+                    .ThenInclude(d => d.BloodType)
+                .Include(c => c.Donor)
+                    .ThenInclude(d => d.Location)
+                .Where(c => c.RequestId == requestId) // Show all records - if record exists, email was sent
+                .ToListAsync();
+
+            var matchedDonors = confirmationsData
+                .Where(c => c.Donor != null && c.Donor.User != null && c.Donor.BloodType != null && c.Donor.Location != null)
+                .Select(c => new MatchedDonorViewModel
+                {
+                    ConfirmationId = c.ConfirmationId,
+                    DonorId = c.DonorId,
+                    DonorName = c.Donor.IsIdentityHidden 
+                        ? $"Donor #{c.DonorId}" 
+                        : $"{c.Donor.User.FirstName} {c.Donor.User.LastName}",
+                    Email = c.Donor.User.Email ?? "",
+                    PhoneNumber = c.Donor.User.PhoneNumber ?? "",
+                    BloodType = c.Donor.BloodType.Type,
+                    Location = c.Donor.Location.Districts,
+                    Status = c.Status ?? "Pending",
+                    ConfirmedAt = c.Status == "Confirmed" ? c.ConfirmedAt : (DateTime?)null,
+                    ContactedAt = c.ContactedAt,
+                    Message = c.Message,
+                    LastDonationDate = c.Donor.LastDonationDate,
+                    IsAvailable = c.Donor.IsAvailable,
+                    IsHealthy = c.Donor.IsHealthyForDonation
+                })
+                .OrderByDescending(d => d.ContactedAt ?? d.ConfirmedAt)
+                .ToList();
+
+            var viewModel = new MatchedDonorsViewModel
+            {
+                Request = request,
+                MatchedDonors = matchedDonors
+            };
+
+            return View("ViewMatchedDonors", viewModel);
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpGet]
+        public async Task<IActionResult> GetNotifications()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            // Load data first, then project to handle GetTimeAgo method
+            var notificationsData = await _context.HospitalNotifications
+                .Include(n => n.Request)
+                    .ThenInclude(r => r.BloodType)
+                .Where(n => n.HospitalUserId == user.Id)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+
+            var notifications = notificationsData.Select(n => {
+                // Parse the notification message to extract status
+                var requestStatus = "Updated";
+                var statusColor = "blue";
+                
+                if (n.Message.Contains("Approved"))
+                {
+                    requestStatus = "Approved";
+                    statusColor = "green";
+                }
+                else if (n.Message.Contains("Completed"))
+                {
+                    requestStatus = "Completed";
+                    statusColor = "blue";
+                }
+                else if (n.Message.Contains("Cancelled"))
+                {
+                    requestStatus = "Cancelled";
+                    statusColor = "red";
+                }
+                else if (n.Message.Contains("Pending"))
+                {
+                    requestStatus = "Pending";
+                    statusColor = "yellow";
+                }
+
+                return new
+                {
+                    NotificationId = n.NotificationId,
+                    RequestId = n.RequestId,
+                    Message = n.Message,
+                    Status = n.Status,
+                    RequestStatus = requestStatus,
+                    StatusColor = statusColor,
+                    CreatedAt = n.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                    TimeAgo = GetTimeAgo(n.CreatedAt),
+                    BloodType = n.Request?.BloodType?.Type ?? null
+                };
+            }).ToList();
+
+            return Json(new { success = true, notifications = notifications });
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpGet]
+        public async Task<IActionResult> GetNotificationCount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { success = false, count = 0 });
+
+            var unreadCount = await _context.HospitalNotifications
+                .Where(n => n.HospitalUserId == user.Id && n.Status == "Unread")
+                .CountAsync();
+
+            return Json(new { success = true, count = unreadCount });
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> MarkNotificationAsRead([FromBody] MarkNotificationReadRequest model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var notification = await _context.HospitalNotifications
+                .FirstOrDefaultAsync(n => n.NotificationId == model.NotificationId && n.HospitalUserId == user.Id);
+
+            if (notification != null)
+            {
+                notification.Status = "Read";
+                notification.ReadAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+
+            return Json(new { success = false, message = "Notification not found" });
+        }
+
+        private string GetTimeAgo(DateTime dateTime)
+        {
+            var timeSpan = DateTime.UtcNow - dateTime;
+            
+            if (timeSpan.TotalMinutes < 1)
+                return "Just now";
+            if (timeSpan.TotalMinutes < 60)
+                return $"{(int)timeSpan.TotalMinutes} min ago";
+            if (timeSpan.TotalHours < 24)
+                return $"{(int)timeSpan.TotalHours} hour(s) ago";
+            return $"{(int)timeSpan.TotalDays} day(s) ago";
+        }
+
+        private string BuildAdditionalNotes(CreateBloodRequestViewModel model)
+        {
+            var notes = new List<string>();
+            
+            notes.Add($"Quantity: {model.Quantity} units");
+            notes.Add($"Component: {model.Component}");
+            
+            if (!string.IsNullOrWhiteSpace(model.DeliveryLocation))
+                notes.Add($"Delivery Location: {model.DeliveryLocation}");
+            
+            if (!string.IsNullOrWhiteSpace(model.PatientMRN))
+                notes.Add($"Patient MRN: {model.PatientMRN}");
+            
+            if (!string.IsNullOrWhiteSpace(model.Diagnosis))
+                notes.Add($"Diagnosis: {model.Diagnosis}");
+            
+            if (!string.IsNullOrWhiteSpace(model.AdditionalNotes))
+                notes.Add($"Notes: {model.AdditionalNotes}");
+
+            notes.Add($"Required Date/Time: {model.DateRequired:yyyy-MM-dd} {model.TimeRequired:hh\\:mm}");
+
+            return string.Join(" | ", notes);
+        }
+    }
+
+    // Request model for marking notification as read
+    public class MarkNotificationReadRequest
+    {
+        public int NotificationId { get; set; }
     }
 }

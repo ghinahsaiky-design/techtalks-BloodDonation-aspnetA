@@ -21,6 +21,7 @@ namespace BloodDonation.Data
         public DbSet<DonorRequest> DonorRequests { get; set; }
         public DbSet<DonorConfirmation> DonorConfirmations { get; set; }
         public DbSet<Hospital> Hospitals { get; set; }
+        public DbSet<HospitalNotification> HospitalNotifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -83,6 +84,13 @@ namespace BloodDonation.Data
                 .WithMany()                       // no collection on DonorProfile (I assume)
                 .HasForeignKey(dc => dc.DonorId)
                 .OnDelete(DeleteBehavior.Cascade);   // or NoAction if you prefer
+
+            // HospitalNotification -> DonorRequest  (NO CASCADE)
+            modelBuilder.Entity<HospitalNotification>()
+                .HasOne(hn => hn.Request)
+                .WithMany()
+                .HasForeignKey(hn => hn.RequestId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
 
     }
