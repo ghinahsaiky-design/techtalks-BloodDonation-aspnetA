@@ -17,7 +17,7 @@ namespace BloodDonation.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -82,6 +82,48 @@ namespace BloodDonation.Migrations
                         });
                 });
 
+            modelBuilder.Entity("BloodDonation.Models.DonorConfirmation", b =>
+                {
+                    b.Property<int>("ConfirmationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConfirmationId"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("ConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ContactedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DonorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ConfirmationId");
+
+                    b.HasIndex("DonorId");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("DonorConfirmations");
+                });
+
             modelBuilder.Entity("BloodDonation.Models.DonorProfile", b =>
                 {
                     b.Property<int>("DonorId")
@@ -89,6 +131,9 @@ namespace BloodDonation.Migrations
 
                     b.Property<int>("BloodTypeId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateOnly>("DateOfBirth")
                         .HasColumnType("date");
@@ -120,6 +165,121 @@ namespace BloodDonation.Migrations
                     b.HasIndex("LocationId");
 
                     b.ToTable("DonorProfile");
+                });
+
+            modelBuilder.Entity("BloodDonation.Models.DonorRequest", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
+
+                    b.Property<string>("AdditionalNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("BloodTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ContactNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HospitalName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PatientName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("RequestedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RequesterEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UrgencyLevel")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("BloodTypeId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("RequestedByUserId");
+
+                    b.ToTable("DonorRequests");
+                });
+
+            modelBuilder.Entity("BloodDonation.Models.Hospital", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("License")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Zip")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Hospitals");
                 });
 
             modelBuilder.Entity("BloodDonation.Models.Locations", b =>
@@ -304,6 +464,43 @@ namespace BloodDonation.Migrations
                     b.ToTable("PasswordResets");
                 });
 
+            modelBuilder.Entity("BloodDonation.Models.TrackedAction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("PerformedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PerformedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TargetEntityId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TargetUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerformedByUserId");
+
+                    b.ToTable("Actions");
+                });
+
             modelBuilder.Entity("BloodDonation.Models.Users", b =>
                 {
                     b.Property<int>("Id")
@@ -318,6 +515,9 @@ namespace BloodDonation.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -359,6 +559,9 @@ namespace BloodDonation.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ProfileImagePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -366,6 +569,11 @@ namespace BloodDonation.Migrations
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -520,6 +728,25 @@ namespace BloodDonation.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BloodDonation.Models.DonorConfirmation", b =>
+                {
+                    b.HasOne("BloodDonation.Models.DonorProfile", "Donor")
+                        .WithMany()
+                        .HasForeignKey("DonorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BloodDonation.Models.DonorRequest", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Donor");
+
+                    b.Navigation("Request");
+                });
+
             modelBuilder.Entity("BloodDonation.Models.DonorProfile", b =>
                 {
                     b.HasOne("BloodDonation.Models.BloodTypes", "BloodType")
@@ -547,6 +774,42 @@ namespace BloodDonation.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BloodDonation.Models.DonorRequest", b =>
+                {
+                    b.HasOne("BloodDonation.Models.BloodTypes", "BloodType")
+                        .WithMany()
+                        .HasForeignKey("BloodTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BloodDonation.Models.Locations", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BloodDonation.Models.Users", "RequestedByUser")
+                        .WithMany()
+                        .HasForeignKey("RequestedByUserId");
+
+                    b.Navigation("BloodType");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("RequestedByUser");
+                });
+
+            modelBuilder.Entity("BloodDonation.Models.Hospital", b =>
+                {
+                    b.HasOne("BloodDonation.Models.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BloodDonation.Models.PasswordReset", b =>
                 {
                     b.HasOne("BloodDonation.Models.Users", "User")
@@ -556,6 +819,17 @@ namespace BloodDonation.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BloodDonation.Models.TrackedAction", b =>
+                {
+                    b.HasOne("BloodDonation.Models.Users", "PerformedByUser")
+                        .WithMany()
+                        .HasForeignKey("PerformedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PerformedByUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

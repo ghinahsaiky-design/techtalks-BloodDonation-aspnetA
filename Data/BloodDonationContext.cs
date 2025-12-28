@@ -17,7 +17,10 @@ namespace BloodDonation.Data
         public DbSet<BloodTypes> BloodTypes { get; set; }
         public DbSet<Locations> Locations { get; set; }
         public DbSet<PasswordReset> PasswordResets { get; set; }
-
+        public DbSet<TrackedAction> Actions { get; set; }
+        public DbSet<DonorRequest> DonorRequests { get; set; }
+        public DbSet<DonorConfirmation> DonorConfirmations { get; set; }
+        public DbSet<Hospital> Hospitals { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -61,7 +64,25 @@ namespace BloodDonation.Data
                 new Locations { LocationId = 24, Districts = "Hasbaya" },
                 new Locations { LocationId = 25, Districts = "Rachaya"},
                 new Locations { LocationId = 26, Districts = "West Beqaa"}
-            ); 
+            );
+
+            // ========================
+            // RELATIONSHIPS TO FIX FK
+            // ========================
+
+            // DonorConfirmation -> DonorRequest  (NO CASCADE)
+            modelBuilder.Entity<DonorConfirmation>()
+                .HasOne(dc => dc.Request)          // navigation property
+                .WithMany()                        // no collection on DonorRequest
+                .HasForeignKey(dc => dc.RequestId)
+                .OnDelete(DeleteBehavior.NoAction);   // or DeleteBehavior.Restrict
+
+            // DonorConfirmation -> DonorProfile  (you can keep cascade here)
+            modelBuilder.Entity<DonorConfirmation>()
+                .HasOne(dc => dc.Donor)           // navigation property
+                .WithMany()                       // no collection on DonorProfile (I assume)
+                .HasForeignKey(dc => dc.DonorId)
+                .OnDelete(DeleteBehavior.Cascade);   // or NoAction if you prefer
         }
 
     }

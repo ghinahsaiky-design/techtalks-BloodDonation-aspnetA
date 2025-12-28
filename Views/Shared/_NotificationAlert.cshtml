@@ -1,0 +1,108 @@
+@if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null || TempData["WarningMessage"] != null || TempData["InfoMessage"] != null)
+{
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2 max-w-md">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div id="success-alert" class="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 text-green-700 dark:text-green-300 p-4 rounded-lg shadow-lg flex items-start gap-3 animate-slide-in">
+                <span class="material-symbols-outlined text-green-500 dark:text-green-400 flex-shrink-0">check_circle</span>
+                <div class="flex-1">
+                    <p class="font-medium">Success!</p>
+                    <p class="text-sm">@TempData["SuccessMessage"]</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-green-500 hover:text-green-700 dark:hover:text-green-200 flex-shrink-0">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            var errorMessage = TempData["ErrorMessage"].ToString();
+            var hasMultipleLines = errorMessage.Contains("\n");
+            <div id="error-alert" class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-4 rounded-lg shadow-lg flex items-start gap-3 animate-slide-in max-w-lg">
+                <span class="material-symbols-outlined text-red-500 dark:text-red-400 flex-shrink-0">error</span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium mb-1">Error!</p>
+                    @if (hasMultipleLines)
+                    {
+                        <div class="text-sm whitespace-pre-line">@errorMessage</div>
+                    }
+                    else
+                    {
+                        <p class="text-sm">@errorMessage</p>
+                    }
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700 dark:hover:text-red-200 flex-shrink-0">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div id="warning-alert" class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 text-yellow-700 dark:text-yellow-300 p-4 rounded-lg shadow-lg flex items-start gap-3 animate-slide-in">
+                <span class="material-symbols-outlined text-yellow-500 dark:text-yellow-400 flex-shrink-0">warning</span>
+                <div class="flex-1">
+                    <p class="font-medium">Warning!</p>
+                    <p class="text-sm">@TempData["WarningMessage"]</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-yellow-500 hover:text-yellow-700 dark:hover:text-yellow-200 flex-shrink-0">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["InfoMessage"] != null)
+        {
+            <div id="info-alert" class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 text-blue-700 dark:text-blue-300 p-4 rounded-lg shadow-lg flex items-start gap-3 animate-slide-in">
+                <span class="material-symbols-outlined text-blue-500 dark:text-blue-400 flex-shrink-0">info</span>
+                <div class="flex-1">
+                    <p class="font-medium">Info</p>
+                    <p class="text-sm">@TempData["InfoMessage"]</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-blue-500 hover:text-blue-700 dark:hover:text-blue-200 flex-shrink-0">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+        }
+    </div>
+
+    <style>
+        @@keyframes slide-in {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .animate-slide-in {
+            animation: slide-in 0.3s ease-out;
+        }
+    </style>
+
+    <script>
+        // Auto-hide notifications after 5 seconds (longer for error messages with multiple lines)
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('#notification-container > div');
+            alerts.forEach(function(alert) {
+                const isErrorWithMultipleLines = alert.id === 'error-alert' && alert.querySelector('.whitespace-pre-line');
+                const hideDelay = isErrorWithMultipleLines ? 10000 : 5000; // 10 seconds for detailed errors, 5 for others
+                
+                setTimeout(function() {
+                    alert.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateX(100%)';
+                    setTimeout(function() {
+                        if (alert.parentElement) {
+                            alert.remove();
+                        }
+                    }, 300);
+                }, hideDelay);
+            });
+        });
+    </script>
+}
+

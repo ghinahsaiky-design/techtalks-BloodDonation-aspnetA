@@ -1,0 +1,653 @@
+@model IEnumerable<BloodDonation.Models.DonorRequest>
+@{
+    ViewData["Title"] = "Requests Management";
+}
+
+<partial name="_NotificationAlert" />
+
+<div class="max-w-7xl mx-auto space-y-6">
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+<p class="text-gray-800 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em] min-w-72">Incoming Blood Requests</p>
+<button onclick="document.getElementById('createRequestModal').classList.remove('hidden')" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90">
+<span class="truncate">+ Create New Request</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">Total Requests</p>
+<p class="text-gray-800 dark:text-white tracking-light text-3xl font-bold leading-tight">@ViewBag.TotalRequests</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">Pending Approval</p>
+<p class="text-gray-800 dark:text-white tracking-light text-3xl font-bold leading-tight">@ViewBag.PendingRequests</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">Critical Cases</p>
+<p class="text-gray-800 dark:text-white tracking-light text-3xl font-bold leading-tight">@ViewBag.CriticalCases</p>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark rounded-xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
+<form method="get" action="@Url.Action("RequestManagement", "Admin")" class="flex flex-wrap justify-between items-center gap-4 p-4 border-b border-gray-100 dark:border-white/10">
+<div class="relative w-full max-w-xs">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500">search</span>
+</div>
+<input name="searchTerm" value="@ViewBag.SearchTerm" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-white/20 bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Search requests..." type="text"/>
+</div>
+<div class="flex gap-2">
+<select name="bloodTypeFilter" onchange="this.form.submit()" class="rounded-lg border border-gray-200 dark:border-white/20 bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+<option value="">Blood Type</option>
+@foreach (var bt in ViewBag.BloodTypes as List<BloodDonation.Models.BloodTypes> ?? new List<BloodDonation.Models.BloodTypes>())
+{
+    <option value="@bt.Type" selected="@(ViewBag.BloodTypeFilter == bt.Type)">@bt.Type</option>
+}
+</select>
+<select name="urgencyFilter" onchange="this.form.submit()" class="rounded-lg border border-gray-200 dark:border-white/20 bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+<option value="">Urgency Level</option>
+<option value="Critical" selected="@(ViewBag.UrgencyFilter == "Critical")">Critical</option>
+<option value="High" selected="@(ViewBag.UrgencyFilter == "High")">High</option>
+<option value="Normal" selected="@(ViewBag.UrgencyFilter == "Normal")">Normal</option>
+<option value="Low" selected="@(ViewBag.UrgencyFilter == "Low")">Low</option>
+</select>
+<select name="statusFilter" onchange="this.form.submit()" class="rounded-lg border border-gray-200 dark:border-white/20 bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+<option value="">All Status</option>
+<option value="Pending" selected="@(ViewBag.StatusFilter == "Pending")">Pending</option>
+<option value="Approved" selected="@(ViewBag.StatusFilter == "Approved")">Approved</option>
+<option value="Completed" selected="@(ViewBag.StatusFilter == "Completed")">Completed</option>
+<option value="Cancelled" selected="@(ViewBag.StatusFilter == "Cancelled")">Cancelled</option>
+</select>
+<button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">Search</button>
+</div>
+</form>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-gray-100 dark:bg-white/5 text-xs uppercase text-gray-500 dark:text-gray-400">
+<tr>
+<th class="px-6 py-3" scope="col">Request ID</th>
+<th class="px-6 py-3" scope="col">Patient Name</th>
+<th class="px-6 py-3" scope="col">Blood Type</th>
+<th class="px-6 py-3" scope="col">Location</th>
+<th class="px-6 py-3" scope="col">Contact Number</th>
+<th class="px-6 py-3" scope="col">Requester Email</th>
+<th class="px-6 py-3" scope="col">Hospital</th>
+<th class="px-6 py-3" scope="col">Urgency</th>
+<th class="px-6 py-3" scope="col">Status</th>
+<th class="px-6 py-3 text-right" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody>
+@if (Model == null || !Model.Any())
+{
+    <tr>
+        <td colspan="10" class="px-6 py-8 text-center text-gray-500">No requests found</td>
+    </tr>
+}
+else
+{
+    @foreach (var request in Model)
+    {
+        var urgencyClass = request.UrgencyLevel == "Critical" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" :
+                          request.UrgencyLevel == "High" ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400" :
+                          request.UrgencyLevel == "Normal" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" : 
+                          "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+        
+        var statusClass = request.Status == "Completed" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
+                         request.Status == "Approved" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" :
+                         request.Status == "Pending" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                         "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+        
+        <tr class="border-b dark:border-white/10 hover:bg-background-light dark:hover:bg-white/5" data-request-id="@request.RequestId">
+            <td class="px-6 py-4 font-medium">#REQ-@request.RequestId</td>
+            <td class="px-6 py-4 font-bold">@request.PatientName</td>
+            <td class="px-6 py-4 font-mono font-bold text-primary">@request.BloodType.Type</td>
+            <td class="px-6 py-4">@request.Location.Districts</td>
+            <td class="px-6 py-4">@request.ContactNumber</td>
+            <td class="px-6 py-4">
+                <a href="mailto:@request.RequesterEmail" class="text-primary hover:underline">@request.RequesterEmail</a>
+            </td>
+            <td class="px-6 py-4">@(request.HospitalName ?? "N/A")</td>
+            <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @urgencyClass">@request.UrgencyLevel</span></td>
+            <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @statusClass">@request.Status</span></td>
+            <td class="px-6 py-4 text-right space-x-2">
+                <button onclick="toggleMatchingDonors(@request.RequestId)" class="p-2 rounded-lg hover:bg-purple-100 dark:hover:bg-white/10 text-purple-600" title="View Matching Donors">
+                    <span class="material-symbols-outlined text-base">people</span>
+                </button>
+                @if (request.Status == "Pending")
+                {
+                    <form method="post" action="@Url.Action("UpdateDonorRequestStatus", "Admin")" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="requestId" value="@request.RequestId" />
+                        <input type="hidden" name="status" value="Approved" />
+                        <button type="submit" class="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-white/10 text-green-600" title="Approve"><span class="material-symbols-outlined text-base">check_circle</span></button>
+                    </form>
+                }
+                @if (request.Status != "Completed" && request.Status != "Cancelled")
+                {
+                    <form method="post" action="@Url.Action("UpdateDonorRequestStatus", "Admin")" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="requestId" value="@request.RequestId" />
+                        <input type="hidden" name="status" value="Completed" />
+                        <button type="submit" class="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-white/10 text-blue-700 dark:text-primary/80" title="Mark Complete"><span class="material-symbols-outlined text-base">done</span></button>
+                    </form>
+                }
+                @if (request.Status == "Pending")
+                {
+                    <form method="post" action="@Url.Action("UpdateDonorRequestStatus", "Admin")" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="requestId" value="@request.RequestId" />
+                        <input type="hidden" name="status" value="Cancelled" />
+                        <button type="submit" class="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-white/10 text-red-600" title="Cancel"><span class="material-symbols-outlined text-base">cancel</span></button>
+                    </form>
+                }
+            </td>
+        </tr>
+        <tr id="matching-donors-row-@request.RequestId" class="hidden">
+            <td colspan="10" class="px-6 py-4 bg-gray-50 dark:bg-white/5">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Matching Donors</h3>
+                        <button onclick="toggleMatchingDonors(@request.RequestId)" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div id="matching-donors-content-@request.RequestId" class="space-y-3">
+                        <div class="text-center py-4">
+                            <span class="material-symbols-outlined animate-spin text-primary">sync</span>
+                            <p class="text-gray-500 dark:text-gray-400 mt-2">Loading matching donors...</p>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    }
+}
+</tbody>
+</table>
+</div>
+<div class="flex justify-between items-center p-4">
+<span class="text-sm text-gray-500 dark:text-gray-400">Showing 1 to @(Model?.Count() ?? 0) of @ViewBag.TotalRequests requests</span>
+<div class="inline-flex rounded-lg shadow-sm">
+<button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 rounded-l-lg hover:bg-gray-100 dark:hover:bg-white/10">Previous</button>
+<button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border-t border-b border-gray-200 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10">1</button>
+<button class="px-3 py-1 text-sm font-medium text-white bg-primary border-t border-b border-primary">2</button>
+<button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border-t border-b border-gray-200 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10">3</button>
+<button class="px-3 py-1 text-sm font-medium text-gray-500 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 rounded-r-lg hover:bg-gray-100 dark:hover:bg-white/10">Next</button>
+</div>
+</div>
+<<<<<<< HEAD
+</div>
+=======
+>>>>>>> d40bfb6205993d358ad4d45ddff15f8b14af77e5
+</div>
+
+<!-- Create Request Modal -->
+<div id="createRequestModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 hidden">
+<div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="document.getElementById('createRequestModal').classList.add('hidden')"></div>
+<div class="relative w-full max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-background-dark p-6 text-left shadow-2xl transition-all border border-gray-100 dark:border-white/10 max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between mb-5">
+<h3 class="text-xl font-bold leading-6 text-gray-900 dark:text-white">Create New Blood Request</h3>
+<button onclick="document.getElementById('createRequestModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<form method="post" action="@Url.Action("CreateDonorRequest", "Admin")">
+@Html.AntiForgeryToken()
+<div class="space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Patient Name *</label>
+<input name="PatientName" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Enter patient name" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Contact Number *</label>
+<input name="ContactNumber" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="+961 XX XXX XXX" type="tel"/>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Requester Email *</label>
+<input name="RequesterEmail" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="requester@example.com" type="email"/>
+<p class="text-xs text-gray-500 dark:text-gray-400">Email where donor information will be sent when they confirm</p>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Blood Type *</label>
+<select name="BloodTypeId" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5">
+<option value="">Select blood type...</option>
+@foreach (var bt in ViewBag.BloodTypes as List<BloodDonation.Models.BloodTypes> ?? new List<BloodDonation.Models.BloodTypes>())
+{
+    <option value="@bt.BloodTypeId">@bt.Type</option>
+}
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Location *</label>
+<select name="LocationId" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5">
+<option value="">Select location...</option>
+@foreach (var loc in ViewBag.Locations as List<BloodDonation.Models.Locations> ?? new List<BloodDonation.Models.Locations>())
+{
+    <option value="@loc.LocationId">@loc.Districts</option>
+}
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Urgency Level *</label>
+<select name="UrgencyLevel" required class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5">
+<option value="">Select urgency...</option>
+<option value="Critical">Critical</option>
+<option value="High">High</option>
+<option value="Normal">Normal</option>
+<option value="Low">Low</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Hospital Name</label>
+<input name="HospitalName" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Hospital name (optional)" type="text"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Additional Notes</label>
+<textarea name="AdditionalNotes" rows="3" class="w-full rounded-lg border-gray-300 dark:border-white/20 dark:bg-white/5 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2.5" placeholder="Any additional information..."></textarea>
+</div>
+<div class="mt-6 flex justify-end gap-3 border-t border-gray-100 dark:border-white/10 pt-4">
+<button type="button" onclick="document.getElementById('createRequestModal').classList.add('hidden')" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:bg-white/5 dark:text-gray-200 dark:border-white/10">Cancel</button>
+<button type="submit" class="rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Create Request</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+
+<script>
+    function toggleMatchingDonors(requestId) {
+        const row = document.getElementById(`matching-donors-row-${requestId}`);
+        const content = document.getElementById(`matching-donors-content-${requestId}`);
+        
+        if (row.classList.contains('hidden')) {
+            row.classList.remove('hidden');
+            loadMatchingDonors(requestId);
+        } else {
+            row.classList.add('hidden');
+        }
+    }
+
+    async function loadMatchingDonors(requestId) {
+        const content = document.getElementById(`matching-donors-content-${requestId}`);
+        
+        try {
+            const response = await fetch(`/Admin/GetMatchingDonors?requestId=${requestId}`);
+            const data = await response.json();
+            
+            if (data.success && data.donors && data.donors.length > 0) {
+                const locationMatched = data.locationMatched !== false; // Default to true if not specified
+                const message = data.message || (locationMatched ? `Found ${data.donors.length} matching donor(s)` : `Found ${data.donors.length} donor(s) with matching blood type`);
+                
+                content.innerHTML = `
+                    <div class="bg-white dark:bg-background-dark rounded-lg border border-gray-200 dark:border-white/10 p-4">
+                    ${!locationMatched ? `
+                    <div class="mb-4 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 flex items-start gap-3">
+                        <span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400 flex-shrink-0">warning</span>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Location Match Not Found</p>
+                            <p class="text-xs text-yellow-700 dark:text-yellow-400 mt-1">${message}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">${locationMatched ? `Found <strong>${data.donors.length}</strong> matching donor(s)` : `Showing <strong>${data.donors.length}</strong> donor(s) with matching blood type`}</p>
+                        <div class="flex gap-2">
+                            <button onclick="loadConfirmations(${requestId})" class="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10" title="Refresh Confirmations">
+                                <span class="material-symbols-outlined text-sm align-middle">refresh</span> Refresh
+                            </button>
+                            <button onclick="selectAllDonors(${requestId})" class="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10">Select All</button>
+                            <button onclick="deselectAllDonors(${requestId})" class="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10">Deselect All</button>
+                            <button onclick="sendEmailsToSelected(${requestId})" class="px-3 py-1 text-xs rounded-lg bg-primary text-white hover:bg-primary/90">
+                                <span class="material-symbols-outlined text-sm align-middle">email</span> Send Emails
+                            </button>
+                        </div>
+                    </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100 dark:bg-white/5">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left"><input type="checkbox" id="select-all-${requestId}" onchange="toggleAllDonors(${requestId}, this.checked)"></th>
+                                        <th class="px-4 py-2 text-left">Name</th>
+                                        <th class="px-4 py-2 text-left">Email</th>
+                                        <th class="px-4 py-2 text-left">Phone</th>
+                                        <th class="px-4 py-2 text-left">Blood Type</th>
+                                        <th class="px-4 py-2 text-left">Location</th>
+                                        <th class="px-4 py-2 text-left">Last Donation</th>
+                                        <th class="px-4 py-2 text-left">Status</th>
+                                        <th class="px-4 py-2 text-left">Confirmation</th>
+                                        <th class="px-4 py-2 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.donors.map(donor => {
+                                        // Handle both camelCase and PascalCase property names
+                                        const donorId = donor.donorId || donor.DonorId;
+                                        const donorName = donor.name || donor.Name || `Donor #${donorId}`;
+                                        const donorEmail = donor.email || donor.Email || 'N/A';
+                                        const donorPhone = donor.phoneNumber || donor.PhoneNumber || 'N/A';
+                                        const donorBloodType = donor.bloodType || donor.BloodType || 'N/A';
+                                        const donorLocation = donor.location || donor.Location || 'N/A';
+                                        const lastDonation = donor.lastDonationDate || donor.LastDonationDate || 'Never';
+                                        const isAvailable = donor.isAvailable || donor.IsAvailable || false;
+                                        const isHealthy = donor.isHealthy || donor.IsHealthy || false;
+                                        const matchesLocation = donor.matchesLocation !== false; // Default to true if not specified
+                                        
+                                        return `
+                                        <tr class="border-b dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 ${!matchesLocation ? 'bg-yellow-50/50 dark:bg-yellow-900/10' : ''}" data-donor-id="${donorId}">
+                                            <td class="px-4 py-2">
+                                                <input type="checkbox" class="donor-checkbox" data-donor-id="${donorId}" data-request-id="${requestId}">
+                                            </td>
+                                            <td class="px-4 py-2 font-medium">${donorName}</td>
+                                            <td class="px-4 py-2">${donorEmail}</td>
+                                            <td class="px-4 py-2">${donorPhone}</td>
+                                            <td class="px-4 py-2 font-mono font-bold text-primary">${donorBloodType}</td>
+                                            <td class="px-4 py-2">
+                                                ${!matchesLocation ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-xs text-yellow-600 dark:text-yellow-400" title="Different location">location_off</span>${donorLocation}</span>` : donorLocation}
+                                            </td>
+                                            <td class="px-4 py-2">${lastDonation}</td>
+                                            <td class="px-4 py-2">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs ${isAvailable && isHealthy ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'}">
+                                                    ${isAvailable && isHealthy ? 'Available' : 'Unavailable'}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2">
+                                                <span class="confirmation-status-${donorId} inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400" data-donor-id="${donorId}">
+                                                    Not Confirmed
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2">
+                                                <button onclick="markDonorConfirmed(${requestId}, ${donorId}, '${donorName.replace(/'/g, "\\'")}')" 
+                                                        class="px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700">
+                                                    Mark Confirmed
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+                // Load existing confirmations after a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    loadConfirmations(requestId);
+                }, 100);
+                
+                // Auto-refresh confirmations every 30 seconds when matching donors are visible
+                const refreshInterval = setInterval(() => {
+                    const row = document.getElementById(`matching-donors-row-${requestId}`);
+                    if (row && !row.classList.contains('hidden')) {
+                        loadConfirmations(requestId);
+                    } else {
+                        clearInterval(refreshInterval);
+                    }
+                }, 30000); // Refresh every 30 seconds
+            } else {
+                content.innerHTML = `
+                    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <span class="material-symbols-outlined text-4xl mb-2">person_off</span>
+                        <p>No matching donors found for this request.</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            content.innerHTML = `
+                <div class="text-center py-8 text-red-500">
+                    <span class="material-symbols-outlined text-4xl mb-2">error</span>
+                    <p>Error loading matching donors: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+
+    function toggleAllDonors(requestId, checked) {
+        const checkboxes = document.querySelectorAll(`input.donor-checkbox[data-request-id="${requestId}"]`);
+        checkboxes.forEach(cb => cb.checked = checked);
+    }
+
+    function selectAllDonors(requestId) {
+        document.getElementById(`select-all-${requestId}`).checked = true;
+        toggleAllDonors(requestId, true);
+    }
+
+    function deselectAllDonors(requestId) {
+        document.getElementById(`select-all-${requestId}`).checked = false;
+        toggleAllDonors(requestId, false);
+    }
+
+    async function loadConfirmations(requestId) {
+        try {
+            console.log(`Loading confirmations for request ${requestId}...`);
+            const response = await fetch(`/Admin/GetDonorConfirmations?requestId=${requestId}`);
+            
+            if (!response.ok) {
+                console.error(`HTTP error! status: ${response.status}`);
+                return;
+            }
+            
+            const data = await response.json();
+            console.log('Confirmations API response for request', requestId, ':', data); // Debug log
+            
+            if (!data.success) {
+                console.error('API returned error:', data.message);
+                return;
+            }
+            
+            if (!data.confirmations || !Array.isArray(data.confirmations)) {
+                console.log('No confirmations array in response:', data);
+                return;
+            }
+            
+            console.log(`Found ${data.confirmations.length} confirmation(s) for request ${requestId}`);
+            
+            let newConfirmations = 0;
+            const matchingDonorsContent = document.getElementById(`matching-donors-content-${requestId}`);
+            
+            if (!matchingDonorsContent) {
+                console.warn(`Matching donors content not found for request ${requestId}. Table may not be loaded yet.`);
+                return;
+            }
+            
+            // Get all donor IDs currently in the table
+            const tableDonorIds = Array.from(matchingDonorsContent.querySelectorAll('tr[data-donor-id]'))
+                .map(row => parseInt(row.getAttribute('data-donor-id')));
+            console.log('Donor IDs in table:', tableDonorIds);
+            
+            data.confirmations.forEach(conf => {
+                // Handle both camelCase (from JSON) and PascalCase (if any)
+                const donorId = conf.donorId || conf.DonorId;
+                const status = conf.status || conf.Status || 'Pending';
+                
+                if (!donorId) {
+                    console.warn('Confirmation missing donorId:', conf);
+                    return;
+                }
+                
+                console.log(`Processing confirmation: DonorId=${donorId}, Status=${status}`, conf);
+                
+                // Find the status element - use data attribute for more reliable selection
+                const statusElement = matchingDonorsContent.querySelector(`span[data-donor-id="${donorId}"].confirmation-status-${donorId}`) ||
+                                     matchingDonorsContent.querySelector(`.confirmation-status-${donorId}`);
+                
+                // Find the row
+                const row = matchingDonorsContent.querySelector(`tr[data-donor-id="${donorId}"]`);
+                
+                console.log(`Donor ${donorId}:`, { 
+                    hasStatusElement: !!statusElement, 
+                    hasRow: !!row,
+                    statusElementClass: statusElement?.className,
+                    statusElementText: statusElement?.textContent,
+                    status: status
+                });
+                
+                if (statusElement) {
+                    const wasNotConfirmed = statusElement.textContent.trim() === 'Not Confirmed' || 
+                                            statusElement.textContent.trim() === '' ||
+                                            !statusElement.textContent.trim();
+                    
+                    const statusClass = status === 'Confirmed' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : status === 'Declined'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+                    
+                    // Update the status element
+                    statusElement.className = `confirmation-status-${donorId} inline-flex items-center px-2 py-0.5 rounded text-xs ${statusClass}`;
+                    statusElement.textContent = status;
+                    statusElement.title = conf.message || conf.adminNotes || conf.confirmedAt || `Status: ${status}`;
+                    
+                    console.log(`Updated status element for donor ${donorId} to: ${status}`);
+                    
+                    // Highlight new confirmations
+                    if (wasNotConfirmed && status === 'Confirmed') {
+                        newConfirmations++;
+                        if (row) {
+                            row.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+                            setTimeout(() => {
+                                row.style.backgroundColor = '';
+                            }, 3000);
+                        }
+                    }
+                } else {
+                    console.warn(`Status element not found for donor ${donorId} in request ${requestId}.`);
+                    console.log('Available confirmation status elements:', 
+                        Array.from(matchingDonorsContent.querySelectorAll('[class*="confirmation-status"]')).map(el => ({
+                            class: el.className,
+                            donorId: el.getAttribute('data-donor-id'),
+                            text: el.textContent
+                        }))
+                    );
+                }
+                
+                // Update or hide the "Mark Confirmed" button
+                if (row) {
+                    const actionCell = row.querySelector('td:last-child');
+                    if (actionCell && status === 'Confirmed') {
+                        const button = actionCell.querySelector('button');
+                        if (button) {
+                            actionCell.innerHTML = `<span class="text-xs text-green-600 dark:text-green-400">✓ Confirmed</span>`;
+                            console.log(`Updated action cell for donor ${donorId}`);
+                        }
+                    }
+                }
+            });
+            
+            if (newConfirmations > 0) {
+                // Show notification for new confirmations
+                showNotification(`🎉 ${newConfirmations} new confirmation(s) detected!`, 'success');
+            }
+            
+            console.log(`Finished processing confirmations for request ${requestId}`);
+        } catch (error) {
+            console.error('Error loading confirmations:', error);
+            console.error('Error stack:', error.stack);
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg ${
+            type === 'success' ? 'bg-green-500 text-white' : 
+            type === 'error' ? 'bg-red-500 text-white' : 
+            'bg-blue-500 text-white'
+        }`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transition = 'opacity 0.3s';
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Notification functionality is now in _DashboardLayout.cshtml and available on all pages
+
+    async function markDonorConfirmed(requestId, donorId, donorName) {
+        const message = prompt(`Mark ${donorName} as confirmed?\n\nOptional: Add a message or notes:`, 'Confirmed via email reply: "YES" or "I can help"');
+        
+        if (message === null) return; // User cancelled
+
+        try {
+            const response = await fetch('/Admin/RecordDonorConfirmation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    requestId: requestId,
+                    donorId: donorId,
+                    status: 'Confirmed',
+                    message: message || 'Confirmed by admin',
+                    adminNotes: message
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(`✅ ${donorName} marked as confirmed!`);
+                // Reload confirmations to update the display
+                loadConfirmations(requestId);
+                // Refresh notification badge
+                loadNotifications();
+            } else {
+                alert(`❌ Error: ${data.message}`);
+            }
+        } catch (error) {
+            alert(`❌ Error: ${error.message}`);
+        }
+    }
+
+    async function sendEmailsToSelected(requestId) {
+        const checkboxes = document.querySelectorAll(`input.donor-checkbox[data-request-id="${requestId}"]:checked`);
+        const selectedDonorIds = Array.from(checkboxes).map(cb => parseInt(cb.dataset.donorId));
+        
+        if (selectedDonorIds.length === 0) {
+            alert('Please select at least one donor to send emails.');
+            return;
+        }
+
+        if (!confirm(`Send emails to ${selectedDonorIds.length} selected donor(s)?`)) {
+            return;
+        }
+
+        const sendButton = event.target.closest('button');
+        const originalText = sendButton.innerHTML;
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<span class="material-symbols-outlined text-sm align-middle animate-spin">sync</span> Sending...';
+
+        try {
+            const response = await fetch('/Admin/SendEmailsToSelectedDonors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    requestId: requestId,
+                    donorIds: selectedDonorIds
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(`✅ ${data.message}\n\nSuccess: ${data.successCount}\nFailed: ${data.failCount}`);
+                if (data.errors && data.errors.length > 0) {
+                    console.error('Email errors:', data.errors);
+                }
+            } else {
+                alert(`❌ Error: ${data.message}`);
+            }
+        } catch (error) {
+            alert(`❌ Error sending emails: ${error.message}`);
+        } finally {
+            sendButton.disabled = false;
+            sendButton.innerHTML = originalText;
+        }
+    }
+</script>

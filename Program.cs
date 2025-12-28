@@ -1,17 +1,36 @@
 using BloodDonation.Data;
 using BloodDonation.Models;
+using BloodDonation.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore; // <-- Add this using
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Register BloodDonationContext with SQL Server connection
-builder.Services.AddDbContext<BloodDonationContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BloodDonationDb")));
+// Configure database provider based on settings
+var useMySQL = builder.Configuration.GetValue<bool>("UseMySQL");
+var databaseProvider = builder.Configuration.GetValue<string>("DatabaseProvider");
+
+if (useMySQL || databaseProvider == "MySQL")
+{
+    var connectionString = builder.Configuration.GetConnectionString("BloodDonationDb");
+    builder.Services.AddDbContext<BloodDonationContext>(options =>
+    {
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+    });
+}
+else
+{
+    var connectionString = builder.Configuration.GetConnectionString("BloodDonationDb_SqlServer");
+    builder.Services.AddDbContext<BloodDonationContext>(options =>
+    {
+        options.UseSqlServer(connectionString);
+    });
+}
 
 builder.Services.AddIdentity<Users, IdentityRole<int>>(options =>
 {
@@ -22,6 +41,14 @@ builder.Services.AddIdentity<Users, IdentityRole<int>>(options =>
     .AddEntityFrameworkStores<BloodDonationContext>()
     .AddDefaultTokenProviders();
 
+// Register DataSeeder as scoped service
+builder.Services.AddScoped<DataSeeder>();
+
+// Register NotificationService as scoped service
+builder.Services.AddScoped<NotificationService>();
+
+// Register EmailMonitoringService as hosted service (background service)
+builder.Services.AddHostedService<EmailMonitoringService>();
 
 // Configure cookie settings
 builder.Services.ConfigureApplicationCookie(options =>
@@ -53,6 +80,14 @@ app.UseRouting();
 // IMPORTANT: Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Seed admin user and demo data using scoped service
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    await seeder.ReseedOwnerUsersAsync();
+    await seeder.SeedDemoDataAsync();
+}
 
 // Default MVC route
 app.MapControllerRoute(

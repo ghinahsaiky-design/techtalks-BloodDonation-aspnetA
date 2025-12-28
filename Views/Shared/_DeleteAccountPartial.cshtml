@@ -1,0 +1,55 @@
+﻿@model DeleteAccountViewModel
+
+<form asp-action="DeleteAccount"
+      asp-controller="Auth"
+      method="post"
+      id="deleteAccountForm"
+      class="space-y-5">
+
+    @Html.AntiForgeryToken()
+
+    <!-- TITLE -->
+    <h2 class="text-xl font-semibold text-red-600">
+        Delete Account
+    </h2>
+
+    <!-- WARNING TEXT -->
+    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+        By deleting your account, all your personal data, activity history, and
+        access to the platform will be permanently removed.<br />
+        <span class="font-medium text-red-600">
+            This action cannot be undone.
+        </span>
+    </p>
+
+    <!-- PASSWORD -->
+    <div>
+        <label asp-for="Password"
+               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Confirm your password
+        </label>
+
+        <input asp-for="Password"
+               type="password"
+               class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+               placeholder="Enter your password" />
+
+        <span asp-validation-for="Password"
+              class="text-sm text-red-500"></span>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="flex justify-end gap-3 pt-2">
+
+        <button type="button"
+                onclick="closeModalDelete()"
+                class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            Cancel
+        </button>
+
+        <button type="submit"
+                class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition">
+            Delete Account
+        </button>
+    </div>
+</form>

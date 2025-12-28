@@ -1,0 +1,354 @@
+@{
+    ViewData["Title"] = "Admin Overview";
+}
+
+@section PageHeader {
+    <div class="flex items-center gap-4">
+
+        <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">
+            Overview
+        </h2>
+
+        <div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-red-100/40 dark:from-primary/20 dark:to-primary/10 rounded-lg border border-primary/20 dark:border-primary/30">
+            <span class="material-symbols-outlined text-primary text-lg">waving_hand</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-white">
+                <span class="text-gray-600 dark:text-gray-300">Hi,</span>
+                <span class="text-primary font-bold">
+                    @(ViewBag.AdminName ?? User?.Identity?.Name ?? "Admin")
+                </span>
+            </span>
+        </div>
+
+    </div>
+}
+
+
+<div class="flex flex-wrap justify-between items-center gap-3 mb-8">
+    <div>
+        <p class="text-gray-800 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">Statistics</p>
+        <p class="text-gray-500 text-sm mt-1">Overview of system performance and blood inventory</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="@Url.Action("ExportDashboardReport", "Admin")" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 shadow-sm transition-colors">
+            <span class="material-symbols-outlined text-sm">download</span>
+            Export Report
+        </a>
+        <button class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 shadow-sm">
+            <span class="material-symbols-outlined text-sm">calendar_today</span>
+            This Month
+        </button>
+    </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+    <div class="flex flex-col gap-4 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Total Registered Donors</p>
+                <h3 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold mt-1">@ViewBag.TotalDonors.ToString("N0")</h3>
+            </div>
+            <div class="p-2 bg-blue-50 text-blue-700 rounded-lg">
+                <span class="material-symbols-outlined">group</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 mt-auto">
+            <span class="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">trending_up</span> +12%
+            </span>
+            <span class="text-gray-400 text-xs">vs last month</span>
+        </div>
+        <div class="flex items-end gap-1 h-8 mt-2">
+            <div class="w-full bg-blue-100 rounded-t-sm h-[40%]"></div>
+            <div class="w-full bg-blue-100 rounded-t-sm h-[60%]"></div>
+            <div class="w-full bg-blue-100 rounded-t-sm h-[50%]"></div>
+            <div class="w-full bg-blue-100 rounded-t-sm h-[70%]"></div>
+            <div class="w-full bg-blue-100 rounded-t-sm h-[90%]"></div>
+            <div class="w-full bg-blue-600 rounded-t-sm h-[85%]"></div>
+        </div>
+    </div>
+    <div class="flex flex-col gap-4 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Successful Donations</p>
+                <h3 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold mt-1">@ViewBag.SuccessfulDonations.ToString("N0")</h3>
+            </div>
+            <div class="p-2 bg-red-50 text-primary rounded-lg">
+                <span class="material-symbols-outlined">bloodtype</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 mt-auto">
+            <span class="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">trending_up</span> +5.2%
+            </span>
+            <span class="text-gray-400 text-xs">vs last month</span>
+        </div>
+        <div class="flex items-end gap-1 h-8 mt-2">
+            <div class="w-full bg-red-100 rounded-t-sm h-[30%]"></div>
+            <div class="w-full bg-red-100 rounded-t-sm h-[45%]"></div>
+            <div class="w-full bg-red-100 rounded-t-sm h-[60%]"></div>
+            <div class="w-full bg-red-100 rounded-t-sm h-[55%]"></div>
+            <div class="w-full bg-red-100 rounded-t-sm h-[75%]"></div>
+            <div class="w-full bg-primary rounded-t-sm h-[90%]"></div>
+        </div>
+    </div>
+    <div class="flex flex-col gap-4 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Active Requests</p>
+                <h3 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold mt-1">@ViewBag.ActiveRequests</h3>
+            </div>
+            <div class="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                <span class="material-symbols-outlined">emergency</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 mt-auto">
+            <span class="text-red-600 bg-red-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">trending_down</span> -2%
+            </span>
+            <span class="text-gray-400 text-xs">vs last month</span>
+        </div>
+        <div class="flex items-end gap-1 h-8 mt-2">
+            <div class="w-full bg-orange-100 rounded-t-sm h-[80%]"></div>
+            <div class="w-full bg-orange-100 rounded-t-sm h-[70%]"></div>
+            <div class="w-full bg-orange-100 rounded-t-sm h-[60%]"></div>
+            <div class="w-full bg-orange-100 rounded-t-sm h-[50%]"></div>
+            <div class="w-full bg-orange-100 rounded-t-sm h-[40%]"></div>
+            <div class="w-full bg-orange-500 rounded-t-sm h-[35%]"></div>
+        </div>
+    </div>
+    <div class="flex flex-col gap-4 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Blood Stock Levels</p>
+                <h3 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold mt-1">@ViewBag.BloodStockPercentage%</h3>
+            </div>
+            <div class="p-2 bg-green-50 text-green-600 rounded-lg">
+                <span class="material-symbols-outlined">inventory_2</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 mt-auto">
+            <span class="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
+                Status: Good
+            </span>
+            <span class="text-gray-400 text-xs">Capacity full</span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-2.5 mt-auto">
+            <div class="bg-green-600 h-2.5 rounded-full" style="width: @ViewBag.BloodStockPercentage%"></div>
+        </div>
+    </div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h4 class="text-lg font-bold text-gray-800 dark:text-white">Donation Trends (Last 6 Months)</h4>
+            <div class="flex items-center gap-2">
+                <span class="flex items-center gap-1 text-xs text-gray-500"><div class="w-2 h-2 rounded-full bg-primary"></div> Donations</span>
+                <span class="flex items-center gap-1 text-xs text-gray-500"><div class="w-2 h-2 rounded-full bg-gray-300"></div> Target</span>
+            </div>
+        </div>
+        @using BloodDonation.Models
+        @{
+            var trends = ViewBag.DonationTrends as List<DonationTrendViewModel> ?? new List<DonationTrendViewModel>();
+            var maxCount = trends.Count > 0 ? Math.Max(trends.Max(t => t.Count), 1) : 1;
+            var monthIndex = 0;
+            var intensityClasses = new[] { "bg-primary/20", "bg-primary/30", "bg-primary/40", "bg-primary/60", "bg-primary/80", "bg-primary" };
+
+            // Calculate Y-axis labels dynamically
+            var yAxisMax = maxCount > 0 ? (int)Math.Ceiling(maxCount * 1.2) : 10;
+            var yAxisStep = yAxisMax / 5;
+            var yAxisLabels = new List<int>();
+            for (int i = 5; i >= 0; i--)
+            {
+                yAxisLabels.Add(i * yAxisStep);
+            }
+        }
+        <div class="flex-1 min-h-[300px] relative flex items-end justify-between gap-2 px-4 pb-8 pt-4 border-l border-b border-gray-100 dark:border-white/10">
+            <div class="absolute left-0 top-0 bottom-8 -translate-x-full pr-2 flex flex-col justify-between text-xs text-gray-400 dark:text-gray-500 h-full">
+                @foreach (var label in yAxisLabels)
+                {
+                    <span>@label</span>
+                }
+            </div>
+            <div class="relative w-full h-full flex items-end justify-around gap-1">
+                <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        <div class="w-full h-px bg-gray-50 dark:bg-white/5"></div>
+                    }
+                </div>
+                @if (trends.Count == 0)
+                {
+                    <div class="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
+                        No donation data available
+                    </div>
+                }
+                else
+                {
+                    @foreach (var trend in trends)
+                    {
+                        var count = trend.Count;
+                        var height = maxCount > 0 ? Math.Max((count * 100.0 / maxCount), count > 0 ? 2 : 0) : 0;
+                        var intensityClass = monthIndex < intensityClasses.Length ? intensityClasses[monthIndex] : "bg-primary";
+                        var monthFull = trend.Month ?? "N/A";
+                        var monthShort = trend.MonthShort ?? monthFull;
+
+                        <div class="relative flex flex-col items-center justify-end h-full flex-1 group cursor-pointer">
+                            <div class="w-full max-w-[40px] @intensityClass rounded-t-sm relative group-hover:bg-primary transition-all duration-200 min-h-[2px]" style="height: @(height)%">
+                                <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-gray-700 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                                    @monthFull: @count donation@(count != 1 ? "s" : "")
+                                </div>
+                            </div>
+                            <span class="absolute -bottom-6 text-xs text-gray-500 dark:text-gray-400 @(monthIndex == trends.Count - 1 ? "font-bold text-gray-700 dark:text-gray-300" : "") whitespace-nowrap">@monthShort</span>
+                        </div>
+                        monthIndex++;
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    <div class="rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm p-6 flex flex-col">
+        <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-6">Blood Type Distribution</h4>
+        <div class="flex flex-col items-center justify-center flex-1">
+            @{
+                var distributions = ViewBag.BloodTypeDistribution as List<BloodTypeDistributionViewModel> ?? new List<BloodTypeDistributionViewModel>();
+                var totalDonors = (int)ViewBag.TotalDonors;
+                var colors = new Dictionary<string, string>
+                {
+                    { "A+", "#d70427" },
+                    { "O+", "#1E40AF" },
+                    { "B+", "#F59E0B" },
+                    { "AB+", "#8B5CF6" },
+                    { "A-", "#EF4444" },
+                    { "O-", "#3B82F6" },
+                    { "B-", "#FBBF24" },
+                    { "AB-", "#A78BFA" }
+                };
+
+                var gradientParts = new List<string>();
+                double currentPercent = 0;
+                
+                if (distributions.Any())
+                {
+                    foreach (var dist in distributions)
+                    {
+                        var color = colors.ContainsKey(dist.Type) ? colors[dist.Type] : "#10B981";
+                        var nextPercent = currentPercent + dist.Percentage;
+                        gradientParts.Add($"{color} {currentPercent.ToString("F1")}% {nextPercent.ToString("F1")}%");
+                        currentPercent = nextPercent;
+                    }
+                }
+                else
+                {
+                    gradientParts.Add("#e5e7eb 0% 100%");
+                }
+                
+                var gradientStyle = string.Join(", ", gradientParts);
+            }
+            <div class="relative w-48 h-48 rounded-full mb-8 shadow-inner" style="background: conic-gradient(@gradientStyle);">
+                <div class="absolute inset-0 m-auto w-32 h-32 bg-white dark:bg-background-dark rounded-full flex flex-col items-center justify-center shadow-sm">
+                    <span class="text-gray-400 text-xs font-medium">Total Donors</span>
+                    <span class="text-2xl font-bold text-gray-800 dark:text-white">@totalDonors.ToString("N0")</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-x-8 gap-y-3 w-full px-4">
+                @{
+                    var bgColors = new Dictionary<string, string>
+                    {
+                        { "A+", "bg-primary" },
+                        { "O+", "bg-blue-700" },
+                        { "B+", "bg-amber-500" },
+                        { "AB+", "bg-purple-500" },
+                        { "A-", "bg-red-500" },
+                        { "O-", "bg-blue-500" },
+                        { "B-", "bg-yellow-500" },
+                        { "AB-", "bg-purple-400" }
+                    };
+                }
+                @foreach (var dist in distributions)
+                {
+                    var colorClass = bgColors.ContainsKey(dist.Type) ? bgColors[dist.Type] : "bg-emerald-500";
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full @colorClass"></div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-gray-500">Type @dist.Type</span>
+                            <span class="text-sm font-bold">@dist.Percentage.ToString("F1")%</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-6 rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm overflow-hidden">
+    <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+        <h4 class="text-base font-bold text-gray-800 dark:text-white">Recent Donors</h4>
+        <a class="text-sm text-primary font-medium hover:underline" href="@Url.Action("DonorManagement", "Admin")">View All</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-gray-50 dark:bg-white/5 text-xs uppercase text-gray-500">
+                <tr>
+                    <th class="px-6 py-3">Donor Name</th>
+                    <th class="px-6 py-3">Blood Type</th>
+                    <th class="px-6 py-3">Location</th>
+                    <th class="px-6 py-3">Registered</th>
+                    <th class="px-6 py-3">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @{
+                    var recentDonations = ViewBag.RecentDonations as IEnumerable<RecentDonorViewModel> ?? new List<RecentDonorViewModel>();
+                    var bloodTypeColors = new Dictionary<string, string>
+                                {
+                                { "A+", "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" },
+                                { "O+", "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" },
+                                { "B+", "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" },
+                                { "AB+", "bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400" },
+                                { "A-", "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400" },
+                                { "O-", "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400" },
+                                { "B-", "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400" },
+                                { "AB-", "bg-pink-100 text-pink-700 dark:bg-pink-900/20 dark:text-pink-400" }
+                                };
+                }
+                @if (recentDonations == null || !recentDonations.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No recent donors registered</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var donor in recentDonations)
+                    {
+                        var bloodTypeStr = donor.BloodType ?? "";
+                        var colorClass = bloodTypeColors.ContainsKey(bloodTypeStr)
+                        ? bloodTypeColors[bloodTypeStr]
+                        : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+                        var dateStr = donor.Date.ToString("MMM dd, yyyy");
+                        var statusStr = donor.Status ?? "Unavailable";
+                        var statusClass = statusStr == "Available"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                        : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+                        var statusIcon = statusStr == "Available"
+                        ? "check_circle"
+                        : "cancel";
+                        var donorName = donor.DonorName ?? "Unknown";
+                        var location = donor.Location ?? "N/A";
+
+                        <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-3 font-medium text-gray-900 dark:text-white">@donorName</td>
+                            <td class="px-6 py-3"><span class="@colorClass px-2 py-0.5 rounded text-xs font-bold">@bloodTypeStr</span></td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-gray-400">@location</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-gray-400">@dateStr</td>
+                            <td class="px-6 py-3">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium @statusClass">
+                                    <span class="material-symbols-outlined text-xs">@statusIcon</span>
+                                    @statusStr
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

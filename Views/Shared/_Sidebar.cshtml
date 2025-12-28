@@ -1,0 +1,183 @@
+<aside class="w-64 shrink-0 bg-white dark:bg-background-dark border-r min-h-screen p-4 relative">
+   
+    <a href="@Url.Action("Index", "Home")">
+    <div class="flex items-center gap-3 mb-8">
+        <img src="~/images/BloodDonationLogo.png" alt="BloodConnect logo" class="size-10 rounded-full object-cover" />
+
+        <div class="flex flex-col">
+            <span class="text-lg font-extrabold text-gray-900 dark:text-white tracking-tight">
+                BloodConnect
+            </span>
+            @if (User.IsInRole("Owner"))
+            {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Owner Panel</span>
+            }
+            else if (User.IsInRole("Admin"))
+            {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Admin Panel</span>
+            }
+        </div>
+    </div>
+    </a>
+
+    @{
+        var action = ViewContext.RouteData.Values["action"]?.ToString();
+    }
+
+    <nav class="flex flex-col gap-2 mt-4">
+
+        @if (User.IsInRole("Owner"))
+        {
+            <!-- Overview -->
+            <a href="@Url.Action("Index", "Owner")"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg
+                      @(action == "Index"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "Index" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                    Overview
+                </span>
+                <p class="text-sm leading-normal @(action == "Index" ? "font-bold" : "font-medium")">
+                    Overview
+                </p>
+            </a>
+        }
+        else
+        {
+            <a href="@Url.Action("Index", "Admin")"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "Index"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+                <span class="material-symbols-outlined @(action == "Index" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                    Overview
+                </span>
+                <p class="text-sm leading-normal @(action == "Index" ? "font-bold" : "font-medium")">
+                    Overview
+                </p>
+            </a>
+        }
+
+
+
+        @if (User.IsInRole("Owner"))
+        {
+            <!-- Admin Management -->
+            <a href="@Url.Action("AdminManagement", "Owner")"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg
+                            @(action == "AdminManagement"
+                                      ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                                      : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+                <span class="material-symbols-outlined @(action == "AdminManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                    manage_accounts
+                </span>
+                <p class="text-sm leading-normal @(action == "AdminManagement" ? "font-bold" : "font-medium")">
+                    Admins
+                </p>
+            </a>
+
+            <!-- Hospital Management -->
+            <a href="@Url.Action("HospitalManagement", "Owner")"
+               class="flex items-center gap-3 px-3 py-2 rounded-lg
+                            @(action == "HospitalManagement"
+                                            ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                                            : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "HospitalManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                    local_hospital
+                </span>
+            <p class="text-sm leading-normal @(action == "HospitalManagement" ? "font-bold" : "font-medium")">
+                    Hospitals
+                </p>
+            </a>
+        }
+
+        <!-- Donor Management -->
+        <a href="@Url.Action("DonorManagement", "Admin")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "DonorManagement"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "DonorManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                group
+            </span>
+            <p class="text-sm leading-normal @(action == "DonorManagement" ? "font-bold" : "font-medium")">
+                Donors
+            </p>
+        </a>
+
+        <!-- Request Management -->
+        <a href="@Url.Action("RequestManagement", "Admin")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "RequestManagement"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "RequestManagement" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                inbox
+            </span>
+            <p class="text-sm leading-normal @(action == "RequestManagement" ? "font-bold" : "font-medium")">
+                Requests
+            </p>
+        </a>
+
+        <!-- Profile -->
+        <a href="@Url.Action("Profile", "Account")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "Profile"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "Profile" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                person
+            </span>
+            <p class="text-sm leading-normal @(action == "Profile" ? "font-bold" : "font-medium")">
+                Profile
+            </p>
+        </a>
+
+        <!-- Settings -->
+        <a href="@Url.Action("Settings", "Account")"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg
+              @(action == "Settings"
+                           ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary font-bold"
+                           : "text-gray-800 dark:text-gray-300 hover:bg-background-light dark:hover:bg-white/5")">
+
+            <span class="material-symbols-outlined @(action == "Settings" ? "!fill-1 text-primary" : "text-blue-700 dark:text-primary/80")">
+                settings
+            </span>
+            <p class="text-sm leading-normal @(action == "Settings" ? "font-bold" : "font-medium")">
+                Settings
+            </p>
+        </a>
+
+    </nav>
+
+    <div class="fixed bottom-4 left-0 w-64 px-4 z-20">
+
+        <form asp-action="Logout" asp-controller="Auth" method="post" class="inline w-full">
+            @Html.AntiForgeryToken()
+
+            <button type="submit"
+                    class="flex items-center gap-3 w-full
+                       text-red-600 dark:text-red-400
+                       hover:bg-red-50 dark:hover:bg-red-900/20
+                       hover:text-red-700 dark:hover:text-red-300
+                       rounded-lg px-3 py-2 transition">
+
+                <span class="material-symbols-outlined text-[20px]">logout</span>
+
+                <p class="text-sm font-medium leading-normal">
+                    Sign Out
+                </p>
+            </button>
+        </form>
+
+    </div>
+
+
+</aside>

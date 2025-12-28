@@ -38,6 +38,15 @@
             box-shadow: 0 0 0 3px rgba(233,78,78,.18);
         }
 
+    .input-group.error {
+        border-color: #dc3545;
+    }
+
+    .input-group.error:focus-within {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220,53,69,.18);
+    }
+
     .form-control,
     .form-select {
         border: none;
@@ -82,58 +91,80 @@
         <p class="text-muted text-center mb-4">Join BloodConnect and save lives</p>
 
         <form asp-action="SignUp" method="post">
-            <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
             <!-- First Name -->
-            <div class="input-group mb-3">
+            <div class="mb-3">
+                <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-person"></i></span>
                 <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+                </div>
+                <span asp-validation-for="FirstName" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Last Name -->
-            <div class="input-group mb-3">
+            <div class="mb-3">
+                <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-person"></i></span>
                 <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+                </div>
+                <span asp-validation-for="LastName" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Email -->
-            <div class="input-group mb-3">
+            <div class="mb-3">
+                <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-at"></i></span>
                 <input asp-for="Email" type="email" class="form-control" placeholder="Email Address" />
+                </div>
+                <span asp-validation-for="Email" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Password -->
-            <div class="input-group mb-3">
+            <div class="mb-3">
+                <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Password (min 6 characters)" />
+                </div>
+                <span asp-validation-for="Password" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Confirm Password -->
-            <div class="input-group mb-3">
+            <div class="mb-3">
+                <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
                 <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm Password" />
+                </div>
+                <span asp-validation-for="ConfirmPassword" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Phone -->
-            <div class="input-group mb-3">
+            <div class="mb-3">
+                <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                <input asp-for="Phone" class="form-control" placeholder="Phone Number" />
+                    <input asp-for="Phone" class="form-control" placeholder="Phone Number (optional)" />
+                </div>
+                <span asp-validation-for="Phone" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Date of Birth -->
-            <div class="input-group mb-3">
+            <div class="mb-3">
+                <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                    <input asp-for="DateOfBirth" type="date" class="form-control" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+                <span asp-validation-for="DateOfBirth" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Gender -->
-            <div class="input-group mb-3">
+            <div class="mb-3">
+                <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
                 <select asp-for="Gender" class="form-select">
                     <option value="">Select Gender</option>
                     <option>Male</option>
                     <option>Female</option>
                 </select>
+                </div>
+                <span asp-validation-for="Gender" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Location & Blood -->
@@ -149,6 +180,7 @@
                             }
                         </select>
                     </div>
+                    <span asp-validation-for="LocationId" class="text-danger small d-block mt-1 ms-2"></span>
                 </div>
 
                 <div class="col-6">
@@ -162,6 +194,7 @@
                             }
                         </select>
                     </div>
+                    <span asp-validation-for="BloodTypeId" class="text-danger small d-block mt-1 ms-2"></span>
                 </div>
             </div>
 
@@ -190,4 +223,50 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Set max date for date of birth to today
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateOfBirthInput = document.querySelector('input[name="DateOfBirth"]');
+            if (dateOfBirthInput) {
+                const today = new Date().toISOString().split('T')[0];
+                dateOfBirthInput.setAttribute('max', today);
+            }
+
+            // Add error styling to input groups with validation errors
+            function updateErrorStyles() {
+                document.querySelectorAll('span.field-validation-error, span[data-valmsg-for]').forEach(function(span) {
+                    if (span.textContent.trim() !== '') {
+                        const inputGroup = span.closest('.mb-3')?.querySelector('.input-group');
+                        if (inputGroup) {
+                            inputGroup.classList.add('error');
+                        }
+                    } else {
+                        const inputGroup = span.closest('.mb-3')?.querySelector('.input-group');
+                        if (inputGroup) {
+                            inputGroup.classList.remove('error');
+                        }
+                    }
+                });
+            }
+
+            // Update error styles on page load
+            setTimeout(updateErrorStyles, 100);
+
+            // Real-time validation feedback
+            document.querySelectorAll('input, select').forEach(function(input) {
+                input.addEventListener('blur', function() {
+                    setTimeout(updateErrorStyles, 100);
+                });
+            });
+
+            // Watch for validation changes
+            const form = document.querySelector('form');
+            if (form) {
+                const observer = new MutationObserver(function() {
+                    updateErrorStyles();
+                });
+                observer.observe(form, { childList: true, subtree: true, characterData: true });
+            }
+        });
+    </script>
 }
