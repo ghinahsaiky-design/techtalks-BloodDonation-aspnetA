@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using BloodDonation.Models.ViewModels;
 
 namespace BloodDonation.Controllers
 {
@@ -729,11 +730,158 @@ namespace BloodDonation.Controllers
 
             return string.Join(" | ", notes);
         }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpGet]
+        public IActionResult Statistics(string timeframe, int? bloodTypeId)
+        {
+            // Start with all donor requests
+            var query = _context.DonorRequests.AsQueryable();
+
+            // Filter by timeframe
+            if (!string.IsNullOrEmpty(timeframe) && timeframe != "all")
+            {
+                int days = timeframe switch
+                {
+                    "30" => 30,
+                    "90" => 90,
+                    "365" => 365,
+                    _ => 0
+                };
+
+                if (days > 0)
+                {
+                    var startDate = DateTime.Today.AddDays(-days);
+                    query = query.Where(r => r.CreatedAt >= startDate);
+                }
+            }
+
+            // Filter by blood type
+            if (bloodTypeId.HasValue)
+            {
+                query = query.Where(r => r.BloodTypeId == bloodTypeId.Value);
+            }
+
+            // Build model based on filtered data
+            var model = new HospitalStatisticsViewModel
+            {
+                FulfillmentRate = GetFulfillmentRate(query),
+                AverageCompletionTimeHours = GetAverageCompletionTime(query),
+                EngagedRequests = GetEngagedRequests(query),
+                UnmetRequests = GetUnmetRequests(query),
+                SupplyVsDemand = GetSupplyVsDemand(query),
+                CompletionRatio = GetCompletionRatio(query),
+                BloodTypeFulfillment = GetFulfillmentByBloodType(query),
+                StatusBreakdown = GetStatusBreakdown(query)
+            };
+
+            // Blood types for dropdown
+            ViewBag.BloodTypes = _context.BloodTypes
+                .Select(bt => new { bt.BloodTypeId, bt.Type })
+                .ToList();
+            ViewBag.Timeframes = new List<SelectListItem>
+{
+    new SelectListItem { Text = "Last 30 Days", Value = "30", Selected = timeframe == "30" },
+    new SelectListItem { Text = "Last 3 Months", Value = "90", Selected = timeframe == "90" },
+    new SelectListItem { Text = "Last Year", Value = "365", Selected = timeframe == "365" },
+    new SelectListItem { Text = "All Time", Value = "all", Selected = timeframe == "all" }
+};
+
+            ViewBag.BloodTypesList = _context.BloodTypes
+                .Select(bt => new SelectListItem
+                {
+                    Text = bt.Type,
+                    Value = bt.BloodTypeId.ToString(),
+                    Selected = bloodTypeId.HasValue && bt.BloodTypeId == bloodTypeId.Value
+                })
+                .ToList();
+
+
+            return View(model);
+        }
+
+        // Updated helper methods to use filtered query
+        private double GetFulfillmentRate(IQueryable<DonorRequest> query)
+        {
+            int total = query.Count();
+            if (total == 0) return 0;
+            int completed = query.Count(r => r.Status == "Completed");
+            return Math.Round((double)completed / total * 100, 1);
+        }
+
+        private double GetAverageCompletionTime(IQueryable<DonorRequest> query)
+        {
+            var times = query
+                .Where(r => r.CompletedAt != null)
+                .Select(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours)
+                .ToList();
+
+            return times.Any() ? Math.Round(times.Average(), 1) : 0;
+        }
+
+        private int GetEngagedRequests(IQueryable<DonorRequest> query)
+        {
+            return query.Count(r => r.Status == "Approved" || r.Status == "Completed");
+        }
+
+        private int GetUnmetRequests(IQueryable<DonorRequest> query)
+        {
+            return query.Count(r => r.Status == "Pending" || r.Status == "Cancelled");
+        }
+
+        private SupplyDemandViewModel GetSupplyVsDemand(IQueryable<DonorRequest> query)
+        {
+            return new SupplyDemandViewModel
+            {
+                Requested = query.Count(),
+                Completed = query.Count(r => r.Status == "Completed")
+            };
+        }
+
+        private List<BloodTypeFulfillmentViewModel> GetFulfillmentByBloodType(IQueryable<DonorRequest> query)
+        {
+            return query
+                .GroupBy(r => r.BloodType.Type)
+                .Select(g => new BloodTypeFulfillmentViewModel
+                {
+                    BloodType = g.Key,
+                    Demand = g.Count(),
+                    Completed = g.Count(r => r.Status == "Completed")
+                })
+                .ToList();
+        }
+
+        private List<StatusBreakdownViewModel> GetStatusBreakdown(IQueryable<DonorRequest> query)
+        {
+            return query
+                .GroupBy(r => r.Status)
+                .Select(g => new StatusBreakdownViewModel
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+        }
+
+        private CompletionRatioViewModel GetCompletionRatio(IQueryable<DonorRequest> query)
+        {
+            int completed = query.Count(r => r.Status == "Completed");
+            int total = query.Count();
+
+            return new CompletionRatioViewModel
+            {
+                Completed = completed,
+                NotCompleted = total - completed
+            };
+        }
+
     }
+
 
     // Request model for marking notification as read
     public class MarkNotificationReadRequest
     {
         public int NotificationId { get; set; }
     }
+
 }

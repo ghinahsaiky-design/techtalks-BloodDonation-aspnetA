@@ -1,0 +1,410 @@
+﻿@model BloodDonation.Models.ViewModels.HospitalStatisticsViewModel
+
+@{
+    Layout = "_HospitalLayout";
+    ViewData["Title"] = "Statistics";
+    var total = Model.CompletionRatio.Completed + Model.CompletionRatio.NotCompleted;
+    var percent = total == 0 ? 0 : ((double)Model.CompletionRatio.Completed * 100 / total);
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Supply vs Demand Trends
+        const supplyDemandLabels = ['Requested', 'Completed'];
+        const supplyDemandData = [
+        @Model.SupplyVsDemand.Requested,
+        @Model.SupplyVsDemand.Completed
+        ];
+
+        new Chart(document.getElementById('supplyDemandChart'), {
+            type: 'bar',
+            data: {
+                labels: supplyDemandLabels,
+                datasets: [{
+                    label: 'Units',
+                    data: supplyDemandData,
+                    backgroundColor: ['#3b82f6', '#d60528'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Donor Retention (Completion Ratio)
+        const retentionData = {
+            labels: ['Completed', 'Not Completed'],
+            datasets: [{
+                data: [@Model.CompletionRatio.Completed, @Model.CompletionRatio.NotCompleted],
+                backgroundColor: ['#d60528', '#3b82f6'],
+                borderWidth: 2
+            }]
+        };
+
+        new Chart(document.getElementById('retentionChart'), {
+            type: 'doughnut',
+            data: retentionData,
+            options: {
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Fulfillment by Blood Type
+        const bloodTypeLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BloodTypeFulfillment.Select(x => x.BloodType)));
+        const bloodTypeDemand = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BloodTypeFulfillment.Select(x => x.Demand)));
+        const bloodTypeCompleted = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BloodTypeFulfillment.Select(x => x.Completed)));
+
+        new Chart(document.getElementById('bloodTypeChart'), {
+            type: 'bar',
+            data: {
+                labels: bloodTypeLabels,
+                datasets: [
+                    {
+                        label: 'Demand',
+                        data: bloodTypeDemand,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Supplied',
+                        data: bloodTypeCompleted,
+                        backgroundColor: '#d60528',
+                        borderColor: '#d60528',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+}
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181112] dark:text-white">
+    <div class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark">
+        <header class="bg-white dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+            <div class="px-8 py-6 flex flex-wrap justify-between items-end gap-4">
+                <div class="flex flex-col gap-1">
+                    <h1 class="text-[#181112] dark:text-white text-3xl font-black leading-tight tracking-tight">
+                        Statistics &amp; Analytics
+                    </h1>
+                    <p class="text-[#8c5f66] dark:text-gray-400 text-sm font-normal">
+                        Detailed insights into donation trends and fulfillment.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="exportButton" class="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm transition-colors">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+                        Export PDF
+                    </button>
+                </div>
+
+            </div>
+        </header>
+        <main id="statisticsContainer" class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-[1200px] mx-auto flex flex-col gap-6">
+                <!-- Filter Section -->
+                <form method="get" asp-action="Statistics">
+                    <div class="bg-white dark:bg-[#1a1a1a] p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col sm:flex-row gap-4 items-center">
+                        <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                            <span class="material-symbols-outlined">filter_list</span>
+                            <span class="text-sm font-semibold">Filter View:</span>
+                        </div>
+                        <div class="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Timeframe -->
+                            <!-- Timeframe -->
+                            <div class="relative">
+                                <select name="timeframe" asp-items="ViewBag.Timeframes" class="w-full bg-gray-50 dark:bg-white/5 border-0 rounded-lg py-2 pl-3 pr-10 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary">
+                                </select>
+                            </div>
+
+                            <!-- Blood Type -->
+                            <div class="relative">
+                                <select name="bloodTypeId" asp-items="ViewBag.BloodTypesList" class="w-full bg-gray-50 dark:bg-white/5 border-0 rounded-lg py-2 pl-3 pr-10 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary">
+                                    <option value="">All Blood Types</option> <!-- optional default -->
+                                </select>
+                            </div>
+
+                        </div>
+                        <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-black font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity">
+                            Apply
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Statistics Cards -->
+                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Fulfillment Rate -->
+                    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-lg bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                                <span class="material-symbols-outlined">handshake</span>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Fulfillment Rate</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.FulfillmentRate%</h3>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Percentage of requests fully met</p>
+                    </div>
+                    <!-- Avg. Match Time -->
+                    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                                <span class="material-symbols-outlined">schedule</span>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg. Match Time</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.AverageCompletionTimeHours Hrs</h3>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Time from request to confirmation</p>
+                    </div>
+                    <!-- Engaged Donors -->
+                    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
+                                <span class="material-symbols-outlined">group</span>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Engaged Donors</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.EngagedRequests</h3>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Donors active this month</p>
+                    </div>
+                    <!-- Unmet Requests -->
+                    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
+                                <span class="material-symbols-outlined">warning</span>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Unmet Requests</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.UnmetRequests</h3>
+                        </div>
+                    </div>
+                </section>
+                <!-- Trends and Retention -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Supply vs. Demand Trends -->
+                    <div class="lg:col-span-2 bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex flex-wrap justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-[#181112] dark:text-white text-lg font-bold">Supply vs. Demand Trends</h3>
+                                <p class="text-gray-500 text-xs">Comparison of blood units requested vs received</p>
+                            </div>
+                        </div>
+                        <div class="relative h-[280px] w-full">
+                            <canvas id="supplyDemandChart" height="120"></canvas>
+                        </div>
+                    </div>
+                    <!-- Donor Retention -->
+                    <div class="bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
+                        <h3 class="text-[#181112] dark:text-white text-lg font-bold mb-1">Donor Retention</h3>
+                        <p class="text-gray-500 text-xs mb-8">Completed vs Not Completed</p>
+                        <div class="flex-1 flex items-center justify-center relative">
+                            <canvas id="retentionChart" width="180" height="180"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-3xl font-bold text-gray-800 dark:text-white">@percent%</span>
+                                <span class="text-xs text-gray-500">Completed</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-3 mt-8">
+                            <div class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="size-3 bg-primary rounded-sm"></span>
+                                    <span class="text-gray-600 dark:text-gray-300">Completed</span>
+                                </div>
+                                <span class="font-bold">@Model.CompletionRatio.Completed</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="size-3 bg-blue-500 rounded-sm"></span>
+                                    <span class="text-gray-600 dark:text-gray-300">Not Completed</span>
+                                </div>
+                                <span class="font-bold">@Model.CompletionRatio.NotCompleted</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Blood Type Fulfillment-->
+                    <div class="bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col mx-auto">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-[#181112] dark:text-white text-lg font-bold">Fulfillment by Blood Type</h3>
+                        </div>
+                        <div class="relative h-[200px] flex items-end justify-center gap-4 sm:gap-4 px-2">
+                            <canvas id="bloodTypeChart" height="180"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+    </div>
+<!-- Keep everything the same until the script section at the bottom -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        document.getElementById("exportButton").addEventListener("click", function () {
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span class="material-symbols-outlined">downloading</span> Generating PDF...';
+            this.disabled = true;
+            
+            // Hide filter section for PDF
+            const filterSection = document.querySelector('form[method="get"]');
+            if (filterSection) {
+                filterSection.style.display = 'none';
+            }
+            
+            const container = document.getElementById("statisticsContainer");
+            
+            // Configure html2canvas with better settings
+            const options = {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#ffffff",
+                logging: false,
+                allowTaint: true,
+                removeContainer: true,
+                onclone: function(clonedDoc) {
+                    // Force light mode for PDF
+                    clonedDoc.body.classList.remove('dark');
+                    clonedDoc.body.classList.add('bg-white');
+                    clonedDoc.body.style.backgroundColor = '#ffffff';
+                    
+                    // Convert all dark mode elements to light mode
+                    const darkElements = clonedDoc.querySelectorAll('.dark\\:bg-\\[\\#1a1a1a\\], .dark\\:bg-background-dark');
+                    darkElements.forEach(el => {
+                        el.classList.remove('dark:bg-[#1a1a1a]', 'dark:bg-background-dark');
+                        el.classList.add('bg-white');
+                        el.style.backgroundColor = '#ffffff';
+                    });
+                    
+                    // Convert text colors
+                    const darkText = clonedDoc.querySelectorAll('.dark\\:text-white, .dark\\:text-gray-300, .dark\\:text-gray-400');
+                    darkText.forEach(el => {
+                        el.classList.remove('dark:text-white', 'dark:text-gray-300', 'dark:text-gray-400');
+                        el.classList.add('text-gray-900', 'text-gray-600', 'text-gray-500');
+                    });
+                    
+                    // Convert borders
+                    const darkBorders = clonedDoc.querySelectorAll('.dark\\:border-gray-800');
+                    darkBorders.forEach(el => {
+                        el.classList.remove('dark:border-gray-800');
+                        el.classList.add('border-gray-200');
+                    });
+                }
+            };
+
+            html2canvas(container, options).then(function(canvas) {
+                // Restore filter section
+                if (filterSection) {
+                    filterSection.style.display = '';
+                }
+                
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'pt', 'a4');
+                
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                // Add margins (72 points = 1 inch)
+                const margin = 72;
+                const contentWidth = pdfWidth - (margin * 2);
+                const contentHeight = (canvas.height * contentWidth) / canvas.width;
+                
+                // Add title header
+                pdf.setFontSize(20);
+                pdf.setTextColor(24, 17, 18);
+                pdf.text('Hospital Statistics Report', margin, margin - 20);
+                
+                pdf.setFontSize(10);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, margin - 5);
+                
+                // Calculate if content fits on one page
+                let position = margin;
+                let page = 1;
+                
+                // First page
+                pdf.addImage(imgData, 'PNG', margin, position, contentWidth, contentHeight);
+                
+                let heightLeft = contentHeight + position;
+                
+                // Check if we need additional pages
+                while (heightLeft > (pdfHeight - margin)) {
+                    pdf.addPage();
+                    page++;
+                    
+                    // Calculate new position for the continuation
+                    const newPosition = margin - (heightLeft - (pdfHeight - margin));
+                    pdf.addImage(imgData, 'PNG', margin, newPosition, contentWidth, contentHeight);
+                    
+                    heightLeft -= (pdfHeight - margin * 2);
+                }
+                
+                // Add page numbers
+                const totalPages = pdf.internal.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    pdf.setFontSize(9);
+                    pdf.setTextColor(150);
+                    pdf.text(
+                        `Page ${i} of ${totalPages}`,
+                        pdfWidth / 2,
+                        pdfHeight - margin / 2,
+                        { align: 'center' }
+                    );
+                }
+                
+                // Save PDF
+                pdf.save(`Hospital_Statistics_${new Date().toISOString().split('T')[0]}.pdf`);
+                
+                // Reset button
+                const exportButton = document.getElementById("exportButton");
+                exportButton.innerHTML = originalText;
+                exportButton.disabled = false;
+                
+            }).catch(function(error) {
+                console.error("Error generating PDF:", error);
+                alert("Error generating PDF. Please try again.");
+                
+                // Restore filter section on error
+                if (filterSection) {
+                    filterSection.style.display = '';
+                }
+                
+                // Reset button on error
+                const exportButton = document.getElementById("exportButton");
+                exportButton.innerHTML = originalText;
+                exportButton.disabled = false;
+            });
+        });
+    </script>
+
+</body>
