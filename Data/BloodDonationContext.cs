@@ -22,6 +22,7 @@ namespace BloodDonation.Data
         public DbSet<DonorConfirmation> DonorConfirmations { get; set; }
         public DbSet<Hospital> Hospitals { get; set; }
         public DbSet<HospitalNotification> HospitalNotifications { get; set; }
+        public DbSet<HospitalStaff> HospitalStaff { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

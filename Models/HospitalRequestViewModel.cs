@@ -163,5 +163,141 @@ namespace BloodDonation.Models
         public bool IsAvailable { get; set; }
         public bool IsHealthy { get; set; }
     }
+
+    public class HospitalSettingsViewModel
+    {
+        // Hospital Profile
+        public int HospitalId { get; set; }
+        [Required]
+        [Display(Name = "Hospital Name")]
+        public string HospitalName { get; set; } = string.Empty;
+        
+        [Display(Name = "Registration Number")]
+        public string License { get; set; } = string.Empty;
+        
+        [Display(Name = "Website")]
+        [Url(ErrorMessage = "Please enter a valid URL")]
+        public string? Website { get; set; }
+        
+        [Required]
+        [Display(Name = "Address")]
+        public string Address { get; set; } = string.Empty;
+        
+        [Required]
+        [Display(Name = "City")]
+        public string City { get; set; } = string.Empty;
+        
+        [Required]
+        [Display(Name = "Zip / Postal Code")]
+        public string Zip { get; set; } = string.Empty;
+        
+        [Required]
+        [Display(Name = "Phone Number")]
+        public string Phone { get; set; } = string.Empty;
+        
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Contact Email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Display(Name = "Logo")]
+        public string? LogoPath { get; set; }
+
+        // Notification Preferences
+        public NotificationPreferencesViewModel NotificationPreferences { get; set; } = new NotificationPreferencesViewModel();
+
+        // Team Members
+        public List<TeamMemberViewModel> TeamMembers { get; set; } = new List<TeamMemberViewModel>();
+    }
+
+    public class NotificationPreferencesViewModel
+    {
+        [Display(Name = "New Donor Matches")]
+        public bool EmailNewDonorMatches { get; set; } = true;
+        
+        [Display(Name = "Request Status Updates")]
+        public bool EmailRequestStatusUpdates { get; set; } = true;
+        
+        [Display(Name = "Marketing & Newsletter")]
+        public bool EmailMarketing { get; set; } = false;
+        
+        [Display(Name = "Emergency Low Stock")]
+        public bool SmsEmergencyLowStock { get; set; } = true;
+        
+        [Display(Name = "Urgent Request Fulfillment")]
+        public bool SmsUrgentRequestFulfillment { get; set; } = true;
+    }
+
+    public class TeamMemberViewModel
+    {
+        public int StaffId { get; set; }
+        public int UserId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string Initials { get; set; } = string.Empty;
+    }
+
+    public class AddTeamMemberViewModel
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "First name is required")]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Last name is required")]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; } = string.Empty;
+
+        [Display(Name = "Phone Number")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Role is required")]
+        [Display(Name = "Role")]
+        public string Role { get; set; } = "Staff"; // Admin, Coordinator, Staff
+
+        [Required(ErrorMessage = "Password is required")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class UpdateHospitalProfileViewModel
+    {
+        [Required]
+        [Display(Name = "Hospital Name")]
+        public string HospitalName { get; set; } = string.Empty;
+        
+        [Display(Name = "Website")]
+        [Url(ErrorMessage = "Please enter a valid URL")]
+        public string? Website { get; set; }
+        
+        [Required]
+        [Display(Name = "Address")]
+        public string Address { get; set; } = string.Empty;
+        
+        [Required]
+        [Display(Name = "City")]
+        public string City { get; set; } = string.Empty;
+        
+        [Required]
+        [Display(Name = "Zip / Postal Code")]
+        public string Zip { get; set; } = string.Empty;
+        
+        [Required]
+        [Display(Name = "Phone Number")]
+        public string Phone { get; set; } = string.Empty;
+        
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Contact Email")]
+        public string Email { get; set; } = string.Empty;
+    }
 }
 

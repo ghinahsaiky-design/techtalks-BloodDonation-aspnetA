@@ -138,16 +138,44 @@ namespace BloodDonation.Controllers
 
             // Check user status before attempting login (for Hospital/Admin users)
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user != null && (user.Role == "Hospital" || user.Role == "Admin") && user.Status == "Pending")
+            if (user != null)
             {
-                // Don't reveal whether the password is correct if account is pending
-                // This prevents information disclosure
-                ModelState.Remove(nameof(LoginViewModel.Email));
-                ModelState.Remove(nameof(LoginViewModel.Password));
-                model.Email = string.Empty;
-                model.Password = string.Empty;
-                ModelState.AddModelError("", "Your account is pending approval. Please wait for administrator approval before logging in.");
-                return View(model);
+                // Check if account is pending
+                if ((user.Role == "Hospital" || user.Role == "Admin") && user.Status == "Pending")
+                {
+                    // Don't reveal whether the password is correct if account is pending
+                    // This prevents information disclosure
+                    ModelState.Remove(nameof(LoginViewModel.Email));
+                    ModelState.Remove(nameof(LoginViewModel.Password));
+                    model.Email = string.Empty;
+                    model.Password = string.Empty;
+                    ModelState.AddModelError("", "Your account is pending approval. Please wait for administrator approval before logging in.");
+                    return View(model);
+                }
+
+                // Check if Hospital user is still linked to a hospital
+                if (user.Role == "Hospital")
+                {
+                    // Check if user is a primary hospital user
+                    var isPrimaryHospitalUser = await _context.Hospitals
+                        .AnyAsync(h => h.UserId == user.Id);
+
+                    // Check if user is an active staff member
+                    var isActiveStaff = await _context.HospitalStaff
+                        .AnyAsync(s => s.UserId == user.Id && s.Status == "Active");
+
+                    // If user is not a primary hospital user and not an active staff member, prevent login
+                    if (!isPrimaryHospitalUser && !isActiveStaff)
+                    {
+                        // Don't reveal whether the password is correct
+                        ModelState.Remove(nameof(LoginViewModel.Email));
+                        ModelState.Remove(nameof(LoginViewModel.Password));
+                        model.Email = string.Empty;
+                        model.Password = string.Empty;
+                        ModelState.AddModelError("", "Your account is no longer associated with a hospital. Please contact your hospital administrator.");
+                        return View(model);
+                    }
+                }
             }
 
             var result = await _signInManager.PasswordSignInAsync(
@@ -160,6 +188,28 @@ namespace BloodDonation.Controllers
             {
                 if (user == null)
                     user = await _userManager.FindByEmailAsync(model.Email);
+
+                // Double-check hospital association after password verification
+                if (user != null && user.Role == "Hospital")
+                {
+                    var isPrimaryHospitalUser = await _context.Hospitals
+                        .AnyAsync(h => h.UserId == user.Id);
+
+                    var isActiveStaff = await _context.HospitalStaff
+                        .AnyAsync(s => s.UserId == user.Id && s.Status == "Active");
+
+                    if (!isPrimaryHospitalUser && !isActiveStaff)
+                    {
+                        // Sign out immediately if they somehow got past the first check
+                        await _signInManager.SignOutAsync();
+                        ModelState.Remove(nameof(LoginViewModel.Email));
+                        ModelState.Remove(nameof(LoginViewModel.Password));
+                        model.Email = string.Empty;
+                        model.Password = string.Empty;
+                        ModelState.AddModelError("", "Your account is no longer associated with a hospital. Please contact your hospital administrator.");
+                        return View(model);
+                    }
+                }
 
                 var claims = new List<Claim>
                 {
