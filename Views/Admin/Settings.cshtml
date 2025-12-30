@@ -1,4 +1,4 @@
-@model BloodDonation.Models.Users
+﻿@model BloodDonation.Models.Users
 @{
     ViewData["Title"] = "System Settings";
 }
@@ -17,23 +17,34 @@
 </div>
 @if (Model != null)
 {
-    <section class="bg-white dark:bg-background-dark rounded-xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
-        <div class="p-6 border-b border-gray-100 dark:border-white/10">
-            <div class="flex items-center gap-3 mb-1">
-                <span class="material-symbols-outlined text-blue-700 dark:text-primary">account_circle</span>
+        <section class="bg-white dark:bg-background-dark rounded-xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-gray-100 dark:border-white/10">
+                <div class="flex items-center justify-between gap-3 mb-1">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-blue-700 dark:text-primary">account_circle</span>
 
-                    @if (User.IsInRole("Owner"))
-                    {
-                        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Owner Profile</h2>
-                    }else
-                    {
-                        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Admin Profile</h2>
-                    }
+                        @if (User.IsInRole("Owner"))
+                        {
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Owner Profile</h2>
+                        }
+                        else
+                        {
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Admin Profile</h2>
+                        }
+                    </div>
 
-                
+                    <!-- Right-side button: matches Edit Profile placement/size from Admin/Profile.cshtml -->
+                    <div class="flex gap-3">
+                        <button id="deleteAccountBtn"
+                                class="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors shadow-sm min-w-[120px]">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                            Delete Account
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400 pl-9">Your account information and role.</p>
             </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 pl-9">Your account information and role.</p>
-        </div>
         <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <div class="col-span-2 md:col-span-1">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
@@ -197,4 +208,93 @@
 </div>
 </section>
 </div>
+<!-- Delete account modal + backdrop (shared partial will load inside) -->
+<div id="deleteAccountBackdrop"
+     class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-40">
+</div>
+<div id="deleteAccountModal"
+     class="fixed inset-0 flex items-center justify-center hidden z-50">
 
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-lg p-4 relative">
+
+        <!-- CLOSE BUTTON -->
+        <button id="closeDeleteAccountModal"
+                class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-lg">
+            ✕
+        </button>
+
+        <!-- PARTIAL VIEW LOADS HERE -->
+        <div id="deleteAccountContainer"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        /* ===============================
+           DELETE ACCOUNT MODAL (admin settings)
+        =============================== */
+        const openBtnDelete = document.getElementById("deleteAccountBtn");
+        const closeBtnDelete = document.getElementById("closeDeleteAccountModal");
+        const modalDelete = document.getElementById("deleteAccountModal");
+        const backdropDelete = document.getElementById("deleteAccountBackdrop");
+        const containerDelete = document.getElementById("deleteAccountContainer");
+
+        if (openBtnDelete) {
+            openBtnDelete.addEventListener("click", function () {
+                fetch('/Auth/DeleteAccountPartial')
+                    .then(res => res.text())
+                    .then(html => {
+                        containerDelete.innerHTML = html;
+                        modalDelete.classList.remove("hidden");
+                        backdropDelete.classList.remove("hidden");
+                        document.body.style.overflow = "hidden";
+                    })
+                    .catch(console.error);
+            });
+        }
+
+        function closeModalDelete() {
+            modalDelete.classList.add("hidden");
+            backdropDelete.classList.add("hidden");
+            containerDelete.innerHTML = "";
+            document.body.style.overflow = "auto";
+        }
+
+        if (closeBtnDelete) closeBtnDelete.addEventListener("click", closeModalDelete);
+        if (backdropDelete) backdropDelete.addEventListener("click", closeModalDelete);
+
+        /* ===============================
+           AJAX submit handler for delete account form only
+        =============================== */
+        document.addEventListener("submit", function (e) {
+
+            const form = e.target;
+             // handle only the shared delete account partial form
+            if (form.id !== "deleteAccountForm") return;
+
+            e.preventDefault();
+
+            fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(res => {
+                const type = res.headers.get("content-type");
+                return type && type.includes("application/json")
+                    ? res.json()
+                    : res.text();
+            })
+            .then(data => {
+                if (typeof data === "object" && data.success) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    containerDelete.innerHTML = data;
+                }
+            })
+            .catch(console.error);
+        });
+
+    });
+</script>
+</div>
