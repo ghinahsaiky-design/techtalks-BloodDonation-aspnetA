@@ -136,11 +136,27 @@ namespace BloodDonation.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Check user status before attempting login (for Hospital/Admin users)
+            // Check user status before attempting login (applies to ALL user roles)
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null)
             {
-                // Check if account is pending
+                // Check if account is inactive or suspended (applies to ALL roles)
+                if (user.Status == "Inactive" || user.Status == "Suspended")
+                {
+                    // Don't reveal whether the password is correct if account is inactive/suspended
+                    // This prevents information disclosure
+                    ModelState.Remove(nameof(LoginViewModel.Email));
+                    ModelState.Remove(nameof(LoginViewModel.Password));
+                    model.Email = string.Empty;
+                    model.Password = string.Empty;
+                    string errorMessage = user.Status == "Inactive" 
+                        ? "Your account is inactive. Please contact the administrator to reactivate your account." 
+                        : "Your account has been suspended. Please contact the administrator for assistance.";
+                    ModelState.AddModelError("", errorMessage);
+                    return View(model);
+                }
+
+                // Check if account is pending (for Hospital/Admin users)
                 if ((user.Role == "Hospital" || user.Role == "Admin") && user.Status == "Pending")
                 {
                     // Don't reveal whether the password is correct if account is pending
@@ -188,6 +204,34 @@ namespace BloodDonation.Controllers
             {
                 if (user == null)
                     user = await _userManager.FindByEmailAsync(model.Email);
+
+                // Double-check user status after password verification (in case status changed)
+                if (user != null && (user.Status == "Inactive" || user.Status == "Suspended"))
+                {
+                    // Sign out immediately if account is inactive or suspended
+                    await _signInManager.SignOutAsync();
+                    ModelState.Remove(nameof(LoginViewModel.Email));
+                    ModelState.Remove(nameof(LoginViewModel.Password));
+                    model.Email = string.Empty;
+                    model.Password = string.Empty;
+                    string errorMessage = user.Status == "Inactive" 
+                        ? "Your account is inactive. Please contact the administrator to reactivate your account." 
+                        : "Your account has been suspended. Please contact the administrator for assistance.";
+                    ModelState.AddModelError("", errorMessage);
+                    return View(model);
+                }
+
+                // Double-check pending status for Hospital/Admin after password verification
+                if (user != null && (user.Role == "Hospital" || user.Role == "Admin") && user.Status == "Pending")
+                {
+                    await _signInManager.SignOutAsync();
+                    ModelState.Remove(nameof(LoginViewModel.Email));
+                    ModelState.Remove(nameof(LoginViewModel.Password));
+                    model.Email = string.Empty;
+                    model.Password = string.Empty;
+                    ModelState.AddModelError("", "Your account is pending approval. Please wait for administrator approval before logging in.");
+                    return View(model);
+                }
 
                 // Double-check hospital association after password verification
                 if (user != null && user.Role == "Hospital")
