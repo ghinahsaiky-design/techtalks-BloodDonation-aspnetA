@@ -1,4 +1,4 @@
-﻿@model IEnumerable<BloodDonation.Models.Hospital>
+﻿@model IEnumerable<BloodDonation.Models.HospitalManagementViewModel>
 
 @{
     ViewData["Title"] = "Hospital Management";
@@ -82,13 +82,20 @@
                         </thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                             @{
-                                var items = Model ?? Enumerable.Empty<BloodDonation.Models.Hospital>();
+                                var items = Model ?? Enumerable.Empty<BloodDonation.Models.HospitalManagementViewModel>();
                             }
                             @foreach (var h in items)
                             {
                                 <tr class="group hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="py-4 px-6">
-                                        <span class="font-mono text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">#HOSP-@h.Id.ToString("D3")</span>
+                                        @if (h.HospitalId.HasValue)
+                                        {
+                                            <span class="font-mono text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">#HOSP-@h.HospitalId.Value.ToString("D3")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="font-mono text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">#USER-@h.UserId.ToString("D3")</span>
+                                        }
                                     </td>
                                     <td class="py-4 px-6">
                                         <div class="flex items-center gap-3">
@@ -97,7 +104,12 @@
                                             </div>
                                             <div class="flex flex-col">
                                                 <span class="text-sm font-bold text-text-main dark:text-white group-hover:text-primary transition-colors">@h.Name</span>
-                                                <span class="text-xs text-text-muted">@(h.User?.Email ?? "No Email")</span>
+                                                <span class="text-xs text-text-muted">@(h.Email ?? "No Email")</span>
+                                                @if(!string.IsNullOrEmpty(h.PhoneNumber))
+                                                {
+                                                    <span class="text-xs text-text-muted">@h.PhoneNumber</span>
+                                                }
+                                                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">@h.Role</span>
                                             </div>
                                         </div>
                                     </td>
@@ -109,7 +121,7 @@
                                     </td>
                                     <td class="py-4 px-6">
                                         @{
-                                            var status = h.User?.Status ?? "Active";
+                                            var status = h.Status ?? "Active";
                                             var statusClass = status == "Active" ? "bg-green-50 text-green-700 border-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" :
                                                               status == "Inactive" ? "bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800" :
                                                               status == "Suspended" ? "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800" :
@@ -125,21 +137,21 @@
                                         </span>
                                     </td>
                                     <td class="py-4 px-6">
-                                        <span class="text-sm text-text-main dark:text-gray-300">@(h.User?.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy") ?? "N/A")</span>
+                                        <span class="text-sm text-text-main dark:text-gray-300">@(h.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy"))</span>
                                     </td>
                                     <td class="py-4 px-6 text-right">
                                         <div class="flex items-center justify-end gap-1">
-                                            <button type="button" onclick="openDetailsModal(@h.Id)" class="p-2 rounded-lg hover:bg-primary/10 text-gray-400 hover:text-primary transition-all" title="View Details">
+                                            <button type="button" onclick="openDetailsModal(@h.HospitalId)" class="p-2 rounded-lg hover:bg-primary/10 text-gray-400 hover:text-primary transition-all" title="View Details">
                                                 <span class="material-symbols-outlined text-xl">visibility</span>
                                             </button>
 
-                                            <button type="button" onclick="openEditModal(@h.Id)" class="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 hover:text-blue-600 transition-all" title="Edit">
+                                            <button type="button" onclick="openEditModal(@h.HospitalId)" class="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 hover:text-blue-600 transition-all" title="Edit">
                                                 <span class="material-symbols-outlined text-xl">edit</span>
                                             </button>
 
                                             <form asp-action="Delete" asp-controller="Hospital" method="post" onsubmit="return confirm('Are you sure you want to delete @h.Name? This will also delete their login account.');" class="inline">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@h.Id" />
+                                                <input type="hidden" name="id" value="@h.HospitalId" />
                                                 <button type="submit" class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 transition-all" title="Delete">
                                                     <span class="material-symbols-outlined text-xl">delete</span>
                                                 </button>

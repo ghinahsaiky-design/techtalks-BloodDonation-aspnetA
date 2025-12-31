@@ -338,29 +338,49 @@ namespace BloodDonation.Controllers
             if (!await IsOwnerAsync())
                 return Forbid();
 
-            var query = _context.Hospitals
-                .Include(h => h.User)
+            var roles = new[] { "Hospital", "Coordinator", "Staff" };
+            
+            var query = _context.Users
+                .Where(u => roles.Contains(u.Role))
+                .GroupJoin(_context.Hospitals, 
+                    u => u.Id, 
+                    h => h.UserId, 
+                    (u, h) => new { User = u, Hospital = h.FirstOrDefault() })
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(q))
             {
-                query = query.Where(h => h.Name.Contains(q) || 
-                                         h.User.Email.Contains(q) || 
-                                         h.Id.ToString().Contains(q));
+                query = query.Where(x => (x.Hospital != null && x.Hospital.Name.Contains(q)) || 
+                                         x.User.Email.Contains(q) || 
+                                         x.User.FirstName.Contains(q) ||
+                                         x.User.LastName.Contains(q));
             }
 
             if (!string.IsNullOrEmpty(status) && status != "All")
             {
-                query = query.Where(h => h.User.Status == status);
+                query = query.Where(x => x.User.Status == status);
             }
 
             if (!string.IsNullOrEmpty(location) && location != "All")
             {
-                query = query.Where(h => h.City == location || h.State == location);
+                query = query.Where(x => x.Hospital != null && (x.Hospital.City == location || x.Hospital.State == location));
             }
 
-            var hospitals = await query
-                .OrderByDescending(h => h.User.CreatedAt)
+            var result = await query
+                .OrderByDescending(x => x.User.CreatedAt)
+                .Select(x => new HospitalManagementViewModel
+                {
+                    HospitalId = x.Hospital != null ? x.Hospital.Id : (int?)null,
+                    UserId = x.User.Id,
+                    Name = x.Hospital != null ? x.Hospital.Name : x.User.FirstName + " " + x.User.LastName,
+                    Email = x.User.Email,
+                    PhoneNumber = x.User.PhoneNumber,
+                    Role = x.User.Role,
+                    City = x.Hospital != null ? x.Hospital.City : "-",
+                    State = x.Hospital != null ? x.Hospital.State : "-",
+                    Status = x.User.Status,
+                    CreatedAt = x.User.CreatedAt
+                })
                 .ToListAsync();
 
             ViewBag.SearchQuery = q;
@@ -373,7 +393,7 @@ namespace BloodDonation.Controllers
                 .OrderBy(d => d)
                 .ToListAsync();
 
-            return View(hospitals);
+            return View(result);
         }
 
         public async Task<IActionResult> GenerateReport()
