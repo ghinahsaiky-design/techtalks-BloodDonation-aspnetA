@@ -152,7 +152,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm p-6 flex flex-col">
             <div class="flex justify-between items-center mb-6">
-                <h4 class="text-lg font-bold text-gray-800 dark:text-white">Platform Activity Trends (Last 7 Days)</h4>
+                <h4 class="text-lg font-bold text-gray-800 dark:text-white">Platform Activity Trends (Last 6 Months)</h4>
                 <div class="flex items-center gap-4">
                     <span class="flex items-center gap-2 text-xs text-gray-500"><div class="w-3 h-3 rounded-sm bg-primary"></div> Donations</span>
                     <span class="flex items-center gap-2 text-xs text-gray-500"><div class="w-3 h-3 rounded-sm bg-blue-500"></div> Registrations</span>
@@ -203,7 +203,7 @@
                 <div class="flex justify-between text-xs text-gray-400 mt-2 px-2">
                     @foreach(var day in Model.DaysLabels)
                     {
-                        <span style="width: @(100.0/7)% ; text-align: center;">@day</span>
+                        <span style="width: @(100.0/Model.DaysLabels.Count)% ; text-align: center;">@day</span>
                     }
                 </div>
             </div>

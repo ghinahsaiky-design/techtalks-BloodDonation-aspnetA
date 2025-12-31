@@ -69,26 +69,27 @@ namespace BloodDonation.Controllers
                 ? ((double)(totalDonations - donationsLastMonthTotal) / donationsLastMonthTotal) * 100
                 : 100;
 
-            // Daily Trends (Last 7 Days)
+            // Monthly Trends (Last 6 Months)
             var today = DateTime.UtcNow.Date;
-            var startDate = today.AddDays(-6); // Last 7 days including today
+            var startDate = today.AddMonths(-5); // Last 6 months including current
+            startDate = new DateTime(startDate.Year, startDate.Month, 1); // Start from the 1st of that month
             
-            var dailyDonationsData = await _context.DonorConfirmations
+            var monthlyDonationsData = await _context.DonorConfirmations
                 .Where(d => d.ConfirmedAt >= startDate)
-                .GroupBy(d => d.ConfirmedAt.Date)
-                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .GroupBy(d => new { d.ConfirmedAt.Year, d.ConfirmedAt.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Count = g.Count() })
                 .ToListAsync();
 
-            var dailyRegistrationsData = await _context.Users
+            var monthlyRegistrationsData = await _context.Users
                 .Where(u => u.CreatedAt >= startDate)
-                .GroupBy(u => u.CreatedAt.Date)
-                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .GroupBy(u => new { u.CreatedAt.Year, u.CreatedAt.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Count = g.Count() })
                 .ToListAsync();
 
-            var dailyRequestsData = await _context.DonorRequests
+            var monthlyRequestsData = await _context.DonorRequests
                 .Where(r => r.CreatedAt >= startDate)
-                .GroupBy(r => r.CreatedAt.Date)
-                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .GroupBy(r => new { r.CreatedAt.Year, r.CreatedAt.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Count = g.Count() })
                 .ToListAsync();
 
             var dailyDonations = new List<int>();
@@ -96,14 +97,14 @@ namespace BloodDonation.Controllers
             var dailyRequests = new List<int>();
             var daysLabels = new List<string>();
 
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 6; i++)
             {
-                var d = startDate.AddDays(i);
-                daysLabels.Add(d.ToString("ddd")); // Mon, Tue, etc.
+                var d = startDate.AddMonths(i);
+                daysLabels.Add(d.ToString("MMM")); // Jan, Feb, etc.
                 
-                dailyDonations.Add(dailyDonationsData.FirstOrDefault(x => x.Date == d)?.Count ?? 0);
-                dailyRegistrations.Add(dailyRegistrationsData.FirstOrDefault(x => x.Date == d)?.Count ?? 0);
-                dailyRequests.Add(dailyRequestsData.FirstOrDefault(x => x.Date == d)?.Count ?? 0);
+                dailyDonations.Add(monthlyDonationsData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0);
+                dailyRegistrations.Add(monthlyRegistrationsData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0);
+                dailyRequests.Add(monthlyRequestsData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0);
             }
 
             // Recent Admin Actions
@@ -400,26 +401,27 @@ namespace BloodDonation.Controllers
                 ? ((double)(totalDonations - donationsLastMonthTotal) / donationsLastMonthTotal) * 100
                 : 100;
 
-            // 2. Fetch Daily Trends
+            // 2. Fetch Monthly Trends (Last 6 Months)
             var today = DateTime.UtcNow.Date;
-            var startDate = today.AddDays(-6);
+            var startDate = today.AddMonths(-5);
+            startDate = new DateTime(startDate.Year, startDate.Month, 1);
             
-            var dailyDonationsData = await _context.DonorConfirmations
+            var monthlyDonationsData = await _context.DonorConfirmations
                 .Where(d => d.ConfirmedAt >= startDate)
-                .GroupBy(d => d.ConfirmedAt.Date)
-                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .GroupBy(d => new { d.ConfirmedAt.Year, d.ConfirmedAt.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Count = g.Count() })
                 .ToListAsync();
 
-            var dailyRegistrationsData = await _context.Users
+            var monthlyRegistrationsData = await _context.Users
                 .Where(u => u.CreatedAt >= startDate)
-                .GroupBy(u => u.CreatedAt.Date)
-                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .GroupBy(u => new { u.CreatedAt.Year, u.CreatedAt.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Count = g.Count() })
                 .ToListAsync();
 
-            var dailyRequestsData = await _context.DonorRequests
+            var monthlyRequestsData = await _context.DonorRequests
                 .Where(r => r.CreatedAt >= startDate)
-                .GroupBy(r => r.CreatedAt.Date)
-                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .GroupBy(r => new { r.CreatedAt.Year, r.CreatedAt.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Count = g.Count() })
                 .ToListAsync();
 
             // 3. Fetch Recent Admin Actions
@@ -524,18 +526,20 @@ namespace BloodDonation.Controllers
                                         h.Cell().AlignRight().Text("Count").SemiBold();
                                     });
 
-                                    foreach (var role in roleDistribution)
+                                    var allRoles = new[] { "Donor", "Hospital", "Admin", "Owner" };
+                                    foreach (var roleName in allRoles)
                                     {
-                                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(role.Key);
-                                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).AlignRight().Text(role.Value.ToString());
+                                        var count = roleDistribution.ContainsKey(roleName) ? roleDistribution[roleName] : 0;
+                                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(roleName);
+                                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).AlignRight().Text(count.ToString());
                                     }
                                 });
                             });
 
-                            // Daily Trends Table
+                            // Monthly Trends Table
                             row.RelativeItem(2).Column(c =>
                             {
-                                c.Item().PaddingBottom(5).Text("Daily Activity (Last 7 Days)").FontSize(12).SemiBold();
+                                c.Item().PaddingBottom(5).Text("Monthly Activity (Last 6 Months)").FontSize(12).SemiBold();
                                 c.Item().Table(table =>
                                 {
                                     table.ColumnsDefinition(columns =>
@@ -548,20 +552,20 @@ namespace BloodDonation.Controllers
 
                                     table.Header(h =>
                                     {
-                                        h.Cell().Text("Date").SemiBold();
+                                        h.Cell().Text("Month").SemiBold();
                                         h.Cell().AlignRight().Text("Donations").SemiBold();
                                         h.Cell().AlignRight().Text("Registers").SemiBold();
                                         h.Cell().AlignRight().Text("Requests").SemiBold();
                                     });
 
-                                    for (int i = 0; i < 7; i++)
+                                    for (int i = 0; i < 6; i++)
                                     {
-                                        var d = startDate.AddDays(i);
-                                        var donations = dailyDonationsData.FirstOrDefault(x => x.Date == d)?.Count ?? 0;
-                                        var registrations = dailyRegistrationsData.FirstOrDefault(x => x.Date == d)?.Count ?? 0;
-                                        var requests = dailyRequestsData.FirstOrDefault(x => x.Date == d)?.Count ?? 0;
+                                        var d = startDate.AddMonths(i);
+                                        var donations = monthlyDonationsData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0;
+                                        var registrations = monthlyRegistrationsData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0;
+                                        var requests = monthlyRequestsData.FirstOrDefault(x => x.Year == d.Year && x.Month == d.Month)?.Count ?? 0;
 
-                                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(d.ToString("MMM dd"));
+                                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(d.ToString("MMM yyyy"));
                                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).AlignRight().Text(donations.ToString());
                                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).AlignRight().Text(registrations.ToString());
                                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).AlignRight().Text(requests.ToString());
