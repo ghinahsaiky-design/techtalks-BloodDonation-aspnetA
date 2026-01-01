@@ -22,6 +22,7 @@ namespace BloodDonation.Data
         public DbSet<DonorConfirmation> DonorConfirmations { get; set; }
         public DbSet<Hospital> Hospitals { get; set; }
         public DbSet<HospitalNotification> HospitalNotifications { get; set; }
+        public DbSet<HospitalStaff> HospitalStaff { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -91,6 +92,20 @@ namespace BloodDonation.Data
                 .WithMany()
                 .HasForeignKey(hn => hn.RequestId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // HospitalStaff -> Hospital relationship
+            modelBuilder.Entity<HospitalStaff>()
+                .HasOne(hs => hs.Hospital)
+                .WithMany()
+                .HasForeignKey(hs => hs.HospitalId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // HospitalStaff -> Users relationship
+            modelBuilder.Entity<HospitalStaff>()
+                .HasOne(hs => hs.User)
+                .WithMany()
+                .HasForeignKey(hs => hs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }

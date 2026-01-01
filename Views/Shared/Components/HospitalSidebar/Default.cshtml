@@ -1,0 +1,110 @@
+@model BloodDonation.ViewComponents.HospitalSidebarViewModel
+
+<div class="w-64 flex-shrink-0 border-r border-gray-200 bg-white dark:bg-[#1a1a1a] dark:border-gray-800 flex flex-col h-full overflow-y-auto">
+    <div class="p-6">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="rounded-full size-10 bg-white dark:bg-[#1a1a1a] flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700">
+                <img src="~/images/BloodDonationLogo.png" alt="BloodConnect Logo" class="w-full h-full object-contain p-1" />
+            </div>
+            <div class="flex flex-col">
+                <h1 class="text-[#181112] dark:text-white text-base font-bold leading-normal">BloodConnect</h1>
+                <p class="text-[#8c5f66] dark:text-gray-400 text-xs font-normal leading-normal">Hospital Portal</p>
+            </div>
+        </div>
+        <div class="flex flex-col gap-2">
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg @(Model.CurrentAction == "Dashboard" ? "bg-primary/10 text-primary" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5") group transition-colors" asp-controller="Hospital" asp-action="Dashboard">
+                <span class="material-symbols-outlined @(Model.CurrentAction == "Dashboard" ? "filled" : "")">dashboard</span>
+                <p class="text-sm font-medium leading-normal">Dashboard</p>
+            </a>
+            @if (Model.CanCreateRequests)
+            {
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg @(Model.CurrentAction == "CreateRequest" ? "bg-primary/10 text-primary" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5") group transition-colors" asp-controller="Hospital" asp-action="CreateRequest">
+                    <span class="material-symbols-outlined @(Model.CurrentAction == "CreateRequest" ? "filled" : "")">water_drop</span>
+                    <p class="text-sm font-medium leading-normal">Request Blood</p>
+                </a>
+            }
+            else
+            {
+                <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-60 relative" title="You don't have permission to create requests">
+                    <span class="material-symbols-outlined">lock</span>
+                    <p class="text-sm font-medium leading-normal">Request Blood</p>
+                </div>
+            }
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg @(Model.CurrentAction == "ViewRequests" ? "bg-primary/10 text-primary" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5") group transition-colors" asp-controller="Hospital" asp-action="ViewRequests">
+                <span class="material-symbols-outlined @(Model.CurrentAction == "ViewRequests" ? "filled" : "")">assignment</span>
+                <p class="text-sm font-medium leading-normal">My Requests</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" href="#">
+                <span class="material-symbols-outlined">chat_bubble</span>
+                <p class="text-sm font-medium leading-normal">Donor Communications</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" href="#">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <p class="text-sm font-medium leading-normal">Statistics</p>
+            </a>
+            @if (Model.CanAccessSettings)
+            {
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg @(Model.CurrentAction == "Settings" ? "bg-primary/10 text-primary" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5") group transition-colors" asp-controller="Hospital" asp-action="Settings">
+                    <span class="material-symbols-outlined @(Model.CurrentAction == "Settings" ? "filled" : "")">settings</span>
+                    <p class="text-sm font-medium leading-normal">Settings</p>
+                </a>
+            }
+            else
+            {
+                <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-60 relative" title="Only the primary administrator can access settings">
+                    <span class="material-symbols-outlined">lock</span>
+                    <p class="text-sm font-medium leading-normal">Settings</p>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="mt-auto border-t border-gray-100 dark:border-gray-800">
+        <!-- Hospital Info Section -->
+        @if (!string.IsNullOrEmpty(Model.HospitalName))
+        {
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                <div class="flex items-center gap-3">
+                    @if (!string.IsNullOrEmpty(Model.LogoPath))
+                    {
+                        <div class="size-10 rounded-full bg-white dark:bg-[#1a1a1a] flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0">
+                            <img src="@Model.LogoPath" alt="@Model.HospitalName Logo" class="w-full h-full object-contain p-1" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="size-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-gray-400 text-xl">domain</span>
+                        </div>
+                    }
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Welcome</p>
+                        <p class="text-sm font-semibold text-[#181112] dark:text-white truncate">@Model.HospitalName</p>
+                    </div>
+                </div>
+            </div>
+        }
+        <!-- User Info Section -->
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                    @(string.IsNullOrEmpty(Model.FirstName) ? "U" : Model.FirstName[0].ToString().ToUpper())
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-[#181112] dark:text-white truncate">@Model.FirstName</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">@Model.UserRole</p>
+                </div>
+            </div>
+        </div>
+        <!-- Logout Section -->
+        <div class="p-6">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors" href="#" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                <span class="material-symbols-outlined">logout</span>
+                <p class="text-sm font-medium leading-normal">Log Out</p>
+            </a>
+            <form id="logoutForm" asp-controller="Auth" asp-action="Logout" method="post" class="hidden">
+                @Html.AntiForgeryToken()
+            </form>
+        </div>
+    </div>
+</div>
+

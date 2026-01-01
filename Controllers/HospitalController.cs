@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Claims;
@@ -29,7 +30,7 @@ namespace BloodDonation.Controllers
         // ============================================
         // OWNER ACTIONS - Hospital Management
         // ============================================
-        
+
         [Authorize(Roles = "Owner")]
         [HttpGet]
         public async Task<IActionResult> Index(string? q)
@@ -47,7 +48,7 @@ namespace BloodDonation.Controllers
 
             // Order by User.CreatedAt Descending
             var model = await list.OrderByDescending(h => h.User.CreatedAt).ToListAsync();
-            
+
             return View("~/Views/Owner/HospitalManagement.cshtml", model);
         }
 
@@ -177,7 +178,7 @@ namespace BloodDonation.Controllers
                 hospital.User.PhoneNumber = model.Phone;
                 hospital.User.Status = model.Status ?? "Active";
                 hospital.User.FirstName = model.Name;
-                
+
                 await _userManager.UpdateAsync(hospital.User);
             }
 
@@ -197,12 +198,12 @@ namespace BloodDonation.Controllers
             {
                 var user = hospital.User;
                 _context.Hospitals.Remove(hospital);
-                
+
                 if (user != null)
                 {
                     await _userManager.DeleteAsync(user);
                 }
-                
+
                 await _context.SaveChangesAsync();
             }
 
@@ -290,6 +291,33 @@ namespace BloodDonation.Controllers
             return RedirectToAction("Login", "Auth");
         }
 
+        // Helper method to get hospital for any hospital user (primary or staff)
+        private async Task<(Hospital? hospital, HospitalStaff? staff, bool isPrimaryUser)> GetHospitalForUserAsync(int userId)
+        {
+            // Check if user is primary hospital user
+            var hospital = await _context.Hospitals
+                .Include(h => h.User)
+                .FirstOrDefaultAsync(h => h.UserId == userId);
+
+            if (hospital != null)
+            {
+                return (hospital, null, true);
+            }
+
+            // Check if user is a staff member
+            var staff = await _context.HospitalStaff
+                .Include(s => s.Hospital)
+                    .ThenInclude(h => h.User)
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.Status == "Active");
+
+            if (staff != null && staff.Hospital != null)
+            {
+                return (staff.Hospital, staff, false);
+            }
+
+            return (null, null, false);
+        }
+
         [Authorize(Roles = "Hospital")]
         [HttpGet]
         public async Task<IActionResult> Dashboard()
@@ -297,15 +325,22 @@ namespace BloodDonation.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            var hospital = await _context.Hospitals
-                .Include(h => h.User)
-                .FirstOrDefaultAsync(h => h.UserId == user.Id);
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
 
             if (hospital == null) return NotFound();
 
+            // Get all requests for this hospital (not just the current user's requests)
+            // Staff members should see all hospital requests
+            var hospitalUserIds = new List<int> { hospital.UserId };
+            var staffUserIds = await _context.HospitalStaff
+                .Where(s => s.HospitalId == hospital.Id && s.Status == "Active")
+                .Select(s => s.UserId)
+                .ToListAsync();
+            hospitalUserIds.AddRange(staffUserIds);
+
             var hospitalRequests = await _context.DonorRequests
                 .Include(r => r.BloodType)
-                .Where(r => r.RequestedByUserId == user.Id)
+                .Where(r => r.RequestedByUserId.HasValue && hospitalUserIds.Contains(r.RequestedByUserId.Value))
                 .ToListAsync();
 
             var totalRequested = hospitalRequests.Count;
@@ -315,7 +350,7 @@ namespace BloodDonation.Controllers
             // Calculate request trends for last 30 days
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
             var last30DaysRequests = hospitalRequests.Where(r => r.CreatedAt >= thirtyDaysAgo).ToList();
-            
+
             // Group by date for trend chart
             var trends = last30DaysRequests
                 .GroupBy(r => r.CreatedAt.Date)
@@ -331,7 +366,7 @@ namespace BloodDonation.Controllers
             var allDates = Enumerable.Range(0, 30)
                 .Select(i => DateTime.UtcNow.Date.AddDays(-29 + i))
                 .ToList();
-            
+
             var trendsDict = trends.ToDictionary(t => t.Date.Date);
             var completeTrends = allDates.Select(date => new DailyRequestCount
             {
@@ -342,11 +377,11 @@ namespace BloodDonation.Controllers
             // Calculate previous 30 days for growth comparison
             var previous30DaysStart = DateTime.UtcNow.AddDays(-60);
             var previous30DaysEnd = DateTime.UtcNow.AddDays(-30);
-            var previous30DaysCount = hospitalRequests.Count(r => 
+            var previous30DaysCount = hospitalRequests.Count(r =>
                 r.CreatedAt >= previous30DaysStart && r.CreatedAt < previous30DaysEnd);
-            
+
             var last30DaysTotal = last30DaysRequests.Count;
-            var growth = previous30DaysCount > 0 
+            var growth = previous30DaysCount > 0
                 ? ((last30DaysTotal - previous30DaysCount) * 100.0 / previous30DaysCount)
                 : (last30DaysTotal > 0 ? 100.0 : 0);
 
@@ -354,7 +389,7 @@ namespace BloodDonation.Controllers
             var allBloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
             var bloodTypeCounts = new Dictionary<string, int>();
             var totalBloodTypeRequests = hospitalRequests.Where(r => r.BloodType != null).Count();
-            
+
             foreach (var request in hospitalRequests.Where(r => r.BloodType != null))
             {
                 var bloodType = request.BloodType.Type;
@@ -367,8 +402,8 @@ namespace BloodDonation.Controllers
             foreach (var bloodType in allBloodTypes)
             {
                 var count = bloodTypeCounts.GetValueOrDefault(bloodType.Type, 0);
-                var percentage = totalBloodTypeRequests > 0 
-                    ? (count * 100.0 / totalBloodTypeRequests) 
+                var percentage = totalBloodTypeRequests > 0
+                    ? (count * 100.0 / totalBloodTypeRequests)
                     : 0;
                 bloodTypePercentages[bloodType.Type] = percentage;
             }
@@ -421,11 +456,18 @@ namespace BloodDonation.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            var hospital = await _context.Hospitals
-                .Include(h => h.User)
-                .FirstOrDefaultAsync(h => h.UserId == user.Id);
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
 
             if (hospital == null) return NotFound();
+
+            // Check if staff member has permission to create requests
+            // Only Admin and Coordinator can create requests
+            if (!isPrimaryUser && staff != null && staff.Role != "Admin" && staff.Role != "Coordinator")
+            {
+                TempData["ErrorMessage"] = "You do not have permission to create blood requests.";
+                model.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
+                return View(model);
+            }
 
             if (!ModelState.IsValid)
             {
@@ -481,15 +523,27 @@ namespace BloodDonation.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return NotFound();
+
+            // Get all requests for this hospital (not just the current user's requests)
+            var hospitalUserIds = new List<int> { hospital.UserId };
+            var staffUserIds = await _context.HospitalStaff
+                .Where(s => s.HospitalId == hospital.Id && s.Status == "Active")
+                .Select(s => s.UserId)
+                .ToListAsync();
+            hospitalUserIds.AddRange(staffUserIds);
+
             var query = _context.DonorRequests
                 .Include(r => r.BloodType)
-                .Where(r => r.RequestedByUserId == user.Id)
+                .Where(r => r.RequestedByUserId.HasValue && hospitalUserIds.Contains(r.RequestedByUserId.Value))
                 .AsQueryable();
 
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
-                query = query.Where(r => 
+                query = query.Where(r =>
                     r.RequestId.ToString().Contains(searchQuery) ||
                     r.BloodType.Type.Contains(searchQuery));
             }
@@ -500,14 +554,14 @@ namespace BloodDonation.Controllers
                 query = query.Where(r => r.Status == statusFilter);
             }
 
-            // Calculate status counts
+            // Calculate status counts for all hospital requests
             var statusCounts = new Dictionary<string, int>
             {
-                { "All", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id) },
-                { "Pending", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id && r.Status == "Pending") },
-                { "Approved", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id && r.Status == "Approved") },
-                { "Completed", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id && r.Status == "Completed") },
-                { "Cancelled", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId == user.Id && r.Status == "Cancelled") }
+                { "All", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId.HasValue && hospitalUserIds.Contains(r.RequestedByUserId.Value)) },
+                { "Pending", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId.HasValue && hospitalUserIds.Contains(r.RequestedByUserId.Value) && r.Status == "Pending") },
+                { "Approved", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId.HasValue && hospitalUserIds.Contains(r.RequestedByUserId.Value) && r.Status == "Approved") },
+                { "Completed", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId.HasValue && hospitalUserIds.Contains(r.RequestedByUserId.Value) && r.Status == "Completed") },
+                { "Cancelled", await _context.DonorRequests.CountAsync(r => r.RequestedByUserId.HasValue && hospitalUserIds.Contains(r.RequestedByUserId.Value) && r.Status == "Cancelled") }
             };
 
             var totalCount = await query.CountAsync();
@@ -541,11 +595,23 @@ namespace BloodDonation.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return NotFound();
+
+            // Get all user IDs for this hospital
+            var hospitalUserIds = new List<int> { hospital.UserId };
+            var staffUserIds = await _context.HospitalStaff
+                .Where(s => s.HospitalId == hospital.Id && s.Status == "Active")
+                .Select(s => s.UserId)
+                .ToListAsync();
+            hospitalUserIds.AddRange(staffUserIds);
+
             // Verify the request belongs to this hospital
             var request = await _context.DonorRequests
                 .Include(r => r.BloodType)
                 .Include(r => r.Location)
-                .FirstOrDefaultAsync(r => r.RequestId == requestId && r.RequestedByUserId == user.Id);
+                .FirstOrDefaultAsync(r => r.RequestId == requestId && r.RequestedByUserId.HasValue && hospitalUserIds.Contains(r.RequestedByUserId.Value));
 
             if (request == null)
             {
@@ -572,8 +638,8 @@ namespace BloodDonation.Controllers
                 {
                     ConfirmationId = c.ConfirmationId,
                     DonorId = c.DonorId,
-                    DonorName = c.Donor.IsIdentityHidden 
-                        ? $"Donor #{c.DonorId}" 
+                    DonorName = c.Donor.IsIdentityHidden
+                        ? $"Donor #{c.DonorId}"
                         : $"{c.Donor.User.FirstName} {c.Donor.User.LastName}",
                     Email = c.Donor.User.Email ?? "",
                     PhoneNumber = c.Donor.User.PhoneNumber ?? "",
@@ -606,11 +672,15 @@ namespace BloodDonation.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            // Load data first, then project to handle GetTimeAgo method
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return Json(new { success = false, notifications = new List<object>() });
+
+            // Get notifications for the primary hospital user (all staff see the same notifications)
             var notificationsData = await _context.HospitalNotifications
                 .Include(n => n.Request)
                     .ThenInclude(r => r.BloodType)
-                .Where(n => n.HospitalUserId == user.Id)
+                .Where(n => n.HospitalUserId == hospital.UserId)
                 .OrderByDescending(n => n.CreatedAt)
                 .Take(10)
                 .ToListAsync();
@@ -619,7 +689,7 @@ namespace BloodDonation.Controllers
                 // Parse the notification message to extract status
                 var requestStatus = "Updated";
                 var statusColor = "blue";
-                
+
                 if (n.Message.Contains("Approved"))
                 {
                     requestStatus = "Approved";
@@ -665,8 +735,13 @@ namespace BloodDonation.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Json(new { success = false, count = 0 });
 
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return Json(new { success = false, count = 0 });
+
+            // Get notification count for the primary hospital user (all staff see the same count)
             var unreadCount = await _context.HospitalNotifications
-                .Where(n => n.HospitalUserId == user.Id && n.Status == "Unread")
+                .Where(n => n.HospitalUserId == hospital.UserId && n.Status == "Unread")
                 .CountAsync();
 
             return Json(new { success = true, count = unreadCount });
@@ -680,8 +755,13 @@ namespace BloodDonation.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return Json(new { success = false, message = "Hospital not found" });
+
+            // Allow any hospital staff to mark notifications as read
             var notification = await _context.HospitalNotifications
-                .FirstOrDefaultAsync(n => n.NotificationId == model.NotificationId && n.HospitalUserId == user.Id);
+                .FirstOrDefaultAsync(n => n.NotificationId == model.NotificationId && n.HospitalUserId == hospital.UserId);
 
             if (notification != null)
             {
@@ -697,7 +777,7 @@ namespace BloodDonation.Controllers
         private string GetTimeAgo(DateTime dateTime)
         {
             var timeSpan = DateTime.UtcNow - dateTime;
-            
+
             if (timeSpan.TotalMinutes < 1)
                 return "Just now";
             if (timeSpan.TotalMinutes < 60)
@@ -710,19 +790,19 @@ namespace BloodDonation.Controllers
         private string BuildAdditionalNotes(CreateBloodRequestViewModel model)
         {
             var notes = new List<string>();
-            
+
             notes.Add($"Quantity: {model.Quantity} units");
             notes.Add($"Component: {model.Component}");
-            
+
             if (!string.IsNullOrWhiteSpace(model.DeliveryLocation))
                 notes.Add($"Delivery Location: {model.DeliveryLocation}");
-            
+
             if (!string.IsNullOrWhiteSpace(model.PatientMRN))
                 notes.Add($"Patient MRN: {model.PatientMRN}");
-            
+
             if (!string.IsNullOrWhiteSpace(model.Diagnosis))
                 notes.Add($"Diagnosis: {model.Diagnosis}");
-            
+
             if (!string.IsNullOrWhiteSpace(model.AdditionalNotes))
                 notes.Add($"Notes: {model.AdditionalNotes}");
 
@@ -875,6 +955,411 @@ namespace BloodDonation.Controllers
             };
         }
 
+        public async Task<IActionResult> Settings()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return NotFound();
+
+            // Only primary admin can access settings
+            if (!isPrimaryUser)
+            {
+                TempData["ErrorMessage"] = "Only the primary hospital administrator can access settings.";
+                return RedirectToAction("Dashboard");
+            }
+
+            // Get all hospital staff members
+            var staffMembers = await _context.HospitalStaff
+                .Include(s => s.User)
+                .Where(s => s.HospitalId == hospital.Id)
+                .ToListAsync();
+
+            var teamMembers = new List<TeamMemberViewModel>();
+
+            // Add primary hospital user as Admin
+            var primaryInitials = GetInitials(user.FirstName, user.LastName, user.Email);
+            teamMembers.Add(new TeamMemberViewModel
+            {
+                UserId = user.Id,
+                Name = $"{user.FirstName} {user.LastName}".Trim(),
+                Email = user.Email ?? "",
+                Role = "Admin",
+                Status = user.Status ?? "Active",
+                Initials = primaryInitials
+            });
+
+            // Add other staff members
+            foreach (var staffMember in staffMembers)
+            {
+                if (staffMember.User != null)
+                {
+                    var initials = GetInitials(staffMember.User.FirstName, staffMember.User.LastName, staffMember.User.Email);
+                    teamMembers.Add(new TeamMemberViewModel
+                    {
+                        StaffId = staffMember.Id,
+                        UserId = staffMember.UserId,
+                        Name = $"{staffMember.User.FirstName} {staffMember.User.LastName}".Trim(),
+                        Email = staffMember.User.Email ?? "",
+                        Role = staffMember.Role,
+                        Status = staffMember.Status,
+                        Initials = initials
+                    });
+                }
+            }
+
+            var model = new HospitalSettingsViewModel
+            {
+                HospitalId = hospital.Id,
+                HospitalName = hospital.Name,
+                License = hospital.License,
+                Website = null, // Add Website field to Hospital model if needed
+                Address = hospital.Address,
+                City = hospital.City,
+                Zip = hospital.Zip,
+                Phone = hospital.User?.PhoneNumber ?? "",
+                Email = hospital.User?.Email ?? "",
+                LogoPath = hospital.LogoPath,
+                NotificationPreferences = new NotificationPreferencesViewModel
+                {
+                    EmailNewDonorMatches = true,
+                    EmailRequestStatusUpdates = true,
+                    EmailMarketing = false,
+                    SmsEmergencyLowStock = true,
+                    SmsUrgentRequestFulfillment = true
+                },
+                TeamMembers = teamMembers
+            };
+
+            return View("HospitalSetting", model);
+        }
+
+        private string GetInitials(string? firstName, string? lastName, string? email)
+        {
+            if (!string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
+            {
+                return $"{firstName[0]}{lastName[0]}".ToUpper();
+            }
+            else if (!string.IsNullOrEmpty(firstName))
+            {
+                return firstName.Substring(0, Math.Min(2, firstName.Length)).ToUpper();
+            }
+            else if (!string.IsNullOrEmpty(email))
+            {
+                return email.Substring(0, Math.Min(2, email.Length)).ToUpper();
+            }
+            return "??";
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(UpdateHospitalProfileViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return NotFound();
+
+            // Only primary admin can update profile
+            if (!isPrimaryUser)
+            {
+                TempData["ErrorMessage"] = "Only the primary hospital administrator can update the profile.";
+                return RedirectToAction("Settings");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Return to settings page with errors - reload full model
+                return RedirectToAction("Settings");
+            }
+
+            // Update Hospital
+            hospital.Name = model.HospitalName;
+            hospital.Address = model.Address;
+            hospital.City = model.City;
+            hospital.Zip = model.Zip;
+            // Note: Website field not in Hospital model yet - add if needed
+
+            // Update User
+            if (hospital.User != null)
+            {
+                hospital.User.Email = model.Email;
+                hospital.User.UserName = model.Email;
+                hospital.User.PhoneNumber = model.Phone;
+                
+                await _userManager.UpdateAsync(hospital.User);
+            }
+
+            _context.Hospitals.Update(hospital);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Profile updated successfully!";
+            return RedirectToAction("Settings");
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadHospitalLogo(IFormFile logoFile)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return NotFound();
+
+            // Only primary admin can upload logo
+            if (!isPrimaryUser)
+            {
+                TempData["ErrorMessage"] = "Only the primary hospital administrator can upload the logo.";
+                return RedirectToAction("Settings");
+            }
+
+            // Validate file
+            if (logoFile == null || logoFile.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select an image file.";
+                return RedirectToAction("Settings");
+            }
+
+            // Validate file type
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(logoFile.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                TempData["ErrorMessage"] = "Invalid file type. Please upload a JPG, PNG, GIF, or WEBP image.";
+                return RedirectToAction("Settings");
+            }
+
+            // Validate file size (max 5MB)
+            const long maxFileSize = 5 * 1024 * 1024; // 5MB
+            if (logoFile.Length > maxFileSize)
+            {
+                TempData["ErrorMessage"] = "File size exceeds 5MB limit. Please upload a smaller image.";
+                return RedirectToAction("Settings");
+            }
+
+            try
+            {
+                // Create hospital logos directory if it doesn't exist
+                var logosDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "hospitals");
+                if (!Directory.Exists(logosDirectory))
+                {
+                    Directory.CreateDirectory(logosDirectory);
+                }
+
+                // Generate unique filename
+                var fileName = $"hospital_{hospital.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}{fileExtension}";
+                var filePath = Path.Combine(logosDirectory, fileName);
+                var relativePath = $"/images/hospitals/{fileName}";
+
+                // Delete old logo if exists
+                if (!string.IsNullOrEmpty(hospital.LogoPath))
+                {
+                    var oldLogoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", hospital.LogoPath.TrimStart('/'));
+                    if (System.IO.File.Exists(oldLogoPath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(oldLogoPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log warning but continue
+                            Console.WriteLine($"Failed to delete old logo: {ex.Message}");
+                        }
+                    }
+                }
+
+                // Save new logo
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await logoFile.CopyToAsync(stream);
+                }
+
+                // Update hospital logo path
+                hospital.LogoPath = relativePath;
+                _context.Hospitals.Update(hospital);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Hospital logo updated successfully!";
+                return RedirectToAction("Settings");
+            }
+            catch (Exception ex)
+            {
+                // Log the error for debugging
+                System.Diagnostics.Debug.WriteLine($"Error uploading hospital logo: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                TempData["ErrorMessage"] = $"An error occurred while uploading the logo: {ex.Message}. Please try again.";
+                return RedirectToAction("Settings");
+            }
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateNotificationPreferences(NotificationPreferencesViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            // For now, we'll store preferences as JSON in a user claim or custom field
+            // This is a simplified version - in production, you might want a dedicated table
+            // Note: This would require adding a field to Users model or using UserClaims
+            
+            TempData["SuccessMessage"] = "Notification preferences updated successfully!";
+            return RedirectToAction("Settings");
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTeamMember(AddTeamMemberViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return NotFound();
+
+            // Only primary admin can add team members
+            if (!isPrimaryUser)
+            {
+                TempData["ErrorMessage"] = "Only the primary hospital administrator can add team members.";
+                return RedirectToAction("Settings");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Please correct the errors and try again.";
+                return RedirectToAction("Settings");
+            }
+
+            // Check if email already exists
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                // Check if user is already a staff member
+                var existingStaff = await _context.HospitalStaff
+                    .FirstOrDefaultAsync(s => s.HospitalId == hospital.Id && s.UserId == existingUser.Id);
+                
+                if (existingStaff != null)
+                {
+                    TempData["ErrorMessage"] = "This user is already a member of your hospital staff.";
+                    return RedirectToAction("Settings");
+                }
+
+                // User exists but not linked to this hospital - link them
+                var newStaff = new HospitalStaff
+                {
+                    HospitalId = hospital.Id,
+                    UserId = existingUser.Id,
+                    Role = model.Role,
+                    Status = "Active",
+                    CreatedAt = DateTime.UtcNow,
+                    InvitedAt = DateTime.UtcNow,
+                    InvitedByUserId = user.Id
+                };
+
+                _context.HospitalStaff.Add(newStaff);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "User has been added to your hospital staff.";
+                return RedirectToAction("Settings");
+            }
+
+            // Create new user account
+            var newUser = new Users
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber,
+                Role = "Hospital", // Hospital staff users have Hospital role
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                EmailConfirmed = false // Require email confirmation
+            };
+
+            var result = await _userManager.CreateAsync(newUser, model.Password);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+                TempData["ErrorMessage"] = string.Join(", ", result.Errors.Select(e => e.Description));
+                return RedirectToAction("Settings");
+            }
+
+            // Add role claims
+            await _userManager.AddClaimAsync(newUser, new Claim(ClaimTypes.Role, "Hospital"));
+            await _userManager.AddClaimAsync(newUser, new Claim("Role", "Hospital"));
+
+            // Link user to hospital as staff
+            var staffMember = new HospitalStaff
+            {
+                HospitalId = hospital.Id,
+                UserId = newUser.Id,
+                Role = model.Role,
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                InvitedAt = DateTime.UtcNow,
+                InvitedByUserId = user.Id
+            };
+
+            _context.HospitalStaff.Add(staffMember);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Team member has been added successfully!";
+            return RedirectToAction("Settings");
+        }
+
+        [Authorize(Roles = "Hospital")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveTeamMember(int staffId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var hospital = await _context.Hospitals
+                .FirstOrDefaultAsync(h => h.UserId == user.Id);
+
+            if (hospital == null) return NotFound();
+
+            // Don't allow removing the primary hospital user
+            if (staffId == 0) // Primary user has no staffId
+            {
+                TempData["ErrorMessage"] = "Cannot remove the primary hospital administrator.";
+                return RedirectToAction("Settings");
+            }
+
+            var staff = await _context.HospitalStaff
+                .FirstOrDefaultAsync(s => s.Id == staffId && s.HospitalId == hospital.Id);
+
+            if (staff == null)
+            {
+                TempData["ErrorMessage"] = "Staff member not found.";
+                return RedirectToAction("Settings");
+            }
+
+            // Optionally delete the user account, or just remove the link
+            // For now, we'll just remove the link
+            _context.HospitalStaff.Remove(staff);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Team member has been removed successfully.";
+            return RedirectToAction("Settings");
+        }
     }
 
 

@@ -32,5 +32,8 @@ namespace BloodDonation.Models
 
         [MaxLength(20)]
         public string Zip { get; set; } = string.Empty;
+
+        [MaxLength(500)]
+        public string? LogoPath { get; set; }
     }
 }
