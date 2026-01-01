@@ -339,6 +339,7 @@ namespace BloodDonation.Controllers
 
             var query = _context.Hospitals
                 .Include(h => h.User)
+                .Include(h => h.HospitalStaff).ThenInclude(hs => hs.User)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(q))

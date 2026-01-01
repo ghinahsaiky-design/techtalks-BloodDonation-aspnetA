@@ -75,6 +75,7 @@
                                 <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-text-muted dark:text-gray-400">Hospital ID</th>
                                 <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-text-muted dark:text-gray-400">Name &amp; Contact</th>
                                 <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-text-muted dark:text-gray-400">Location</th>
+                                <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-text-muted dark:text-gray-400">Role</th>
                                 <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-text-muted dark:text-gray-400">Status</th>
                                 <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-text-muted dark:text-gray-400">Registered On</th>
                                 <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-text-muted dark:text-gray-400 text-right">Actions</th>
@@ -86,7 +87,7 @@
                             }
                             @foreach (var h in items)
                             {
-                                <tr class="group hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors">
+                                <tr class="group hover:bg-background-light dark:hover:bg-gray-800/50 transition-colors border-b border-gray-50 dark:border-gray-800/50">
                                     <td class="py-4 px-6">
                                         <span class="font-mono text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">#HOSP-@h.Id.ToString("D3")</span>
                                     </td>
@@ -106,6 +107,9 @@
                                             <span class="material-symbols-outlined text-[18px] text-gray-400">location_on</span>
                                             @h.City@((!string.IsNullOrWhiteSpace(h.State)) ? ", " + h.State : "")
                                         </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800 text-xs">Admin</span>
                                     </td>
                                     <td class="py-4 px-6">
                                         @{
@@ -147,11 +151,55 @@
                                         </div>
                                     </td>
                                 </tr>
+
+                                @if(h.HospitalStaff != null && h.HospitalStaff.Any())
+                                {
+                                    @foreach(var staff in h.HospitalStaff)
+                                    {
+                                        <tr class="bg-gray-50/30 dark:bg-gray-800/20 border-b border-gray-50 dark:border-gray-800/50">
+                                            <td class="py-3 px-6 text-right">
+                                                <span class="material-symbols-outlined text-gray-300 text-lg rotate-180" style="transform: scaleX(-1);">subdirectory_arrow_right</span>
+                                            </td>
+                                            <td class="py-3 px-6">
+                                                <div class="flex items-center gap-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                                                    <div class="flex flex-col">
+                                                        <span class="text-sm font-medium text-text-main dark:text-gray-300">@(staff.User?.FirstName + " " + staff.User?.LastName)</span>
+                                                        <span class="text-xs text-text-muted">@(staff.User?.Email ?? "No Email")</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-6"></td> <!-- Location Empty -->
+                                            <td class="py-3 px-6">
+                                                @if(staff.Role == "Coordinator")
+                                                {
+                                                    <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-xs">Coordinator</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 font-bold border border-gray-200 dark:border-gray-700 text-xs">Staff</span>
+                                                }
+                                            </td>
+                                            <td class="py-3 px-6">
+                                                @{
+                                                    var sStatus = staff.Status ?? "Active";
+                                                    var sStatusClass = sStatus == "Active" ? "text-green-600 dark:text-green-400" : "text-gray-500";
+                                                }
+                                                <span class="text-xs font-semibold @sStatusClass">@sStatus</span>
+                                            </td>
+                                            <td class="py-3 px-6">
+                                                <span class="text-xs text-text-muted">@(staff.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy"))</span>
+                                            </td>
+                                            <td class="py-3 px-6 text-right">
+                                                <!-- Staff Actions if needed -->
+                                            </td>
+                                        </tr>
+                                    }
+                                }
                             }
                             @if (!items.Any())
                             {
                                 <tr>
-                                    <td colspan="6" class="py-12 px-6 text-center">
+                                    <td colspan="7" class="py-12 px-6 text-center">
                                         <div class="flex flex-col items-center gap-3">
                                             <span class="material-symbols-outlined text-5xl text-gray-300">search_off</span>
                                             <p class="text-gray-500 font-medium">No hospitals found matching your criteria.</p>
