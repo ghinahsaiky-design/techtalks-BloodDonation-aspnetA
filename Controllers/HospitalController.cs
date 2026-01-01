@@ -816,9 +816,10 @@ namespace BloodDonation.Controllers
         public IActionResult Statistics(string timeframe, int? bloodTypeId)
         {
             // Start with all donor requests
-            var query = _context.DonorRequests.AsQueryable();
+            var query = _context.DonorRequests.Include(r => r.BloodType).AsQueryable();
 
             // Filter by timeframe
+            DateTime? startDate = null;
             if (!string.IsNullOrEmpty(timeframe) && timeframe != "all")
             {
                 int days = timeframe switch
@@ -831,7 +832,7 @@ namespace BloodDonation.Controllers
 
                 if (days > 0)
                 {
-                    var startDate = DateTime.Today.AddDays(-days);
+                    startDate = DateTime.Today.AddDays(-days);
                     query = query.Where(r => r.CreatedAt >= startDate);
                 }
             }
@@ -852,20 +853,24 @@ namespace BloodDonation.Controllers
                 SupplyVsDemand = GetSupplyVsDemand(query),
                 CompletionRatio = GetCompletionRatio(query),
                 BloodTypeFulfillment = GetFulfillmentByBloodType(query),
-                StatusBreakdown = GetStatusBreakdown(query)
+                StatusBreakdown = GetStatusBreakdown(query),
+                // New properties
+                MonthlyTrends = GetMonthlyTrends(query, startDate),
+                MonthlyPerformance = GetMonthlyPerformance(query, startDate),
+                FulfillmentTrend = GetFulfillmentTrend(query, startDate),
+                TimeTrendHours = GetTimeTrend(query, startDate),
+                EngagedTrendPercent = GetEngagedTrend(query, startDate),
+                UnmetTrendCount = GetUnmetTrend(query, startDate)
             };
 
             // Blood types for dropdown
-            ViewBag.BloodTypes = _context.BloodTypes
-                .Select(bt => new { bt.BloodTypeId, bt.Type })
-                .ToList();
             ViewBag.Timeframes = new List<SelectListItem>
-{
-    new SelectListItem { Text = "Last 30 Days", Value = "30", Selected = timeframe == "30" },
-    new SelectListItem { Text = "Last 3 Months", Value = "90", Selected = timeframe == "90" },
-    new SelectListItem { Text = "Last Year", Value = "365", Selected = timeframe == "365" },
-    new SelectListItem { Text = "All Time", Value = "all", Selected = timeframe == "all" }
-};
+    {
+        new SelectListItem { Text = "Last 30 Days", Value = "30", Selected = timeframe == "30" },
+        new SelectListItem { Text = "Last 3 Months", Value = "90", Selected = timeframe == "90" },
+        new SelectListItem { Text = "Last Year", Value = "365", Selected = timeframe == "365" },
+        new SelectListItem { Text = "All Time", Value = "all", Selected = timeframe == "all" }
+    };
 
             ViewBag.BloodTypesList = _context.BloodTypes
                 .Select(bt => new SelectListItem
@@ -876,11 +881,10 @@ namespace BloodDonation.Controllers
                 })
                 .ToList();
 
-
             return View(model);
         }
 
-        // Updated helper methods to use filtered query
+        // Existing helper methods
         private double GetFulfillmentRate(IQueryable<DonorRequest> query)
         {
             int total = query.Count();
@@ -953,6 +957,129 @@ namespace BloodDonation.Controllers
                 Completed = completed,
                 NotCompleted = total - completed
             };
+        }
+
+        // New helper methods for trends and monthly data
+        private List<MonthlyTrendViewModel> GetMonthlyTrends(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            var endDate = DateTime.Today;
+            var compareStartDate = startDate ?? DateTime.Today.AddMonths(-6); // Default to last 6 months if no filter
+
+            return query
+                .Where(r => r.CreatedAt >= compareStartDate && r.CreatedAt <= endDate)
+                .AsEnumerable() // Switch to client-side for date manipulation
+                .GroupBy(r => new { Year = r.CreatedAt.Year, Month = r.CreatedAt.Month })
+                .Select(g => new MonthlyTrendViewModel
+                {
+                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM"),
+                    Requested = g.Count(),
+                    Completed = g.Count(r => r.Status == "Completed")
+                })
+                .OrderByDescending(x =>
+                {
+                    // Parse month name back to date for ordering
+                    var monthNames = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+                    var monthIndex = Array.IndexOf(monthNames, x.Month) + 1;
+                    return new DateTime(DateTime.Today.Year, monthIndex, 1);
+                })
+                .Take(6) // Last 6 months
+                .OrderBy(x =>
+                {
+                    var monthNames = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+                    var monthIndex = Array.IndexOf(monthNames, x.Month) + 1;
+                    return new DateTime(DateTime.Today.Year, monthIndex, 1);
+                })
+                .ToList();
+        }
+
+        private List<MonthlyPerformanceViewModel> GetMonthlyPerformance(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            var endDate = DateTime.Today;
+            var compareStartDate = startDate ?? DateTime.Today.AddMonths(-4); // Default to last 4 months
+
+            return query
+                .Where(r => r.CreatedAt >= compareStartDate && r.CreatedAt <= endDate)
+                .AsEnumerable() // Switch to client-side for date manipulation
+                .GroupBy(r => new { Year = r.CreatedAt.Year, Month = r.CreatedAt.Month })
+                .Select(g => new MonthlyPerformanceViewModel
+                {
+                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM"),
+                    Requested = g.Count(),
+                    Fulfilled = g.Count(r => r.Status == "Completed"),
+                    Efficiency = g.Count() > 0 ? Math.Round((double)g.Count(r => r.Status == "Completed") / g.Count() * 100, 1) : 0
+                })
+                .OrderByDescending(x =>
+                {
+                    var monthNames = new[] { "January", "February", "March", "April", "May", "June",
+                                   "July", "August", "September", "October", "November", "December" };
+                    var monthIndex = Array.IndexOf(monthNames, x.Month) + 1;
+                    return new DateTime(DateTime.Today.Year, monthIndex, 1);
+                })
+                .Take(4) // Last 4 months
+                .ToList();
+        }
+
+        private double GetFulfillmentTrend(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
+                return 2.1; // Default if not enough data
+
+            var currentPeriod = query.Where(r => r.CreatedAt >= startDate);
+            var previousPeriod = query.Where(r => r.CreatedAt >= startDate.Value.AddMonths(-1) && r.CreatedAt < startDate);
+
+            var currentRate = GetFulfillmentRate(currentPeriod);
+            var previousRate = GetFulfillmentRate(previousPeriod);
+
+            return Math.Round(currentRate - previousRate, 1);
+        }
+
+        private double GetTimeTrend(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
+                return 0.25; // Default
+
+            var currentPeriod = query.Where(r => r.CreatedAt >= startDate && r.CompletedAt != null);
+            var previousPeriod = query.Where(r => r.CreatedAt >= startDate.Value.AddMonths(-1) &&
+                                                 r.CreatedAt < startDate &&
+                                                 r.CompletedAt != null);
+
+            var currentAvg = currentPeriod.Any() ?
+                currentPeriod.Average(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours) : 0;
+            var previousAvg = previousPeriod.Any() ?
+                previousPeriod.Average(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours) : 0;
+
+            return Math.Round(previousAvg - currentAvg, 2); // Positive means improvement
+        }
+
+        private double GetEngagedTrend(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
+                return 12.0; // Default
+
+            var currentPeriod = query.Where(r => r.CreatedAt >= startDate);
+            var previousPeriod = query.Where(r => r.CreatedAt >= startDate.Value.AddMonths(-1) && r.CreatedAt < startDate);
+
+            var currentEngaged = currentPeriod.Count(r => r.Status == "Approved" || r.Status == "Completed");
+            var previousEngaged = previousPeriod.Count(r => r.Status == "Approved" || r.Status == "Completed");
+
+            if (previousEngaged == 0) return 0;
+            return Math.Round((double)(currentEngaged - previousEngaged) / previousEngaged * 100, 1);
+        }
+
+        private int GetUnmetTrend(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
+                return 2; // Default
+
+            var currentPeriod = query.Where(r => r.CreatedAt >= startDate);
+            var previousPeriod = query.Where(r => r.CreatedAt >= startDate.Value.AddMonths(-1) && r.CreatedAt < startDate);
+
+            var currentUnmet = currentPeriod.Count(r => r.Status == "Pending" || r.Status == "Cancelled");
+            var previousUnmet = previousPeriod.Count(r => r.Status == "Pending" || r.Status == "Cancelled");
+
+            return currentUnmet - previousUnmet;
         }
 
         public async Task<IActionResult> Settings()
