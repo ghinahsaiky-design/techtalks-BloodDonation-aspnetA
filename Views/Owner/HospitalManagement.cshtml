@@ -137,14 +137,18 @@
                                                 <span class="material-symbols-outlined text-xl">visibility</span>
                                             </button>
 
-                                            <button type="button" onclick="openEditModal(@h.Id)" class="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 hover:text-blue-600 transition-all" title="Edit">
+                                            <button type="button" onclick="openEditModal(@h.Id)" class="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 hover:text-blue-600 transition-all" title="Edit Hospital">
                                                 <span class="material-symbols-outlined text-xl">edit</span>
+                                            </button>
+
+                                            <button type="button" onclick="openAddTeamMemberModal(@h.Id)" class="p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-400 hover:text-purple-600 transition-all" title="Add Team Member">
+                                                <span class="material-symbols-outlined text-xl">person_add</span>
                                             </button>
 
                                             <form asp-action="Delete" asp-controller="Hospital" method="post" onsubmit="return confirm('Are you sure you want to delete @h.Name? This will also delete their login account.');" class="inline">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@h.Id" />
-                                                <button type="submit" class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 transition-all" title="Delete">
+                                                <button type="submit" class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 transition-all" title="Delete Hospital">
                                                     <span class="material-symbols-outlined text-xl">delete</span>
                                                 </button>
                                             </form>
@@ -174,6 +178,10 @@
                                                 {
                                                     <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-xs">Coordinator</span>
                                                 }
+                                                else if(staff.Role == "Admin")
+                                                {
+                                                    <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800 text-xs">Admin</span>
+                                                }
                                                 else
                                                 {
                                                     <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 font-bold border border-gray-200 dark:border-gray-700 text-xs">Staff</span>
@@ -190,7 +198,19 @@
                                                 <span class="text-xs text-text-muted">@(staff.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy"))</span>
                                             </td>
                                             <td class="py-3 px-6 text-right">
-                                                <!-- Staff Actions if needed -->
+                                                <div class="flex items-center justify-end gap-1">
+                                                    <button type="button" onclick="openEditTeamMemberModal(@staff.Id)" class="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 hover:text-blue-600 transition-all" title="Edit Member">
+                                                        <span class="material-symbols-outlined text-lg">edit</span>
+                                                    </button>
+                                                    
+                                                    <form asp-action="DeleteTeamMember" asp-controller="Owner" method="post" onsubmit="return confirm('Are you sure you want to delete this team member?');" class="inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@staff.Id" />
+                                                        <button type="submit" class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 transition-all" title="Delete Member">
+                                                            <span class="material-symbols-outlined text-lg">delete</span>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     }
@@ -260,6 +280,10 @@
 <div id="editHospitalContainer"></div>
 @* Details modal container *@
 <div id="detailsHospitalContainer"></div>
+@* Add Team Member modal container *@
+<div id="addTeamMemberContainer"></div>
+@* Edit Team Member modal container *@
+<div id="editTeamMemberContainer"></div>
 
 @section Scripts {
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
@@ -292,6 +316,38 @@
                 .then(html => {
                     container.innerHTML = html;
                     transitionModal('detailsHospitalBindingModal', 'show');
+                })
+                .catch(err => console.error(err));
+        };
+
+        window.openAddTeamMemberModal = function(hospitalId) {
+            const container = document.getElementById('addTeamMemberContainer');
+            fetch('/Owner/AddTeamMemberModal?hospitalId=' + hospitalId)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load modal');
+                    return response.text();
+                })
+                .then(html => {
+                    container.innerHTML = html;
+                    transitionModal('addTeamMemberModal', 'show');
+                    bindForm('addTeamMemberForm', 'addTeamMemberContainer', 'addTeamMemberModal');
+                    attachAddTeamMemberEvents();
+                })
+                .catch(err => console.error(err));
+        };
+
+        window.openEditTeamMemberModal = function(id) {
+            const container = document.getElementById('editTeamMemberContainer');
+            fetch('/Owner/EditTeamMemberModal/' + id)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load modal');
+                    return response.text();
+                })
+                .then(html => {
+                    container.innerHTML = html;
+                    transitionModal('editTeamMemberModal', 'show');
+                    bindForm('editTeamMemberForm', 'editTeamMemberContainer', 'editTeamMemberModal');
+                    attachEditTeamMemberEvents();
                 })
                 .catch(err => console.error(err));
         };
@@ -334,8 +390,10 @@
                             // Re-show modal and re-bind
                             transitionModal(modalId, 'show');
                             bindForm(formId, containerId, modalId);
-                            // Re-attach close events if it's the add modal
+                            // Re-attach close events
                             if(formId === 'addHospitalForm') attachAddModalEvents();
+                            if(formId === 'addTeamMemberForm') attachAddTeamMemberEvents();
+                            if(formId === 'editTeamMemberForm') attachEditTeamMemberEvents();
                         });
                     }
                 })
@@ -351,28 +409,30 @@
         }
 
         function transitionModal(modalId, action) {
-             const modal = document.getElementById(modalId);
-             if (!modal) return;
-             
-             if (action === 'show') {
-                 modal.classList.remove('hidden');
-                 modal.classList.add('flex');
-                 setTimeout(() => {
-                     modal.classList.remove('opacity-0');
-                     const content = modal.querySelector('div[class*="transform"]');
-                     if(content) content.classList.remove('scale-95');
-                 }, 10);
-             } else {
-                 modal.classList.add('opacity-0');
-                 const content = modal.querySelector('div[class*="transform"]');
-                 if(content) content.classList.add('scale-95');
-                 setTimeout(() => {
-                     modal.classList.add('hidden');
-                     modal.classList.remove('flex');
-                     if(modalId === 'editHospitalBindingModal') document.getElementById('editHospitalContainer').innerHTML = '';
-                     if(modalId === 'detailsHospitalBindingModal') document.getElementById('detailsHospitalContainer').innerHTML = '';
-                 }, 300);
-             }
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            
+            if (action === 'show') {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    const content = modal.querySelector('div[class*="transform"]');
+                    if(content) content.classList.remove('scale-95');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                const content = modal.querySelector('div[class*="transform"]');
+                if(content) content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    if(modalId === 'editHospitalBindingModal') document.getElementById('editHospitalContainer').innerHTML = '';
+                    if(modalId === 'detailsHospitalBindingModal') document.getElementById('detailsHospitalContainer').innerHTML = '';
+                    if(modalId === 'addTeamMemberModal') document.getElementById('addTeamMemberContainer').innerHTML = '';
+                    if(modalId === 'editTeamMemberModal') document.getElementById('editTeamMemberContainer').innerHTML = '';
+                }, 300);
+            }
         }
 
         window.closeEditModal = function() {
@@ -420,10 +480,30 @@
                     }
                 }, 300);
             }
-            
-            if(form) bindForm('addHospitalForm', 'addHospitalContainer', 'addHospitalModal');
         }
 
-        document.addEventListener('DOMContentLoaded', attachAddModalEvents);
+        function attachAddTeamMemberEvents() {
+            const modal = document.getElementById('addTeamMemberModal');
+            const closeBtn = document.getElementById('closeAddTeamMemberModal');
+            const cancelBtn = document.getElementById('cancelAddTeamMember');
+            
+            if (closeBtn) closeBtn.onclick = () => transitionModal('addTeamMemberModal', 'hide');
+            if (cancelBtn) cancelBtn.onclick = () => transitionModal('addTeamMemberModal', 'hide');
+        }
+
+        function attachEditTeamMemberEvents() {
+            const modal = document.getElementById('editTeamMemberModal');
+            const closeBtn = document.getElementById('closeEditTeamMemberModal');
+            const cancelBtn = document.getElementById('cancelEditTeamMember');
+            
+            if (closeBtn) closeBtn.onclick = () => transitionModal('editTeamMemberModal', 'hide');
+            if (cancelBtn) cancelBtn.onclick = () => transitionModal('editTeamMemberModal', 'hide');
+        }
+
+        // Initialize add hospital modal events
+        document.addEventListener('DOMContentLoaded', function() {
+            attachAddModalEvents();
+            bindForm('addHospitalForm', 'addHospitalContainer', 'addHospitalModal');
+        });
     </script>
 }

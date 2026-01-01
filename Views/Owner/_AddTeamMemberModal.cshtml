@@ -1,0 +1,98 @@
+@model BloodDonation.Models.AddHospitalTeamMemberViewModel
+
+<div id="addTeamMemberModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/50 backdrop-blur-sm p-4 md:p-0 transition-all duration-300">
+    <div class="relative w-full max-w-2xl transform rounded-2xl bg-white dark:bg-surface-dark p-6 shadow-2xl transition-all duration-300 scale-95" id="addTeamMemberModalContent">
+        <!-- Header -->
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Add Team Member</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Create a new staff account for this hospital.</p>
+            </div>
+            <button type="button" id="closeAddTeamMemberModal" class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-800 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form asp-action="AddTeamMember" asp-controller="Owner" method="post" id="addTeamMemberForm" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="HospitalId" />
+            
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-red-500 text-xl">error</span>
+                        <div>
+                            <h4 class="text-sm font-semibold text-red-700 dark:text-red-400">Please fix the following errors:</h4>
+                            <div asp-validation-summary="All" class="text-sm text-red-600 dark:text-red-400 mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="grid gap-6 md:grid-cols-2">
+                <!-- First Name -->
+                <div class="space-y-2">
+                    <label asp-for="FirstName" class="text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <input asp-for="FirstName" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all" placeholder="John" />
+                    <span asp-validation-for="FirstName" class="text-xs text-red-500 block mt-1"></span>
+                </div>
+
+                <!-- Last Name -->
+                <div class="space-y-2">
+                    <label asp-for="LastName" class="text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <input asp-for="LastName" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all" placeholder="Doe" />
+                    <span asp-validation-for="LastName" class="text-xs text-red-500 block mt-1"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="space-y-2 md:col-span-2">
+                    <label asp-for="Email" class="text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">mail</span>
+                        <input asp-for="Email" class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all" placeholder="john@hospital.com" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-xs text-red-500 block mt-1"></span>
+                </div>
+
+                <!-- Role -->
+                <div class="space-y-2 md:col-span-2">
+                    <label asp-for="Role" class="text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <select asp-for="Role" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all">
+                        <option value="">Select a Role</option>
+                        <option value="Coordinator">Coordinator</option>
+                        <option value="Staff">Staff</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-xs text-red-500 block mt-1"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="space-y-2">
+                    <label asp-for="Password" class="text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">lock</span>
+                        <input asp-for="Password" class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all" placeholder="••••••••" />
+                    </div>
+                    <span asp-validation-for="Password" class="text-xs text-red-500 block mt-1"></span>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="space-y-2">
+                    <label asp-for="ConfirmPassword" class="text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">lock_reset</span>
+                        <input asp-for="ConfirmPassword" class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all" placeholder="••••••••" />
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-xs text-red-500 block mt-1"></span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <button type="button" id="cancelAddTeamMember" class="rounded-xl px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors">Cancel</button>
+                <button type="submit" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark hover:shadow-md transition-all active:scale-95">Create Member</button>
+            </div>
+        </form>
+    </div>
+</div>

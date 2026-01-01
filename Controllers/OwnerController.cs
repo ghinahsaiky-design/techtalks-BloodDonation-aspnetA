@@ -691,5 +691,135 @@ namespace BloodDonation.Controllers
             return File(stream, "application/pdf", $"BloodConnect_Report_{DateTime.Now:yyyyMMdd}.pdf");
         }
 
+        // GET: /Owner/AddTeamMemberModal/5
+        [HttpGet]
+        public async Task<IActionResult> AddTeamMemberModal(int hospitalId)
+        {
+             if (!await IsOwnerAsync()) return Forbid();
+             
+             var model = new AddHospitalTeamMemberViewModel { HospitalId = hospitalId };
+             return PartialView("~/Views/Owner/_AddTeamMemberModal.cshtml", model);
+        }
+
+        // POST: /Owner/AddTeamMember
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTeamMember(AddHospitalTeamMemberViewModel model)
+        {
+            if (!await IsOwnerAsync()) return Forbid();
+
+            if (ModelState.IsValid)
+            {
+                var user = new Users
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Role = "Hospital", // They are hospital users, but role in HospitalStaff distinguishes them
+                    Status = "Active",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    // Create HospitalStaff
+                    var staff = new HospitalStaff
+                    {
+                        HospitalId = model.HospitalId,
+                        UserId = user.Id,
+                        Role = model.Role,
+                        Status = "Active",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.HospitalStaff.Add(staff);
+                    await _context.SaveChangesAsync();
+                    return Ok();
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+            Response.StatusCode = 400;
+            return PartialView("~/Views/Owner/_AddTeamMemberModal.cshtml", model);
+        }
+
+        // GET: /Owner/EditTeamMemberModal/5
+        [HttpGet]
+        public async Task<IActionResult> EditTeamMemberModal(int id)
+        {
+            if (!await IsOwnerAsync()) return Forbid();
+
+            var staff = await _context.HospitalStaff.Include(s => s.User).FirstOrDefaultAsync(s => s.Id == id);
+            if (staff == null) return NotFound();
+
+            var model = new EditTeamMemberViewModel
+            {
+                StaffId = staff.Id,
+                FirstName = staff.User.FirstName,
+                LastName = staff.User.LastName,
+                Email = staff.User.Email,
+                Role = staff.Role,
+                Status = staff.Status
+            };
+            return PartialView("~/Views/Owner/_EditTeamMemberModal.cshtml", model);
+        }
+
+        // POST: /Owner/EditTeamMember
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditTeamMember(EditTeamMemberViewModel model)
+        {
+            if (!await IsOwnerAsync()) return Forbid();
+
+            if (ModelState.IsValid)
+            {
+                var staff = await _context.HospitalStaff.Include(s => s.User).FirstOrDefaultAsync(s => s.Id == model.StaffId);
+                if (staff == null) return NotFound();
+
+                staff.Role = model.Role;
+                staff.Status = model.Status ?? "Active";
+                
+                staff.User.FirstName = model.FirstName;
+                staff.User.LastName = model.LastName;
+                staff.User.Email = model.Email;
+                staff.User.UserName = model.Email;
+
+                var result = await _userManager.UpdateAsync(staff.User);
+                if (result.Succeeded)
+                {
+                    _context.HospitalStaff.Update(staff);
+                    await _context.SaveChangesAsync();
+                    return Ok();
+                }
+                 foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+            Response.StatusCode = 400;
+            return PartialView("~/Views/Owner/_EditTeamMemberModal.cshtml", model);
+        }
+
+        // POST: /Owner/DeleteTeamMember
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteTeamMember(int id)
+        {
+            if (!await IsOwnerAsync()) return Forbid();
+
+            var staff = await _context.HospitalStaff.Include(s => s.User).FirstOrDefaultAsync(s => s.Id == id);
+            if (staff != null)
+            {
+                var user = staff.User;
+                _context.HospitalStaff.Remove(staff);
+                // Also delete the user account
+                await _userManager.DeleteAsync(user);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(HospitalManagement));
+        }
     }
 }
