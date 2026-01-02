@@ -373,6 +373,14 @@ namespace BloodDonation.Controllers
                 .OrderBy(d => d)
                 .ToListAsync();
 
+            // Get recent hospital-related actions
+            ViewBag.RecentActions = await _context.Actions
+                .Include(a => a.PerformedByUser)
+                .Where(a => a.Name.Contains("Hospital") || a.Name.Contains("Team Member"))
+                .OrderByDescending(a => a.PerformedAt)
+                .Take(5)
+                .ToListAsync();
+
             return View(hospitals);
         }
 
@@ -735,6 +743,23 @@ namespace BloodDonation.Controllers
                     };
                     _context.HospitalStaff.Add(staff);
                     await _context.SaveChangesAsync();
+
+                    // Record the action
+                    var currentUser = await _userManager.GetUserAsync(User);
+                    if (currentUser != null)
+                    {
+                        _context.Actions.Add(new TrackedAction
+                        {
+                            Name = "Add Team Member",
+                            Description = $"Added team member {user.FirstName} {user.LastName} to hospital ID {model.HospitalId}",
+                            Type = ActionType.Create,
+                            PerformedByUserId = currentUser.Id,
+                            PerformedAt = DateTime.UtcNow,
+                            TargetUserId = user.Id
+                        });
+                        await _context.SaveChangesAsync();
+                    }
+
                     return Ok();
                 }
                 foreach (var error in result.Errors)
@@ -792,6 +817,23 @@ namespace BloodDonation.Controllers
                 {
                     _context.HospitalStaff.Update(staff);
                     await _context.SaveChangesAsync();
+
+                    // Record the action
+                    var currentUser = await _userManager.GetUserAsync(User);
+                    if (currentUser != null)
+                    {
+                        _context.Actions.Add(new TrackedAction
+                        {
+                            Name = "Edit Team Member",
+                            Description = $"Updated team member: {staff.User.FirstName} {staff.User.LastName}",
+                            Type = ActionType.Update,
+                            PerformedByUserId = currentUser.Id,
+                            PerformedAt = DateTime.UtcNow,
+                            TargetUserId = staff.UserId
+                        });
+                        await _context.SaveChangesAsync();
+                    }
+
                     return Ok();
                 }
                  foreach (var error in result.Errors)
@@ -814,10 +856,27 @@ namespace BloodDonation.Controllers
             if (staff != null)
             {
                 var user = staff.User;
+                var staffName = $"{user.FirstName} {user.LastName}";
                 _context.HospitalStaff.Remove(staff);
                 // Also delete the user account
                 await _userManager.DeleteAsync(user);
                 await _context.SaveChangesAsync();
+
+                // Record the action
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null)
+                {
+                    _context.Actions.Add(new TrackedAction
+                    {
+                        Name = "Delete Team Member",
+                        Description = $"Deleted team member: {staffName}",
+                        Type = ActionType.Delete,
+                        PerformedByUserId = currentUser.Id,
+                        PerformedAt = DateTime.UtcNow,
+                        TargetUserId = null
+                    });
+                    await _context.SaveChangesAsync();
+                }
             }
             return RedirectToAction(nameof(HospitalManagement));
         }
