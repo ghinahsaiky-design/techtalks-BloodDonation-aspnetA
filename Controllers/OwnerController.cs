@@ -114,8 +114,13 @@ namespace BloodDonation.Controllers
                 .Take(5)
                 .ToListAsync();
 
-            var newHospitalsThisMonth = await _context.Users
-                .CountAsync(u => u.Role == "Hospital" && u.CreatedAt >= oneMonthAgo);
+            var newHospitalsThisMonth = await _context.Hospitals
+                .Include(h => h.User)
+                .CountAsync(h => h.User.CreatedAt >= oneMonthAgo);
+
+            var activeHospitals = await _context.Hospitals.Include(h => h.User).CountAsync(h => h.User.Status == "Active");
+            var activeTeamMembers = await _context.HospitalStaff.CountAsync(s => s.Status == "Active");
+            var newTeamMembersThisMonth = await _context.HospitalStaff.CountAsync(s => s.CreatedAt >= oneMonthAgo);
 
             var viewModel = new OwnerDashboardViewModel
             {
@@ -126,6 +131,9 @@ namespace BloodDonation.Controllers
                 TotalHospitals = roleDistribution.ContainsKey("Hospital") ? roleDistribution["Hospital"] : 0,
                 TotalOwners = roleDistribution.ContainsKey("Owner") ? roleDistribution["Owner"] : 0,
                 NewHospitalsThisMonth = newHospitalsThisMonth,
+                NewTeamMembersThisMonth = newTeamMembersThisMonth,
+                ActiveHospitals = activeHospitals,
+                ActiveTeamMembers = activeTeamMembers,
                 RoleDistribution = roleDistribution,
                 UserGrowthPercentage = Math.Round(userGrowth, 1),
                 DonationGrowthPercentage = Math.Round(donationGrowth, 1),

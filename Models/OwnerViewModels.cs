@@ -13,6 +13,9 @@ namespace BloodDonation.Models
         public int TotalHospitals { get; set; }
         public int TotalOwners { get; set; }
         public int NewHospitalsThisMonth { get; set; }
+        public int NewTeamMembersThisMonth { get; set; }
+        public int ActiveTeamMembers { get; set; }
+        public int ActiveHospitals { get; set; }
         
         public double UserGrowthPercentage { get; set; }
         public double DonationGrowthPercentage { get; set; }

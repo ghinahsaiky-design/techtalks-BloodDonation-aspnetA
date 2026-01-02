@@ -40,7 +40,6 @@
     </div>
 }
 
-
 <main class="flex-1 p-6 md:p-8 lg:p-10 bg-background-light/50">
     <div class="flex flex-wrap justify-between items-center gap-3 mb-8">
         <div>
@@ -112,14 +111,14 @@
             <div class="flex justify-between items-start">
                 <div>
                     <p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Active Hospitals</p>
-                    <h3 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold mt-1">@Model.TotalHospitals</h3>
+                    <h3 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold mt-1">@Model.ActiveHospitals</h3>
                 </div>
                 <div class="p-2 bg-purple-50 text-purple-600 rounded-lg">
                     <span class="material-symbols-outlined">local_hospital</span>
                 </div>
             </div>
             <div class="flex items-center gap-2 mt-auto">
-                <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
+                <span class="text-purple-600 bg-purple-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
                     <span class="material-symbols-outlined text-xs">add</span> @Model.NewHospitalsThisMonth New
                 </span>
                 <span class="text-gray-400 text-xs">this month</span>
@@ -131,21 +130,21 @@
         <div class="flex flex-col gap-4 rounded-xl p-6 border border-gray-100 dark:border-white/10 bg-white dark:bg-background-dark shadow-sm">
             <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">System Blood Stock</p>
-                    <h3 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold mt-1">88%</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal">Active Team Members</p>
+                    <h3 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold mt-1">@Model.ActiveTeamMembers</h3>
                 </div>
-                <div class="p-2 bg-green-50 text-green-600 rounded-lg">
-                    <span class="material-symbols-outlined">inventory_2</span>
+                <div class="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                    <span class="material-symbols-outlined">diversity_3</span>
                 </div>
             </div>
             <div class="flex items-center gap-2 mt-auto">
-                <span class="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
-                    Status: Healthy
+                <span class="text-orange-600 bg-orange-50 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">add</span> @Model.NewTeamMembersThisMonth New
                 </span>
-                <span class="text-gray-400 text-xs">Optimum level</span>
+                <span class="text-gray-400 text-xs">this month</span>
             </div>
-            <div class="w-full bg-gray-100 rounded-full h-2.5 mt-auto">
-                <div class="bg-green-600 h-2.5 rounded-full" style="width: 88%"></div>
+            <div class="w-full bg-orange-100 rounded-full h-2.5 mt-auto">
+                <div class="bg-orange-500 h-2.5 rounded-full" style="width: 100%"></div>
             </div>
         </div>
     </div>
