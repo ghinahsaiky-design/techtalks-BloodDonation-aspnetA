@@ -913,6 +913,12 @@ namespace BloodDonation.Controllers
                     query = query.Where(r => r.CreatedAt >= startDate);
                 }
             }
+            else
+            {
+                // "all" → include everything
+                startDate = query.Any() ? query.Min(r => r.CreatedAt) : DateTime.Today;
+            }
+
 
             // Filter by blood type
             if (bloodTypeId.HasValue)
@@ -1040,63 +1046,47 @@ namespace BloodDonation.Controllers
         private List<MonthlyTrendViewModel> GetMonthlyTrends(IQueryable<DonorRequest> query, DateTime? startDate)
         {
             var endDate = DateTime.Today;
-            var compareStartDate = startDate ?? DateTime.Today.AddMonths(-6); // Default to last 6 months if no filter
+
+            // If no startDate provided, default to all data
+            var compareStartDate = startDate ?? query.Min(r => r.CreatedAt);
 
             return query
                 .Where(r => r.CreatedAt >= compareStartDate && r.CreatedAt <= endDate)
-                .AsEnumerable() // Switch to client-side for date manipulation
-                .GroupBy(r => new { Year = r.CreatedAt.Year, Month = r.CreatedAt.Month })
+                .AsEnumerable()
+                .GroupBy(r => new DateTime(r.CreatedAt.Year, r.CreatedAt.Month, 1))
                 .Select(g => new MonthlyTrendViewModel
                 {
-                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM"),
+                    Month = g.Key.ToString("MMM yyyy"), // "Jan 2026"
                     Requested = g.Count(),
                     Completed = g.Count(r => r.Status == "Completed")
                 })
-                .OrderByDescending(x =>
-                {
-                    // Parse month name back to date for ordering
-                    var monthNames = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-                    var monthIndex = Array.IndexOf(monthNames, x.Month) + 1;
-                    return new DateTime(DateTime.Today.Year, monthIndex, 1);
-                })
-                .Take(6) // Last 6 months
-                .OrderBy(x =>
-                {
-                    var monthNames = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-                    var monthIndex = Array.IndexOf(monthNames, x.Month) + 1;
-                    return new DateTime(DateTime.Today.Year, monthIndex, 1);
-                })
+                .OrderBy(g => g.Month)
                 .ToList();
         }
+
+
 
         private List<MonthlyPerformanceViewModel> GetMonthlyPerformance(IQueryable<DonorRequest> query, DateTime? startDate)
         {
             var endDate = DateTime.Today;
-            var compareStartDate = startDate ?? DateTime.Today.AddMonths(-4); // Default to last 4 months
+            var compareStartDate = startDate ?? query.Min(r => r.CreatedAt);
 
             return query
                 .Where(r => r.CreatedAt >= compareStartDate && r.CreatedAt <= endDate)
-                .AsEnumerable() // Switch to client-side for date manipulation
-                .GroupBy(r => new { Year = r.CreatedAt.Year, Month = r.CreatedAt.Month })
+                .AsEnumerable()
+                .GroupBy(r => new DateTime(r.CreatedAt.Year, r.CreatedAt.Month, 1))
                 .Select(g => new MonthlyPerformanceViewModel
                 {
-                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM"),
+                    Month = g.Key.ToString("MMMM yyyy"),
                     Requested = g.Count(),
                     Fulfilled = g.Count(r => r.Status == "Completed"),
                     Efficiency = g.Count() > 0 ? Math.Round((double)g.Count(r => r.Status == "Completed") / g.Count() * 100, 1) : 0
                 })
-                .OrderByDescending(x =>
-                {
-                    var monthNames = new[] { "January", "February", "March", "April", "May", "June",
-                                   "July", "August", "September", "October", "November", "December" };
-                    var monthIndex = Array.IndexOf(monthNames, x.Month) + 1;
-                    return new DateTime(DateTime.Today.Year, monthIndex, 1);
-                })
-                .Take(4) // Last 4 months
+                .OrderBy(g => g.Month)
                 .ToList();
         }
+
+
 
         private double GetFulfillmentTrend(IQueryable<DonorRequest> query, DateTime? startDate)
         {
