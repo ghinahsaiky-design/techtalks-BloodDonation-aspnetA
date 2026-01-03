@@ -416,124 +416,127 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
-        document.getElementById("exportButton").addEventListener("click", function () {
-            // Show loading state
-            const originalText = this.innerHTML;
-            this.innerHTML = '<span class="material-symbols-outlined">downloading</span> Generating PDF...';
-            this.disabled = true;
+        document.getElementById("exportButton").addEventListener("click", async function () {
 
-            // Hide filter section for PDF
+            const exportButton = this;
+            const originalText = exportButton.innerHTML;
+
+            exportButton.innerHTML =
+                '<span class="material-symbols-outlined">downloading</span> Generating PDF...';
+            exportButton.disabled = true;
+
             const filterSection = document.querySelector('form[method="get"]');
-            if (filterSection) {
-                filterSection.style.display = 'none';
-            }
+            if (filterSection) filterSection.style.display = 'none';
 
             const container = document.getElementById("statisticsContainer");
 
-            // Configure html2canvas
-            const options = {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: "#ffffff",
-                logging: false,
-                allowTaint: true,
-                removeContainer: true,
-                onclone: function(clonedDoc) {
-                    // Force light mode for PDF
-                    clonedDoc.body.classList.remove('dark');
-                    clonedDoc.body.classList.add('bg-white');
-                    clonedDoc.body.style.backgroundColor = '#ffffff';
+            // 🔹 Fix overflow clipping
+            const originalOverflow = container.style.overflow;
+            const originalHeight = container.style.height;
+            container.style.overflow = 'visible';
+            container.style.height = 'auto';
 
-                    // Convert all dark mode elements to light mode
-                    const darkElements = clonedDoc.querySelectorAll('.dark\\:bg-\\[\\#1a1a1a\\], .dark\\:bg-background-dark');
-                    darkElements.forEach(el => {
-                        el.classList.remove('dark:bg-[#1a1a1a]', 'dark:bg-background-dark');
-                        el.classList.add('bg-white');
-                        el.style.backgroundColor = '#ffffff';
-                    });
+            try {
+                const canvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff",
+                    logging: false,
+                    allowTaint: true,
+                    onclone: (clonedDoc) => {
 
-                    // Convert text colors
-                    const darkText = clonedDoc.querySelectorAll('.dark\\:text-white, .dark\\:text-gray-300, .dark\\:text-gray-400');
-                    darkText.forEach(el => {
-                        el.classList.remove('dark:text-white', 'dark:text-gray-300', 'dark:text-gray-400');
-                        el.classList.add('text-gray-900', 'text-gray-600', 'text-gray-500');
-                    });
+                        // Force light mode
+                        clonedDoc.body.classList.remove("dark");
+                        clonedDoc.body.style.backgroundColor = "#ffffff";
 
-                    // Convert borders
-                    const darkBorders = clonedDoc.querySelectorAll('.dark\\:border-gray-800');
-                    darkBorders.forEach(el => {
-                        el.classList.remove('dark:border-gray-800');
-                        el.classList.add('border-gray-200');
-                    });
-                }
-            };
+                        // Backgrounds
+                        clonedDoc.querySelectorAll(
+                            '.dark\\:bg-\\[\\#1a1a1a\\], .dark\\:bg-background-dark'
+                        ).forEach(el => {
+                            el.style.backgroundColor = "#ffffff";
+                        });
 
-            html2canvas(container, options).then(function(canvas) {
-                // Restore filter section
-                if (filterSection) {
-                    filterSection.style.display = '';
-                }
+                        // Text colors
+                        clonedDoc.querySelectorAll(
+                            '.dark\\:text-white, .dark\\:text-gray-300, .dark\\:text-gray-400'
+                        ).forEach(el => {
+                            el.style.color = "#111827";
+                        });
 
-                const imgData = canvas.toDataURL('image/png', 1.0);
+                        // Borders
+                        clonedDoc.querySelectorAll('.dark\\:border-gray-800')
+                            .forEach(el => {
+                                el.style.borderColor = "#e5e7eb";
+                            });
+                    }
+                });
+
+                const imgData = canvas.toDataURL("image/png");
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'pt', 'a4');
+                const pdf = new jsPDF("p", "pt", "a4");
 
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
 
-                // Add margins
                 const margin = 72;
-                const contentWidth = pdfWidth - (margin * 2);
-                const contentHeight = (canvas.height * contentWidth) / canvas.width;
+                const usableWidth = pdfWidth - margin * 2;
+                const usableHeight = pdfHeight - margin * 2;
 
-                // Add title header
+                const imgHeight = (canvas.height * usableWidth) / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = margin;
+
+                // Header
                 pdf.setFontSize(20);
-                pdf.setTextColor(24, 17, 18);
-                pdf.text('Hospital Statistics Report', margin, margin - 20);
+                pdf.text("Hospital Statistics Report", margin, 40);
 
                 pdf.setFontSize(10);
-                pdf.setTextColor(100, 100, 100);
-                pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, margin - 5);
+                pdf.setTextColor(120);
+                pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 58);
 
-                // Add content
-                pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, contentHeight);
+                position = 80;
+                heightLeft -= usableHeight;
 
-                // Add page numbers
-                const totalPages = pdf.internal.getNumberOfPages();
-                for (let i = 1; i <= totalPages; i++) {
+                pdf.addImage(imgData, "PNG", margin, position, usableWidth, imgHeight);
+
+                // 🔹 Multi-page support
+                while (heightLeft > 0) {
+                    pdf.addPage();
+                    position = margin - heightLeft;
+                    pdf.addImage(imgData, "PNG", margin, position, usableWidth, imgHeight);
+                    heightLeft -= usableHeight;
+                }
+
+                // Page numbers
+                const pageCount = pdf.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
                     pdf.setPage(i);
                     pdf.setFontSize(9);
                     pdf.setTextColor(150);
                     pdf.text(
-                        `Page ${i} of ${totalPages}`,
+                        `Page ${i} of ${pageCount}`,
                         pdfWidth / 2,
-                        pdfHeight - margin / 2,
-                        { align: 'center' }
+                        pdfHeight - 30,
+                        { align: "center" }
                     );
                 }
 
-                // Save PDF
-                pdf.save(`Hospital_Statistics_${new Date().toISOString().split('T')[0]}.pdf`);
+                pdf.save(`Hospital_Statistics_${new Date().toISOString().split("T")[0]}.pdf`);
 
-                // Reset button
-                const exportButton = document.getElementById("exportButton");
-                exportButton.innerHTML = originalText;
-                exportButton.disabled = false;
+            } catch (error) {
+                console.error("PDF export error:", error);
+                alert("Failed to generate PDF. Please try again.");
+            }
 
-            }).catch(function(error) {
-                console.error("Error generating PDF:", error);
-                alert("Error generating PDF. Please try again.");
+            // Restore UI
+            container.style.overflow = originalOverflow;
+            container.style.height = originalHeight;
+            if (filterSection) filterSection.style.display = '';
 
-                // Restore filter section on error
-                if (filterSection) {
-                    filterSection.style.display = '';
-                }
-
-                // Reset button on error
-                const exportButton = document.getElementById("exportButton");
-                exportButton.innerHTML = originalText;
-                exportButton.disabled = false;
-            });
+            exportButton.innerHTML = originalText;
+            exportButton.disabled = false;
         });
     </script>
+
 </body>
