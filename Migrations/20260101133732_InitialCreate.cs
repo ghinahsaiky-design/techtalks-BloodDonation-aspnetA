@@ -366,14 +366,13 @@ namespace BloodDonation.Migrations
                         name: "FK_HospitalStaff_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_HospitalStaff_Hospitals_HospitalId",
                         column: x => x.HospitalId,
                         principalTable: "Hospitals",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

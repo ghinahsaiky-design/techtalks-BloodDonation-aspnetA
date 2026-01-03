@@ -96,7 +96,7 @@ namespace BloodDonation.Data
             // HospitalStaff -> Hospital  (keep cascade)
             modelBuilder.Entity<HospitalStaff>()
                 .HasOne(hs => hs.Hospital)
-                .WithMany()                             // or .WithMany(h => h.Staff)
+                .WithMany(h => h.HospitalStaff)
                 .HasForeignKey(hs => hs.HospitalId)
                 .OnDelete(DeleteBehavior.Cascade);
 

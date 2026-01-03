@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BloodDonation.Migrations
 {
     [DbContext(typeof(BloodDonationContext))]
-    [Migration("20260101091552_InitialCreate")]
+    [Migration("20260101133732_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -910,7 +910,7 @@ namespace BloodDonation.Migrations
             modelBuilder.Entity("BloodDonation.Models.HospitalStaff", b =>
                 {
                     b.HasOne("BloodDonation.Models.Hospital", "Hospital")
-                        .WithMany()
+                        .WithMany("HospitalStaff")
                         .HasForeignKey("HospitalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -918,7 +918,7 @@ namespace BloodDonation.Migrations
                     b.HasOne("BloodDonation.Models.Users", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Hospital");
@@ -997,6 +997,11 @@ namespace BloodDonation.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BloodDonation.Models.Hospital", b =>
+                {
+                    b.Navigation("HospitalStaff");
                 });
 #pragma warning restore 612, 618
         }

@@ -107,6 +107,23 @@ namespace BloodDonation.Controllers
             _context.Hospitals.Add(entity);
             await _context.SaveChangesAsync();
 
+            // Record the action
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser != null)
+            {
+                _context.Actions.Add(new TrackedAction
+                {
+                    Name = "Create Hospital",
+                    Description = $"Created new hospital: {entity.Name}",
+                    Type = ActionType.Create,
+                    PerformedByUserId = currentUser.Id,
+                    PerformedAt = DateTime.UtcNow,
+                    TargetEntityId = entity.Id,
+                    TargetUserId = user.Id
+                });
+                await _context.SaveChangesAsync();
+            }
+
             return Ok();
         }
 
@@ -185,6 +202,23 @@ namespace BloodDonation.Controllers
             _context.Hospitals.Update(hospital);
             await _context.SaveChangesAsync();
 
+            // Record the action
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser != null)
+            {
+                _context.Actions.Add(new TrackedAction
+                {
+                    Name = "Edit Hospital",
+                    Description = $"Updated hospital details: {hospital.Name}",
+                    Type = ActionType.Update,
+                    PerformedByUserId = currentUser.Id,
+                    PerformedAt = DateTime.UtcNow,
+                    TargetEntityId = hospital.Id,
+                    TargetUserId = hospital.UserId
+                });
+                await _context.SaveChangesAsync();
+            }
+
             return Ok();
         }
 
@@ -193,18 +227,61 @@ namespace BloodDonation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var hospital = await _context.Hospitals.Include(h => h.User).FirstOrDefaultAsync(h => h.Id == id);
+            var hospital = await _context.Hospitals
+                .Include(h => h.User)
+                .Include(h => h.HospitalStaff)
+                    .ThenInclude(hs => hs.User)
+                .FirstOrDefaultAsync(h => h.Id == id);
+
             if (hospital != null)
             {
-                var user = hospital.User;
-                _context.Hospitals.Remove(hospital);
+                var hospitalName = hospital.Name;
+                
+                // Collect all users to delete (Hospital User + Staff Users)
+                var usersToDelete = new System.Collections.Generic.List<Users>();
+                
+                if (hospital.User != null) 
+                {
+                    usersToDelete.Add(hospital.User);
+                }
 
-                if (user != null)
+                if (hospital.HospitalStaff != null)
+                {
+                    foreach (var staff in hospital.HospitalStaff)
+                    {
+                        if (staff.User != null)
+                        {
+                            usersToDelete.Add(staff.User);
+                        }
+                    }
+                }
+
+                // Remove hospital (this will cascade delete HospitalStaff)
+                _context.Hospitals.Remove(hospital);
+                await _context.SaveChangesAsync();
+
+                // Now delete the user accounts
+                foreach (var user in usersToDelete)
                 {
                     await _userManager.DeleteAsync(user);
                 }
 
-                await _context.SaveChangesAsync();
+                // Record the action
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null)
+                {
+                    _context.Actions.Add(new TrackedAction
+                    {
+                        Name = "Delete Hospital",
+                        Description = $"Deleted hospital: {hospitalName}",
+                        Type = ActionType.Delete,
+                        PerformedByUserId = currentUser.Id,
+                        PerformedAt = DateTime.UtcNow,
+                        TargetEntityId = null,
+                        TargetUserId = null
+                    });
+                    await _context.SaveChangesAsync();
+                }
             }
 
             return RedirectToAction("HospitalManagement", "Owner");

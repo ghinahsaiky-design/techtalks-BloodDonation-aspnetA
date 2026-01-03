@@ -35,5 +35,7 @@ namespace BloodDonation.Models
 
         [MaxLength(500)]
         public string? LogoPath { get; set; }
+
+        public virtual ICollection<HospitalStaff> HospitalStaff { get; set; } = new List<HospitalStaff>();
     }
 }
