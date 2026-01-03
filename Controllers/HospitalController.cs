@@ -1115,20 +1115,34 @@ namespace BloodDonation.Controllers
         private double GetTimeTrend(IQueryable<DonorRequest> query, DateTime? startDate)
         {
             if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
-                return 0.25; // Default
+                return 0.25;
 
-            var currentPeriod = query.Where(r => r.CreatedAt >= startDate && r.CompletedAt != null);
-            var previousPeriod = query.Where(r => r.CreatedAt >= startDate.Value.AddMonths(-1) &&
-                                                 r.CreatedAt < startDate &&
-                                                 r.CompletedAt != null);
+            var currentValues = query
+                .Where(r => r.CreatedAt >= startDate && r.CompletedAt != null)
+                .AsEnumerable()
+                .Select(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours)
+                .ToList();
 
-            var currentAvg = currentPeriod.Any() ?
-                currentPeriod.Average(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours) : 0;
-            var previousAvg = previousPeriod.Any() ?
-                previousPeriod.Average(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours) : 0;
+            var previousValues = query
+                .Where(r =>
+                    r.CreatedAt >= startDate.Value.AddMonths(-1) &&
+                    r.CreatedAt < startDate &&
+                    r.CompletedAt != null)
+                .AsEnumerable()
+                .Select(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours)
+                .ToList();
 
-            return Math.Round(previousAvg - currentAvg, 2); // Positive means improvement
+            // 🔹 No data → neutral trend
+            if (!currentValues.Any() || !previousValues.Any())
+                return 0;
+
+            var currentAvg = currentValues.Average();
+            var previousAvg = previousValues.Average();
+
+            return Math.Round(previousAvg - currentAvg, 2);
         }
+
+
 
         private double GetEngagedTrend(IQueryable<DonorRequest> query, DateTime? startDate)
         {
