@@ -229,7 +229,8 @@ namespace BloodDonation.Migrations
                     Address = table.Column<string>(type: "nvarchar(400)", maxLength: 400, nullable: false),
                     City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     State = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Zip = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
+                    Zip = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    LogoPath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -345,6 +346,36 @@ namespace BloodDonation.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "HospitalStaff",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HospitalId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    InvitedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    InvitedByUserId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HospitalStaff", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_HospitalStaff_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_HospitalStaff_Hospitals_HospitalId",
+                        column: x => x.HospitalId,
+                        principalTable: "Hospitals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DonorConfirmations",
                 columns: table => new
                 {
@@ -369,6 +400,29 @@ namespace BloodDonation.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DonorConfirmations_DonorRequests_RequestId",
+                        column: x => x.RequestId,
+                        principalTable: "DonorRequests",
+                        principalColumn: "RequestId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "HospitalNotifications",
+                columns: table => new
+                {
+                    NotificationId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HospitalUserId = table.Column<int>(type: "int", nullable: false),
+                    RequestId = table.Column<int>(type: "int", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HospitalNotifications", x => x.NotificationId);
+                    table.ForeignKey(
+                        name: "FK_HospitalNotifications_DonorRequests_RequestId",
                         column: x => x.RequestId,
                         principalTable: "DonorRequests",
                         principalColumn: "RequestId");
@@ -502,8 +556,23 @@ namespace BloodDonation.Migrations
                 column: "RequestedByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_HospitalNotifications_RequestId",
+                table: "HospitalNotifications",
+                column: "RequestId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Hospitals_UserId",
                 table: "Hospitals",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HospitalStaff_HospitalId",
+                table: "HospitalStaff",
+                column: "HospitalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HospitalStaff_UserId",
+                table: "HospitalStaff",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -537,7 +606,10 @@ namespace BloodDonation.Migrations
                 name: "DonorConfirmations");
 
             migrationBuilder.DropTable(
-                name: "Hospitals");
+                name: "HospitalNotifications");
+
+            migrationBuilder.DropTable(
+                name: "HospitalStaff");
 
             migrationBuilder.DropTable(
                 name: "PasswordResets");
@@ -552,13 +624,16 @@ namespace BloodDonation.Migrations
                 name: "DonorRequests");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "Hospitals");
 
             migrationBuilder.DropTable(
                 name: "BloodTypes");
 
             migrationBuilder.DropTable(
                 name: "Locations");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

@@ -1,0 +1,464 @@
+@model BloodDonation.Models.HospitalDashboardViewModel
+@{
+    Layout = "_HospitalLayout";
+    ViewData["Title"] = "Hospital Dashboard";
+    var hospitalName = Model.Hospital?.Name ?? "Hospital";
+    var today = DateTime.Now.ToString("MMMM dd, yyyy");
+}
+
+<!-- Header -->
+<header class="bg-white dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+    <div class="px-8 py-6 flex flex-wrap justify-between items-end gap-4">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-[#181112] dark:text-white text-3xl font-black leading-tight tracking-tight">Welcome back, @hospitalName</h1>
+            <p class="text-[#8c5f66] dark:text-gray-400 text-sm font-normal">Today is @today</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <button id="notificationBtn" class="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-white border border-gray-200 hover:bg-gray-50 dark:bg-white/5 dark:border-gray-700 dark:hover:bg-white/10 text-sm font-semibold transition-colors relative">
+                    <span class="material-symbols-outlined text-gray-500" style="font-size: 20px;">notifications</span>
+                    <span class="hidden sm:inline">Alerts</span>
+                    <span id="notificationBadge" class="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                </button>
+                <!-- Notification Dropdown -->
+                <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                        <h3 class="font-bold text-[#181112] dark:text-white">Notifications</h3>
+                        <button id="closeNotifications" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                    <div id="notificationList" class="divide-y divide-gray-100 dark:divide-gray-800">
+                        <div class="p-4 text-center text-gray-500 dark:text-gray-400">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <a asp-action="CreateRequest" class="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+                Request Blood
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto p-8">
+    <div class="max-w-[1200px] mx-auto flex flex-col gap-8">
+        <!-- KPI Stats -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between h-32">
+                <div class="flex justify-between items-start">
+                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Requested</p>
+                    <span class="material-symbols-outlined text-primary/50 bg-primary/10 p-1.5 rounded-md text-xl">bloodtype</span>
+                </div>
+                <div>
+                    <p class="text-[#181112] dark:text-white text-2xl font-bold">@Model.TotalRequested Units</p>
+                    <p class="text-green-600 text-xs font-medium mt-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">trending_up</span> +5% vs last month
+                    </p>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between h-32">
+                <div class="flex justify-between items-start">
+                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Received</p>
+                    <span class="material-symbols-outlined text-blue-500/50 bg-blue-500/10 p-1.5 rounded-md text-xl">inventory_2</span>
+                </div>
+                <div>
+                    <p class="text-[#181112] dark:text-white text-2xl font-bold">@Model.TotalReceived Units</p>
+                    <p class="text-green-600 text-xs font-medium mt-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">trending_up</span> +12% vs last month
+                    </p>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
+                <div class="absolute right-0 top-0 h-full w-1 bg-orange-500"></div>
+                <div class="flex justify-between items-start">
+                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Pending Requests</p>
+                    <span class="material-symbols-outlined text-orange-500/50 bg-orange-500/10 p-1.5 rounded-md text-xl">pending_actions</span>
+                </div>
+                <div>
+                    <p class="text-[#181112] dark:text-white text-2xl font-bold">@Model.PendingRequests</p>
+                    @if (Model.PendingRequests > 0)
+                    {
+                        <p class="text-orange-600 text-xs font-bold mt-1 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">warning</span> @Model.PendingRequests urgent request@(Model.PendingRequests > 1 ? "s" : "")
+                        </p>
+                    }
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between h-32">
+                <div class="flex justify-between items-start">
+                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Successful Matches</p>
+                    <span class="material-symbols-outlined text-green-500/50 bg-green-500/10 p-1.5 rounded-md text-xl">check_circle</span>
+                </div>
+                <div>
+                    <p class="text-[#181112] dark:text-white text-2xl font-bold">@Model.SuccessRate.ToString("F0")%</p>
+                    <p class="text-green-600 text-xs font-medium mt-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">trending_up</span> +1% efficiency
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Charts & Analysis -->
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Left Chart -->
+            <div class="flex-1 bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-[#181112] dark:text-white text-lg font-bold">Request Trends</h3>
+                        <p class="text-gray-500 text-sm">Last 30 Days</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-[#181112] dark:text-white">@Model.Last30DaysTotal</p>
+                        <p class="text-xs @(Model.Last30DaysGrowth >= 0 ? "text-green-600" : "text-red-600") font-medium">
+                            @(Model.Last30DaysGrowth >= 0 ? "+" : "")@Model.Last30DaysGrowth.ToString("F0")% growth
+                        </p>
+                    </div>
+                </div>
+                <div class="h-[200px] w-full relative">
+                    @{
+                        var trends = Model.RequestTrends;
+                        var maxCount = trends.Any() ? Math.Max(trends.Max(t => t.Count), 1) : 1;
+                        var chartWidth = 478;
+                        var chartHeight = 150;
+                        var pathPoints = new System.Text.StringBuilder();
+                        var fillPath = new System.Text.StringBuilder();
+                        
+                        if (trends.Any() && trends.Count > 1)
+                        {
+                            var stepX = (double)chartWidth / (trends.Count - 1);
+                            
+                            for (int i = 0; i < trends.Count; i++)
+                            {
+                                var x = i * stepX;
+                                var normalizedValue = trends[i].Count / maxCount;
+                                var y = chartHeight - (normalizedValue * chartHeight);
+                                if (y < 0) y = 0;
+                                if (y > chartHeight) y = chartHeight;
+                                
+                                if (i == 0)
+                                {
+                                    pathPoints.Append($"M{x} {y}");
+                                    fillPath.Append($"M{x} {y}");
+                                }
+                                else
+                                {
+                                    // Smooth curve using quadratic bezier
+                                    var prevX = (i - 1) * stepX;
+                                    var prevNormalized = trends[i - 1].Count / maxCount;
+                                    var prevY = chartHeight - (prevNormalized * chartHeight);
+                                    if (prevY < 0) prevY = 0;
+                                    if (prevY > chartHeight) prevY = chartHeight;
+                                    
+                                    var controlX = prevX + (stepX / 2);
+                                    pathPoints.Append($" Q{controlX} {prevY} {x} {y}");
+                                    fillPath.Append($" Q{controlX} {prevY} {x} {y}");
+                                }
+                            }
+                            
+                            // Complete fill path
+                            var firstY = chartHeight - ((trends[0].Count / maxCount) * chartHeight);
+                            if (firstY < 0) firstY = 0;
+                            if (firstY > chartHeight) firstY = chartHeight;
+                            
+                            var lastX = (trends.Count - 1) * ((double)chartWidth / (trends.Count - 1));
+                            fillPath.Append($"L{lastX} {chartHeight}L0 {chartHeight}Z");
+                        }
+                        else
+                        {
+                            // Single point or no data - draw a flat line
+                            pathPoints.Append($"M0 {chartHeight}L{chartWidth} {chartHeight}");
+                            fillPath.Append($"M0 {chartHeight}L{chartWidth} {chartHeight}L{chartWidth} {chartHeight}L0 {chartHeight}Z");
+                        }
+                    }
+                    <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 478 150">
+                        <defs>
+                            <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="#d60528" stop-opacity="0.1"></stop>
+                                <stop offset="100%" stop-color="#d60528" stop-opacity="0"></stop>
+                            </linearGradient>
+                        </defs>
+                        <path d="@pathPoints.ToString()" fill="none" stroke="#d60528" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+                        <path d="@fillPath.ToString()" fill="url(#chartGradient)" style="opacity: 0.5;"></path>
+                    </svg>
+                </div>
+                <div class="flex justify-between mt-4 border-t border-gray-100 dark:border-gray-700 pt-3">
+                    <span class="text-xs font-medium text-gray-400">Week 1</span>
+                    <span class="text-xs font-medium text-gray-400">Week 2</span>
+                    <span class="text-xs font-medium text-gray-400">Week 3</span>
+                    <span class="text-xs font-medium text-gray-400">Week 4</span>
+                </div>
+            </div>
+            
+            <!-- Right Chart -->
+            <div class="flex-1 bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-[#181112] dark:text-white text-lg font-bold">Demand by Blood Type</h3>
+                        <p class="text-gray-500 text-sm">Current Inventory Status</p>
+                    </div>
+                    @{
+                        var criticalBloodType = Model.BloodTypePercentages
+                            .Where(x => x.Value < 10)
+                            .OrderBy(x => x.Value)
+                            .FirstOrDefault();
+                    }
+                    @if (criticalBloodType.Key != null)
+                    {
+                        <div class="px-3 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full text-xs font-bold border border-red-100 dark:border-red-900/30">
+                            Critical: @criticalBloodType.Key
+                        </div>
+                    }
+                </div>
+                <div class="h-[200px] flex items-end justify-between gap-4 px-2">
+                    @{
+                        var bloodTypeOrder = new[] { "A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-" };
+                        var maxPercentage = Model.BloodTypePercentages.Any() ? Math.Max(Model.BloodTypePercentages.Values.Max(), 1) : 1;
+                    }
+                    @foreach (var bloodType in bloodTypeOrder)
+                    {
+                        var percentage = Model.BloodTypePercentages.GetValueOrDefault(bloodType, 0);
+                        var heightPercentage = maxPercentage > 0 ? (percentage / maxPercentage * 100) : 0;
+                        var isCritical = percentage < 10;
+                        <div class="w-full flex flex-col items-center gap-2 group">
+                            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-t-sm relative h-[140px] overflow-hidden">
+                                <div class="absolute bottom-0 w-full @(isCritical ? "bg-red-600 animate-pulse" : "bg-primary/80 group-hover:bg-primary") transition-all rounded-t-sm" style="height: @heightPercentage.ToString("F1")%; min-height: @(heightPercentage > 0 ? "4px" : "0");"></div>
+                            </div>
+                            <span class="text-xs font-bold @(isCritical ? "text-red-600 dark:text-red-400" : "text-gray-600 dark:text-gray-400")">@bloodType</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Communications & Actions -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left: Communications -->
+            <div class="lg:col-span-2 bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                    <h3 class="text-[#181112] dark:text-white text-lg font-bold">Recent Communications</h3>
+                    <a class="text-primary text-sm font-semibold hover:underline" href="#">View All</a>
+                </div>
+                <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                    <div class="p-4 flex gap-4 items-start hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+                        <div class="size-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 font-bold">JD</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <p class="text-sm font-bold text-[#181112] dark:text-white">John Doe (Donor)</p>
+                                <span class="text-xs text-gray-500">2 min ago</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">I am available to donate for the O- emergency request this afternoon. Please confirm...</p>
+                        </div>
+                    </div>
+                    <div class="p-4 flex gap-4 items-start hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+                        <div class="size-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 font-bold">RC</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <p class="text-sm font-bold text-[#181112] dark:text-white">Red Cross Logistics</p>
+                                <span class="text-xs text-gray-500">1 hr ago</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">Shipment #BLD-40291 is currently in transit. ETA: 14:00 today.</p>
+                        </div>
+                    </div>
+                    <div class="p-4 flex gap-4 items-start hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+                        <div class="size-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 font-bold">SM</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <p class="text-sm font-bold text-[#181112] dark:text-white">Sarah Miller (Donor)</p>
+                                <span class="text-xs text-gray-500">4 hrs ago</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">Thank you for the update. I will schedule my next appointment for next month.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: Quick Stock Check -->
+            <div class="bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 flex flex-col gap-4">
+                <h3 class="text-[#181112] dark:text-white text-lg font-bold">Inventory Alerts</h3>
+                <div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-red-600 dark:text-red-400">error</span>
+                    <div>
+                        <p class="text-sm font-bold text-red-800 dark:text-red-300">O- Negative Critical</p>
+                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">Only 2 units remaining. Immediate action required.</p>
+                        <button class="mt-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded transition-colors">Launch Campaign</button>
+                    </div>
+                </div>
+                <div class="p-4 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30 flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">warning</span>
+                    <div>
+                        <p class="text-sm font-bold text-orange-800 dark:text-orange-300">Platelets Low</p>
+                        <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Supply dropping below 3-day buffer.</p>
+                    </div>
+                </div>
+                <div class="mt-auto pt-4">
+                    <button class="w-full flex items-center justify-center gap-2 rounded-lg py-2.5 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+                        View Full Inventory
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+<script>
+    let notificationCheckInterval;
+
+    // Load notification count
+    async function loadNotificationCount() {
+        try {
+            const response = await fetch('@Url.Action("GetNotificationCount", "Hospital")');
+            const data = await response.json();
+            if (data.success) {
+                const badge = document.getElementById('notificationBadge');
+                if (data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading notification count:', error);
+        }
+    }
+
+    // Load notifications list
+    async function loadNotifications() {
+        const list = document.getElementById('notificationList');
+        try {
+            const response = await fetch('@Url.Action("GetNotifications", "Hospital")');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log('Notifications response:', JSON.stringify(data, null, 2)); // Debug log
+            if (data.success) {
+                if (data.notifications && data.notifications.length > 0) {
+                    console.log('First notification object:', data.notifications[0]); // Debug log
+                    console.log('First notification keys:', Object.keys(data.notifications[0])); // Debug log
+                    list.innerHTML = data.notifications.map(notif => {
+                        // ASP.NET Core JSON serialization uses camelCase by default
+                        // Handle both camelCase and PascalCase for compatibility
+                        const requestId = notif.requestId ?? notif.RequestId ?? 0;
+                        const requestStatus = notif.requestStatus ?? notif.RequestStatus ?? 'Updated';
+                        const notificationStatus = notif.status ?? notif.Status ?? 'Unread';
+                        const timeAgo = notif.timeAgo ?? notif.TimeAgo ?? 'Just now';
+                        const notificationId = notif.notificationId ?? notif.NotificationId ?? 0;
+                        
+                        // Determine status badge class based on request status
+                        const statusClasses = {
+                            'Approved': 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 border-green-100 dark:border-green-900/30',
+                            'Completed': 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border-blue-100 dark:border-blue-900/30',
+                            'Cancelled': 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border-red-100 dark:border-red-900/30',
+                            'Pending': 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400 border-yellow-100 dark:border-yellow-900/30',
+                            'Updated': 'bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400 border-gray-100 dark:border-gray-900/30'
+                        };
+                        const statusClass = statusClasses[requestStatus] || statusClasses['Updated'];
+                        
+                        return `
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer ${notificationStatus === 'Unread' ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}" 
+                             onclick="markAsRead(${notificationId}, ${requestId})">
+                            <div class="flex items-start gap-3">
+                                <div class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                                    <span class="material-symbols-outlined text-base">notifications</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <p class="text-sm font-bold text-[#181112] dark:text-white">Request #${requestId || 'N/A'}</p>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${statusClass}">
+                                            ${escapeHtml(requestStatus)}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">${escapeHtml(timeAgo || 'Just now')}</p>
+                                </div>
+                                ${notificationStatus === 'Unread' ? '<div class="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2"></div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                    }).join('');
+                } else {
+                    list.innerHTML = '<div class="p-4 text-center text-gray-500 dark:text-gray-400">No notifications</div>';
+                }
+            } else {
+                list.innerHTML = '<div class="p-4 text-center text-red-500">Failed to load notifications</div>';
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+            list.innerHTML = `<div class="p-4 text-center text-red-500">Error: ${escapeHtml(error.message)}</div>`;
+        }
+    }
+
+    // Mark notification as read
+    async function markAsRead(notificationId, requestId) {
+        try {
+            const response = await fetch('@Url.Action("MarkNotificationAsRead", "Hospital")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ notificationId: notificationId })
+            });
+            const data = await response.json();
+            if (data.success) {
+                // Reload notifications and count
+                await loadNotifications();
+                await loadNotificationCount();
+                // Redirect to view requests or the specific request
+                window.location.href = '@Url.Action("ViewRequests", "Hospital")';
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    }
+
+    // Toggle notification dropdown
+    document.getElementById('notificationBtn').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const dropdown = document.getElementById('notificationDropdown');
+        dropdown.classList.toggle('hidden');
+        if (!dropdown.classList.contains('hidden')) {
+            await loadNotifications();
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('notificationDropdown');
+        const btn = document.getElementById('notificationBtn');
+        if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    document.getElementById('closeNotifications').addEventListener('click', () => {
+        document.getElementById('notificationDropdown').classList.add('hidden');
+    });
+
+    // Escape HTML helper
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadNotificationCount();
+        // Poll for notifications every 30 seconds
+        notificationCheckInterval = setInterval(loadNotificationCount, 30000);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (notificationCheckInterval) {
+            clearInterval(notificationCheckInterval);
+        }
+    });
+</script>
+}

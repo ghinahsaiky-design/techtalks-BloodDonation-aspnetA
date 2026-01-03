@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using BloodDonation.Models;
+using BloodDonation.Data;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace BloodDonation.Controllers
 {
@@ -10,10 +12,12 @@ namespace BloodDonation.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<Users> _userManager;
+        private readonly BloodDonationContext _context;
 
-        public AccountController(UserManager<Users> userManager)
+        public AccountController(UserManager<Users> userManager, BloodDonationContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<IActionResult> Profile()
@@ -22,6 +26,18 @@ namespace BloodDonation.Controllers
             if (user == null)
             {
                 return RedirectToAction("Login", "Auth");
+            }
+
+            // Check if user is a hospital user (primary or staff)
+            var isHospitalUser = await _context.Hospitals
+                .AnyAsync(h => h.UserId == user.Id);
+            
+            var isHospitalStaff = await _context.HospitalStaff
+                .AnyAsync(s => s.UserId == user.Id && s.Status == "Active");
+
+            if (isHospitalUser || isHospitalStaff)
+            {
+                return RedirectToAction("Dashboard", "Hospital");
             }
 
             if (user.Role == "Donor")

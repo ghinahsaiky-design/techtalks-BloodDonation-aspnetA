@@ -1,0 +1,456 @@
+@model BloodDonation.Models.HospitalSettingsViewModel
+@{
+    Layout = "_HospitalLayout";
+    ViewData["Title"] = "Hospital Settings";
+}
+
+@section Styles {
+    <style type="text/tailwindcss">
+        @@layer components {
+            .form-input {
+                @@apply w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2a1d20] text-[#181112] dark:text-gray-200 text-sm focus:ring-primary focus:border-primary transition-shadow duration-200;
+            }
+            .form-label {
+                @@apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5;
+            }
+            .btn-primary {
+                @@apply px-4 py-2 bg-primary hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm;
+            }
+            .btn-secondary {
+                @@apply px-4 py-2 bg-white dark:bg-white/5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 transition-colors;
+            }
+        }
+    </style>
+}
+
+<header class="bg-white dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+    <div class="px-8 py-6 flex flex-wrap justify-between items-end gap-4">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-[#181112] dark:text-white text-3xl font-black leading-tight tracking-tight">Settings</h1>
+            <p class="text-[#8c5f66] dark:text-gray-400 text-sm font-normal">Manage account details, notifications, and team members</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="window.location.href='@Url.Action("Contact","Home")'" class="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-white border border-gray-200 hover:bg-gray-50 dark:bg-white/5 dark:border-gray-700 dark:hover:bg-white/10 text-sm font-semibold transition-colors">
+                <span class="material-symbols-outlined text-gray-500" style="font-size: 20px;">help</span>
+                <span class="hidden sm:inline">Support</span>
+            </button>
+        </div>
+    </div>
+    <div class="px-8 border-t border-gray-100 dark:border-gray-800 flex gap-6 overflow-x-auto">
+        <a class="py-3 text-sm font-semibold text-primary border-b-2 border-primary" href="#profile">Profile</a>
+        <a class="py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors" href="#notifications">Notifications</a>
+        <a class="py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors" href="#team">Team</a>
+    </div>
+</header>
+
+<main class="flex-1 overflow-y-auto p-8">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="max-w-4xl mx-auto mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 rounded-lg">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="max-w-4xl mx-auto mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 rounded-lg">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="max-w-4xl mx-auto space-y-8">
+        <!-- Success/Error Messages -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <p class="text-green-800 dark:text-green-200">@TempData["SuccessMessage"]</p>
+            </div>
+        }
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p class="text-red-800 dark:text-red-200">@TempData["ErrorMessage"]</p>
+            </div>
+        }
+
+        <!-- Hospital Profile Section -->
+        <section class="bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" id="profile">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                <h2 class="text-lg font-bold text-[#181112] dark:text-white">Hospital Profile</h2>
+                <p class="text-sm text-gray-500 mt-1">Update your hospital's public information and contact details.</p>
+            </div>
+            <!-- Logo Upload Form (separate from profile form to avoid nested forms) -->
+            <form id="logoUploadForm" asp-controller="Hospital" asp-action="UploadHospitalLogo" method="post" enctype="multipart/form-data" style="display: none;">
+                @Html.AntiForgeryToken()
+                <input type="file" id="logoFileInput" name="logoFile" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" onchange="handleLogoUpload(this)" />
+            </form>
+            
+            <form asp-controller="Hospital" asp-action="UpdateProfile" method="post" class="p-6">
+                @Html.AntiForgeryToken()
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-shrink-0 flex flex-col items-center gap-4">
+                        <div id="logoContainer" class="size-32 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center overflow-hidden relative group cursor-pointer" onclick="document.getElementById('logoFileInput').click();">
+                            @if (!string.IsNullOrEmpty(Model.LogoPath))
+                            {
+                                <img id="logoPreview" src="@Model.LogoPath" alt="Hospital Logo" class="w-full h-full object-cover rounded-full" />
+                                <div id="logoPlaceholder" class="hidden">
+                                    <span class="material-symbols-outlined text-gray-400 text-4xl">domain</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <img id="logoPreview" src="" alt="Hospital Logo" class="hidden w-full h-full object-cover rounded-full" />
+                                <div id="logoPlaceholder">
+                                    <span class="material-symbols-outlined text-gray-400 text-4xl">domain</span>
+                                </div>
+                            }
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <span class="material-symbols-outlined text-white">edit</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="document.getElementById('logoFileInput').click();" class="text-sm font-semibold text-primary hover:text-red-700">Change Logo</button>
+                    </div>
+                    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="form-label" for="hospitalName">Hospital Name</label>
+                            <input class="form-input" id="hospitalName" name="HospitalName" type="text" value="@Model.HospitalName" required />
+                            <span asp-validation-for="HospitalName" class="text-red-500 text-xs"></span>
+                        </div>
+                        <div>
+                            <label class="form-label" for="regNumber">Registration Number</label>
+                            <input class="form-input" id="regNumber" type="text" value="@Model.License" disabled />
+                            <p class="text-xs text-gray-400 mt-1">Contact admin to change this.</p>
+                        </div>
+                        <div>
+                            <label class="form-label" for="website">Website</label>
+                            <input class="form-input" id="website" name="Website" type="url" value="@(Model.Website ?? "")" />
+                            <span asp-validation-for="Website" class="text-red-500 text-xs"></span>
+                        </div>
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="form-label" for="address">Address</label>
+                            <input class="form-input" id="address" name="Address" type="text" value="@Model.Address" required />
+                            <span asp-validation-for="Address" class="text-red-500 text-xs"></span>
+                        </div>
+                        <div>
+                            <label class="form-label" for="city">City</label>
+                            <input class="form-input" id="city" name="City" type="text" value="@Model.City" required />
+                            <span asp-validation-for="City" class="text-red-500 text-xs"></span>
+                        </div>
+                        <div>
+                            <label class="form-label" for="zip">Zip / Postal Code</label>
+                            <input class="form-input" id="zip" name="Zip" type="text" value="@Model.Zip" required />
+                            <span asp-validation-for="Zip" class="text-red-500 text-xs"></span>
+                        </div>
+                        <div>
+                            <label class="form-label" for="phone">Phone Number</label>
+                            <input class="form-input" id="phone" name="Phone" type="tel" value="@Model.Phone" required />
+                            <span asp-validation-for="Phone" class="text-red-500 text-xs"></span>
+                        </div>
+                        <div>
+                            <label class="form-label" for="email">Contact Email</label>
+                            <input class="form-input" id="email" name="Email" type="email" value="@Model.Email" required />
+                            <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3 mt-6">
+                    <button type="button" class="btn-secondary" onclick="window.location.reload();">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Notification Preferences Section -->
+        <section class="bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" id="notifications">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                <h2 class="text-lg font-bold text-[#181112] dark:text-white">Notification Preferences</h2>
+                <p class="text-sm text-gray-500 mt-1">Control how and when you receive alerts for blood requests and matches.</p>
+            </div>
+            <form asp-controller="Hospital" asp-action="UpdateNotificationPreferences" method="post" class="p-6 flex flex-col gap-8">
+                @Html.AntiForgeryToken()
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4 uppercase tracking-wider text-xs">Email Alerts</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">New Donor Matches</p>
+                                <p class="text-xs text-gray-500">Receive an email when a donor matches your pending request.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" name="EmailNewDonorMatches" value="true" @(Model.NotificationPreferences.EmailNewDonorMatches ? "checked" : "") />
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Request Status Updates</p>
+                                <p class="text-xs text-gray-500">Get notified when your request status changes (e.g., Fulfilled, Expired).</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" name="EmailRequestStatusUpdates" value="true" @(Model.NotificationPreferences.EmailRequestStatusUpdates ? "checked" : "") />
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Marketing &amp; Newsletter</p>
+                                <p class="text-xs text-gray-500">Receive updates about BloodConnect platform features.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" name="EmailMarketing" value="true" @(Model.NotificationPreferences.EmailMarketing ? "checked" : "") />
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <hr class="border-gray-100 dark:border-gray-800"/>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4 uppercase tracking-wider text-xs">SMS &amp; Urgent Alerts</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Emergency Low Stock</p>
+                                <p class="text-xs text-gray-500">SMS alert when inventory for any blood type hits critical levels.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" name="SmsEmergencyLowStock" value="true" @(Model.NotificationPreferences.SmsEmergencyLowStock ? "checked" : "") />
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Urgent Request Fulfillment</p>
+                                <p class="text-xs text-gray-500">Immediate SMS when an 'Urgent' request receives a donor match.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" name="SmsUrgentRequestFulfillment" value="true" @(Model.NotificationPreferences.SmsUrgentRequestFulfillment ? "checked" : "") />
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                    <button type="submit" class="btn-primary">Save Preferences</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Team Management Section -->
+        <section class="bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" id="team">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center flex-wrap gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-[#181112] dark:text-white">Team Management</h2>
+                    <p class="text-sm text-gray-500 mt-1">Manage users who have access to this hospital portal.</p>
+                </div>
+                <button type="button" class="flex items-center gap-2 btn-secondary bg-white" onclick="openAddUserModal()">
+                    <span class="material-symbols-outlined text-base">add</span>
+                    Add User
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
+                            <th class="py-4 px-6 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 tracking-wider">User</th>
+                            <th class="py-4 px-6 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 tracking-wider">Role</th>
+                            <th class="py-4 px-6 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 tracking-wider">Status</th>
+                            <th class="py-4 px-6 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 tracking-wider text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @foreach (var member in Model.TeamMembers)
+                        {
+                            var statusColor = member.Status == "Active" ? "green" : "gray";
+                            var statusText = member.Status == "Active" ? "Active" : member.Status;
+                            var roleBadgeColor = member.Role == "Admin" ? "purple" : "gray";
+                            var isPrimaryAdmin = member.Role == "Admin" && member.StaffId == 0;
+                            
+                            <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="size-9 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                                            @member.Initials
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-[#181112] dark:text-white">@member.Name</p>
+                                            <p class="text-xs text-gray-500">@member.Email</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    @if (member.Role == "Admin")
+                                    {
+                                        <span class="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">@member.Role</span>
+                                    }
+                                    else if (member.Role == "Coordinator")
+                                    {
+                                        <span class="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">@member.Role</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">@member.Role</span>
+                                    }
+                                </td>
+                                <td class="py-4 px-6">
+                                    @if (statusColor == "green")
+                                    {
+                                        <span class="flex items-center gap-1.5 text-xs font-medium text-green-600 dark:text-green-400">
+                                            <span class="size-1.5 rounded-full bg-green-500"></span>
+                                            @statusText
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+                                            <span class="size-1.5 rounded-full bg-gray-400"></span>
+                                            @statusText
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-4 px-6 text-right">
+                                    @if (!isPrimaryAdmin && member.StaffId > 0)
+                                    {
+                                        <form asp-controller="Hospital" asp-action="RemoveTeamMember" method="post" class="inline" onsubmit="return confirm('Are you sure you want to remove this team member?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="staffId" value="@member.StaffId" />
+                                            <button type="submit" class="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors" title="Remove">
+                                                <span class="material-symbols-outlined text-lg">delete</span>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-gray-300 dark:text-gray-600 text-sm">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Add User Modal -->
+        <div id="addUserModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-[#181112] dark:text-white">Add Team Member</h3>
+                    <button type="button" onclick="closeAddUserModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <form asp-controller="Hospital" asp-action="AddTeamMember" method="post" class="p-6">
+                    @Html.AntiForgeryToken()
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label" for="addEmail">Email Address</label>
+                            <input class="form-input" id="addEmail" name="Email" type="email" required />
+                            <span class="text-xs text-gray-500 mt-1">If user exists, they will be linked. Otherwise, a new account will be created.</span>
+                        </div>
+                        <div>
+                            <label class="form-label" for="addFirstName">First Name</label>
+                            <input class="form-input" id="addFirstName" name="FirstName" type="text" required />
+                        </div>
+                        <div>
+                            <label class="form-label" for="addLastName">Last Name</label>
+                            <input class="form-input" id="addLastName" name="LastName" type="text" required />
+                        </div>
+                        <div>
+                            <label class="form-label" for="addPhone">Phone Number (Optional)</label>
+                            <input class="form-input" id="addPhone" name="PhoneNumber" type="tel" />
+                        </div>
+                        <div>
+                            <label class="form-label" for="addRole">Role</label>
+                            <select class="form-input" id="addRole" name="Role" required>
+                                <option value="Staff">Staff</option>
+                                <option value="Coordinator">Coordinator</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label" for="addPassword">Password</label>
+                            <input class="form-input" id="addPassword" name="Password" type="password" required />
+                            <span class="text-xs text-gray-500 mt-1">Only used if creating a new account.</span>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button type="button" onclick="closeAddUserModal()" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Member</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        function handleLogoUpload(input) {
+            console.log('handleLogoUpload called', input.files);
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                console.log('File selected:', file.name, file.type, file.size);
+                
+                // Validate file size (5MB max)
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file.size > maxSize) {
+                    alert('File size exceeds 5MB limit. Please upload a smaller image.');
+                    input.value = '';
+                    return;
+                }
+
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Invalid file type. Please upload a JPG, PNG, GIF, or WEBP image.');
+                    input.value = '';
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('logoPreview');
+                    const placeholder = document.getElementById('logoPlaceholder');
+                    
+                    if (preview) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                    }
+                    if (placeholder) {
+                        placeholder.classList.add('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                // Submit the form immediately after validation
+                const form = document.getElementById('logoUploadForm');
+                if (form) {
+                    console.log('Submitting form...');
+                    form.submit();
+                } else {
+                    console.error('Form not found!');
+                }
+            } else {
+                console.error('No file selected');
+            }
+        }
+
+        function openAddUserModal() {
+            document.getElementById('addUserModal').classList.remove('hidden');
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('addUserModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('addUserModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddUserModal();
+            }
+        });
+    </script>
+}

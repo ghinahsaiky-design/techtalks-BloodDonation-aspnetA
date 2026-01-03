@@ -1,0 +1,298 @@
+@model BloodDonation.Models.HospitalRegistrationViewModel
+@{
+     Layout = null;
+    
+    ViewData["Title"] = "Hospital Registration";
+}
+
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>BloodConnect - Hospital Registration</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d70427",
+                        "primary-hover": "#d32f2f",
+                        "background-light": "#f8f5f6",
+                        "background-dark": "#230f12",
+                        "deep-blue": "#192A56",
+                        "soft-red": "#FF5252",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#2a1d20",
+                        "text-main": "#181112",
+                        "text-muted": "#8a6067",
+                        "border-light": "#e6dbdd",
+                        "border-dark": "#4a3b3e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .floating-input:placeholder-shown ~ .floating-label {
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: #8a6067;
+        }
+        .floating-input:focus ~ .floating-label,
+        .floating-input:not(:placeholder-shown) ~ .floating-label {
+            top: 0;
+            transform: translateY(-50%) scale(0.85);
+            color: #d70427;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col text-text-main dark:text-white">
+    <!-- Normal Top Bar -->
+    <header class="w-full bg-white/80 dark:bg-background-dark/80 backdrop-blur-sm fixed top-0 z-50">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-center justify-between whitespace-nowrap px-10 py-4">
+                <div class="flex items-center gap-3 text-deep-blue dark:text-white">
+                    <div class="w-7 h-7 text-soft-red">
+                        <img src="~/images/BloodDonationLogo.png" alt="Blood Donation Logo" class="w-full h-full object-contain" />
+                    </div>
+                    <a asp-controller="Home" asp-action="Index">
+                        <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">BloodConnect</h2>
+                    </a>
+                </div>
+                <div class="flex flex-1 justify-end items-center gap-8">
+                    <div class="hidden md:flex items-center gap-8">
+                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-action="About" asp-controller="Home">About Us</a>
+                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-action="Contact" asp-controller="Home">Contact</a>
+                        <a class="text-deep-blue dark:text-white text-sm font-medium leading-normal hover:text-soft-red transition-colors" asp-controller="Home" asp-action="IsHealthy">Are You Healthy?</a>
+                    </div>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="flex items-center gap-3">
+                            <form asp-action="Logout" asp-controller="Auth" method="post" class="inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="flex items-center justify-center rounded-full h-9 px-4 text-xs font-semibold bg-gray-100 text-deep-blue hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 transition-all">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 bg-soft-red text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
+                           asp-action="Login" asp-controller="Auth">
+                            <span class="truncate">Login</span>
+                        </a>
+
+                        <a class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 bg-soft-red text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
+                           asp-action="SignUp" asp-controller="Auth">
+                            <span class="truncate">SignUp</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </header>
+
+<!-- Main Content -->
+<main class="flex-grow flex flex-col items-center justify-center py-10 px-4 sm:px-6 mt-20">
+    <!-- Page Header -->
+    <div class="max-w-4xl w-full text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-black tracking-tight text-text-main dark:text-white mb-4">
+            Partner with BloodConnect
+        </h1>
+        <p class="text-lg text-text-muted dark:text-gray-400 max-w-2xl mx-auto">
+            Join our network to manage blood inventory and save lives efficiently. Register your medical institution today.
+        </p>
+    </div>
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="max-w-5xl w-full mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <p class="text-green-800 dark:text-green-200">@TempData["SuccessMessage"]</p>
+        </div>
+    }
+    
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="max-w-5xl w-full mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div asp-validation-summary="All" class="text-red-800 dark:text-red-200"></div>
+        </div>
+    }
+    
+    <!-- Registration Form Card -->
+    <div class="w-full max-w-5xl bg-surface-light dark:bg-surface-dark rounded-xl shadow-lg border border-border-light dark:border-border-dark overflow-hidden">
+        <div class="h-2 bg-primary w-full"></div>
+        <form asp-action="Registration" method="post" class="p-8 md:p-12">
+            @Html.AntiForgeryToken()
+            
+            <!-- Section 1: Hospital Details -->
+            <div class="mb-10">
+                <h2 class="text-xl font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">local_hospital</span>
+                    Hospital Details
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Hospital Name -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">apartment</span>
+                        <input asp-for="HospitalName" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="HospitalName" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="HospitalName" class="text-red-600 text-xs mt-1 ml-10 block"></span>
+                    </div>
+                    <!-- License Number -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">badge</span>
+                        <input asp-for="License" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="License" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="License" class="text-red-600 text-xs mt-1 ml-10 block"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 2: Contact Information & Location -->
+            <div class="mb-10">
+                <h2 class="text-xl font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">contact_mail</span>
+                    Contact & Location
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Contact Person -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">person</span>
+                        <input asp-for="ContactName" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="ContactName" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="ContactName" class="text-red-600 text-xs mt-1 ml-10 block"></span>
+                    </div>
+                    <!-- Email -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">mail</span>
+                        <input asp-for="Email" type="email" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="Email" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="Email" class="text-red-600 text-xs mt-1 ml-10 block"></span>
+                    </div>
+                    <!-- Phone -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">call</span>
+                        <input asp-for="Phone" type="tel" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="Phone" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="Phone" class="text-red-600 text-xs mt-1 ml-10 block"></span>
+                    </div>
+                </div>
+                <!-- Address Full Width -->
+                <div class="relative mb-6">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">pin_drop</span>
+                    <input asp-for="Address" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                    <label asp-for="Address" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                    <span asp-validation-for="Address" class="text-red-600 text-xs mt-1 ml-10 block"></span>
+                </div>
+                <!-- City, State, Zip -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="relative">
+                        <input asp-for="City" class="floating-input block px-4 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="City" class="floating-label absolute left-3 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="City" class="text-red-600 text-xs mt-1 ml-3 block"></span>
+                    </div>
+                    <div class="relative">
+                        <input asp-for="State" class="floating-input block px-4 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="State" class="floating-label absolute left-3 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="State" class="text-red-600 text-xs mt-1 ml-3 block"></span>
+                    </div>
+                    <div class="relative">
+                        <input asp-for="Zip" class="floating-input block px-4 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="Zip" class="floating-label absolute left-3 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="Zip" class="text-red-600 text-xs mt-1 ml-3 block"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 3: Security -->
+            <div class="mb-10">
+                <h2 class="text-xl font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">lock</span>
+                    Security
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Password -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">key</span>
+                        <input asp-for="Password" type="password" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="Password" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main focus:outline-none" onclick="togglePassword('Password')">
+                            <span class="material-symbols-outlined text-[20px]">visibility</span>
+                        </button>
+                        <span asp-validation-for="Password" class="text-red-600 text-xs mt-1 ml-10 block"></span>
+                    </div>
+                    <!-- Confirm Password -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">lock_reset</span>
+                        <input asp-for="ConfirmPassword" type="password" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                        <label asp-for="ConfirmPassword" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
+                        <span asp-validation-for="ConfirmPassword" class="text-red-600 text-xs mt-1 ml-10 block"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Actions -->
+            <div class="pt-6 border-t border-border-light dark:border-border-dark flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <input asp-for="AgreeToTerms" type="checkbox" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary/20 dark:bg-transparent dark:border-gray-500"/>
+                    <span class="text-sm text-text-main dark:text-gray-300 select-none group-hover:text-primary transition-colors">
+                        I agree to the <a class="underline decoration-1 underline-offset-2" href="#">Terms and Conditions</a> & <a class="underline decoration-1 underline-offset-2" href="#">Privacy Policy</a>
+                    </span>
+                </label>
+                <span asp-validation-for="AgreeToTerms" class="text-red-600 text-xs"></span>
+                <button type="submit" class="w-full md:w-auto min-w-[200px] h-12 flex items-center justify-center rounded-lg bg-primary hover:bg-primary-hover text-white text-base font-bold tracking-wide transition-all shadow-md hover:shadow-lg focus:ring-4 focus:ring-primary/20">
+                    Register Hospital
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Trust Footer -->
+    <div class="mt-8 flex items-center gap-6 text-text-muted opacity-80">
+        <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider">
+            <span class="material-symbols-outlined text-lg">verified_user</span>
+            Secure Registration
+        </div>
+        <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider">
+            <span class="material-symbols-outlined text-lg">health_and_safety</span>
+            Verified Platform
+        </div>
+    </div>
+</main>
+
+<script>
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (field.type === "password") {
+        field.type = "text";
+    } else {
+        field.type = "password";
+    }
+}
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+</body>
+</html>

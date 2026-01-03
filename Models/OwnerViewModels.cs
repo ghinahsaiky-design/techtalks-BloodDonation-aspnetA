@@ -13,6 +13,9 @@ namespace BloodDonation.Models
         public int TotalHospitals { get; set; }
         public int TotalOwners { get; set; }
         public int NewHospitalsThisMonth { get; set; }
+        public int NewTeamMembersThisMonth { get; set; }
+        public int ActiveTeamMembers { get; set; }
+        public int ActiveHospitals { get; set; }
         
         public double UserGrowthPercentage { get; set; }
         public double DonationGrowthPercentage { get; set; }
@@ -83,6 +86,61 @@ namespace BloodDonation.Models
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+    }
+
+    public class AddHospitalTeamMemberViewModel
+    {
+        [Required]
+        public int HospitalId { get; set; }
+
+        [Required]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
+        [DataType(DataType.Password)]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
+        public string Password { get; set; }
+
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm Password")]
+        [Compare("Password", ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; }
+
+        [Required]
+        public string Role { get; set; } // "Admin", "Staff", "Coordinator"
+    }
+
+    public class EditTeamMemberViewModel
+    {
+        [Required]
+        public int StaffId { get; set; }
+
+        [Required]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
+        public string Role { get; set; } // "Admin", "Staff", "Coordinator"
+        
+        public string? Status { get; set; }
     }
 
     
