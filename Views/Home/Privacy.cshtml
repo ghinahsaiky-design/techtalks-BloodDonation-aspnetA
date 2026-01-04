@@ -2,184 +2,180 @@
     ViewData["Title"] = "Privacy Policy";
 }
 
-<div class="mt-28 max-w-4xl mx-auto px-4">
-    <h1 class="text-4xl lg:text-5xl font-black tracking-tighter text-gray-900 dark:text-white">
-        @ViewData["Title"]
-    </h1>
-    <section class="mt-4">
-        <p>Last Updated: December 1, 2025</p>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-        <p class="main-writing">
-            Welcome to BloodConnect. We are committed to protecting your personal information and your right to privacy.
-            If you have any questions or concerns about our policy, or our practices with regards to your personal
-            information, please contact us. This privacy policy applies to all information collected through our application.
-        </p>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#d60528",
+            "background-light": "#f8f5f6",
+            "background-dark": "#230f13",
+          },
+          fontFamily: {
+            display: ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          }
+        }
+      }
+    }
+</script>
 
-        <hr />
-        <div class="mt-8 border border-gray-200 rounded-lg shadow-sm" x-data="{ open: 1 }">
+<body class="font-display bg-background-light dark:bg-background-dark">
+    <div class="relative flex min-h-screen w-full flex-col">
+        <main class="px-4 sm:px-10 flex flex-1 justify-center py-5 mt-20">
+            <div class="flex flex-col max-w-4xl flex-1 gap-8">
 
-            <!-- 1 -->
-            <div class="border-b border-gray-200">
-                <button class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-gray-900 dark:text-white text-lg lg:text-xl"
-                        :class="open === 1 ? 'bg-red-500 text-white' : 'bg-white dark:bg-background-dark text-gray-900 dark:text-white'"
-                        @@click ="open = open === 1 ? null : 1">
-                    Information We Collect
-                    <span :class="{'rotate-180': open === 1}" class="transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </span>
-                </button>
-                <div x-show="open === 1" x-collapse class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-red-600">
-                        We collect personal information that you voluntarily provide to uswhen you register on
-                        the application, express interest in our products, or contact us. The personal information
-                        we collect may include:
+                <!-- Header -->
+                <div class="flex flex-col gap-4 text-center items-center py-8">
+                    <p class="text-[#343A40] dark:text-white text-4xl sm:text-5xl font-black">
+                        Privacy Policy
                     </p>
-                    <ul class="list-disc list-inside mt-2 space-y-1">
-                        <li class="text-red-600">Personal Identification Data (Name, contact info)</li>
-                        <li class="text-red-600">Health & Eligibility Data (Blood type, donation history)</li>
-                        <li class="text-red-600">Technical & Usage Data (IP address, browser type)</li>
-                    </ul>
+                    <p class="text-slate-600 dark:text-slate-400 max-w-xl">
+                        Your privacy matters. Learn how BloodConnect collects, uses, and protects your data.
+                    </p>
+                    <p class="text-sm text-slate-500">Last Updated: December 1, 2025</p>
+                </div>
+
+                <!-- Privacy Sections -->
+                <div class="flex flex-col p-4 space-y-2 bg-white dark:bg-background-dark rounded-xl shadow-md">
+
+                    <details class="border-b border-primary/20 py-2 group" open>
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] dark:text-white font-semibold">
+                                Information We Collect
+                            </p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">
+                                expand_more
+                            </span>
+                        </summary>
+                        <div class="text-slate-600 dark:text-slate-400 pb-4 space-y-2">
+                            <p>
+                                We collect personal information that you voluntarily provide when registering
+                                or using the BloodConnect platform.
+                            </p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Personal identification data (name, contact information)</li>
+                                <li>Health and eligibility data (blood type, donation history)</li>
+                                <li>Technical data (IP address, device, browser)</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] dark:text-white font-semibold">
+                                How We Use Your Information
+                            </p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">
+                                expand_more
+                            </span>
+                        </summary>
+                        <div class="text-slate-600 dark:text-slate-400 pb-4 space-y-2">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Manage and authenticate user accounts</li>
+                                <li>Match donors with recipients efficiently</li>
+                                <li>Improve platform features and usability</li>
+                                <li>Ensure compliance with legal obligations</li>
+                            </ul>
+                            <p>
+                                Aggregated and anonymized data may be used for analytics purposes.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] dark:text-white font-semibold">
+                                Data Sharing & Disclosure
+                            </p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">
+                                expand_more
+                            </span>
+                        </summary>
+                        <div class="text-slate-600 dark:text-slate-400 pb-4 space-y-2">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li><strong>With users:</strong> Limited details to enable donations</li>
+                                <li><strong>With providers:</strong> Hosting, analytics, and email services</li>
+                                <li><strong>Legal requirements:</strong> When required by law</li>
+                            </ul>
+                            <p class="font-medium">
+                                We never sell or rent your personal data.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] dark:text-white font-semibold">
+                                Data Security
+                            </p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">
+                                expand_more
+                            </span>
+                        </summary>
+                        <div class="text-slate-600 dark:text-slate-400 pb-4 space-y-2">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Encrypted data storage and transfer</li>
+                                <li>Secure password hashing</li>
+                                <li>Restricted internal access</li>
+                                <li>Regular security audits</li>
+                            </ul>
+                            <p>
+                                While we use strong safeguards, no system is entirely risk-free.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="border-b border-primary/20 py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] dark:text-white font-semibold">
+                                Your Rights
+                            </p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">
+                                expand_more
+                            </span>
+                        </summary>
+                        <div class="text-slate-600 dark:text-slate-400 pb-4 space-y-2">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Access your personal data</li>
+                                <li>Request correction or deletion</li>
+                                <li>Withdraw consent</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="py-2 group">
+                        <summary class="flex cursor-pointer justify-between py-4">
+                            <p class="text-[#343A40] dark:text-white font-semibold">
+                                Contact Us
+                            </p>
+                            <span class="material-symbols-outlined group-open:rotate-180 transition">
+                                expand_more
+                            </span>
+                        </summary>
+                        <div class="text-slate-600 dark:text-slate-400 pb-4">
+                            <p>
+                                If you have any questions about this Privacy Policy, contact us at:
+                            </p>
+                            <a href="mailto:bloodconnect.web@gmail.com"
+                               class="text-primary font-medium hover:underline">
+                                bloodconnect.web@gmail.com
+                            </a>
+                        </div>
+                    </details>
+
                 </div>
             </div>
-
-            <!-- 2 -->
-            <div class="border-b border-gray-200">
-                <button class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-gray-900 dark:text-white text-lg lg:text-xl"
-                        :class="open === 2 ? 'bg-red-500 text-white' : 'bg-white dark:bg-background-dark text-gray-900 dark:text-white'"
-                        @@click ="open = open === 2 ? null : 2">
-                    How We Use Your Information
-                    <span :class="{'rotate-180': open === 2}" class="transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </span>
-                </button>
-                <div x-show="open === 2" x-collapse class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-red-600">
-                        We use the personal data we collect for a variety of business and operational purposes,
-                        including to:
-                    </p>
-                    <ul class="list-disc list-inside mt-2 space-y-1">
-                        <li class="text-red-600">Register and manage your account, and authenticate your access to the platform.</li>
-                        <li class="text-red-600">Match donors with recipients based on blood type and location.</li>
-                        <li class="text-red-600">Improve our services, develop new features, and personalize your experience.</li>
-                        <li class="text-red-600">Comply with legal obligations, resolve disputes, and enforce our terms and policies.</li>
-                    </ul>
-                    <p class ="text-red-600">
-                        We may also anonymize and aggregate certain data for analytics and statistical purposes to
-                        better understand donation trends and community engagement — this data cannot identify you personally.
-                    </p>
-
-                </div>
-            </div>
-
-            <!-- 3 -->
-            <div class="border-b border-gray-200">
-                <button class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-gray-900 dark:text-white text-lg lg:text-xl"
-                        :class="open === 3 ? 'bg-red-500 text-white' : 'bg-white dark:bg-background-dark text-gray-900 dark:text-white'"
-                        @@click ="open = open === 3 ? null : 3">
-                    Data Sharing and Disclosure
-                    <span :class="{'rotate-180': open === 3}" class="transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </span>
-                </button>
-                <div x-show="open === 3" x-collapse class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-red-600">
-                        We value your trust and handle your personal information with care. We only share your data
-                        in the following circumstances:
-                    </p>
-                    <ul>
-                        <li class="text-red-600"><strong>With Other Users:</strong> When necessary to facilitate a blood donation request, we may share limited details (e.g., name, blood type, and contact method) with a matched donor or recipient.</li>
-                        <li class="text-red-600"><strong>With Service Providers:</strong> We may share data with trusted vendors who assist us with app hosting, email delivery, data analytics, and customer service. These providers are bound by confidentiality agreements.</li>
-                        <li class="text-red-600"><strong>For Legal Compliance:</strong> We may disclose your data if required by law, court order, or governmental request.</li>
-                    </ul>
-
-                    <p class="text-red-600">We never sell or rent your personal data to third parties</p>
-                </div>
-            </div>
-
-            <!-- 4 -->
-            <div class="border-b border-gray-200">
-                <button class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-gray-900 dark:text-white text-lg lg:text-xl"
-                        :class="open === 4 ? 'bg-red-500 text-white' : 'bg-white dark:bg-background-dark text-gray-900 dark:text-white'"
-                        @@click ="open = open === 4 ? null : 4">
-                    Data Security
-                    <span :class="{'rotate-180': open === 4}" class="transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </span>
-                </button>
-                <div x-show="open === 4" x-collapse class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-red-600">
-                        We use appropriate technical and organizational measures to safeguard your data from unauthorized access,loss, misuse, or alteration. These include:
-                    </p>
-                    <ul class="list-disc list-inside space-y-1">
-                        <li class="text-red-600">Encryption of data in transit and at rest.</li>
-                        <li class="text-red-600">Secure password storage using industry-standard hashing algorithms.</li>
-                        <li class="text-red-600">Regular security audits and vulnerability assessments.</li>
-                        <li class="text-red-600">Access controls to limit who can view or process your data.</li>
-                    </ul>
-                    <p class="text-red-600">
-                        While we strive to protect your data, no system is completely secure.
-                        You are responsible for maintaining the confidentiality of your account credentials.
-                    </p>
-
-                </div>
-            </div>
-
-            <!-- 5 -->
-            <div class="border-b border-gray-200">
-                <button class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-gray-900 dark:text-white text-lg lg:text-xl"
-                        :class="open === 5 ? 'bg-red-500 text-white' : 'bg-white dark:bg-background-dark text-gray-900 dark:text-white'"
-                        @@click ="open = open === 5 ? null : 5">
-                    Your Rights
-                    <span :class="{'rotate-180': open === 5}" class="transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </span>
-                </button>
-                <div x-show="open === 5" x-collapse class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-red-600">
-                        Depending on your location, you may have certain legal rights regarding your personal data, including:
-                    </p>
-                    <ul class="list-disc list-inside space-y-1">
-                        <li class="text-red-600">The right to access and obtain a copy of your personal data.</li>
-                        <li class="text-red-600">The right to request correction or deletion of inaccurate or incomplete information.</li>
-                        <li class="text-red-600">The right to withdraw consent for data processing at any time.</li>
-                    </ul>
-                    <p class="text-red-600">
-                        To exercise these rights, please contact us using the details below. We will respond to your request
-                        in accordance with applicable data protection laws.
-                    </p>
-                </div>
-            </div>
-
-            <!-- 6 -->
-            <div>
-                <button class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-gray-900 dark:text-white text-lg lg:text-xl"
-                        :class="open === 6 ? 'bg-red-500 text-white' : 'bg-white dark:bg-background-dark text-gray-900 dark:text-white'"
-                        @@click ="open = open === 6 ? null : 6">
-                    Contact Us
-                    <span :class="{'rotate-180': open === 6}" class="transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </span>
-                </button>
-                <div x-show="open === 6" x-collapse class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-red-600"> If you have any questions or concerns about this privacy policy or our data practices,
-                        please do not hesitate to contact us. You can reach our privacy team via email at
-                    </p>
-                    <a class="text-red-600 hover:underline" href="mailto:bloodconnect.web@gmail.com">
-                        BloodConnect.web@gmail.com
-                    </a>
-                </div>
-            </div>
-
-        </div>
+        </main>
+    </div>
+</body>
