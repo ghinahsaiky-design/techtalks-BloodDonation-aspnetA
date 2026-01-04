@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using BloodDonation.Models.ViewModels;
+using System.Collections.Generic;
 
 namespace BloodDonation.Controllers
 {
@@ -1039,8 +1040,29 @@ namespace BloodDonation.Controllers
         [HttpGet]
         public async Task<IActionResult> Statistics(string timeframe, int? bloodTypeId)
         {
-            // Start with all donor requests
-            var query = _context.DonorRequests.Include(r => r.BloodType).AsQueryable();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            // 🔹 Get the hospital for the current user
+            var hospital = await _context.Hospitals
+                .FirstOrDefaultAsync(h => h.UserId == user.Id);
+            if (hospital == null) return NotFound();
+
+            // 🔹 Get all relevant user IDs: hospital user + active staff from HospitalStaff table
+            var hospitalUserIds = new List<int> { hospital.UserId };
+
+            var staffUserIds = await _context.HospitalStaff
+                .Where(s => s.HospitalId == hospital.Id && s.Status == "Active")
+                .Select(s => s.UserId)
+                .ToListAsync();
+
+            hospitalUserIds.AddRange(staffUserIds);
+
+            // 🔹 Filter donor requests by these user IDs
+            var query = _context.DonorRequests
+                .Include(r => r.BloodType)
+                .Where(r => r.RequestedByUserId != null && hospitalUserIds.Contains(r.RequestedByUserId.Value))
+                .AsQueryable();
 
             // Filter by timeframe
             DateTime? startDate = null;

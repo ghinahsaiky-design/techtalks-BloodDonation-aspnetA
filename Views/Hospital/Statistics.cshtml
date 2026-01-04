@@ -3,12 +3,20 @@
 @{
     Layout = "_HospitalLayout";
     ViewData["Title"] = "Statistics";
-    var total = Model.CompletionRatio.Completed + Model.CompletionRatio.NotCompleted;
-    var percent = total == 0 ? 0 : ((double)Model.CompletionRatio.Completed * 100 / total);
+
+    // Use local variables to avoid null/?? issues
+    var completed = Model.CompletionRatio.Completed;
+    var notCompleted = Model.CompletionRatio.NotCompleted;
+
+    var total = completed + notCompleted;
+    var percent = total > 0 ? ((double)completed * 100 / total) : 0;
 
     // Calculate blood type bar heights
-    var maxDemand = Model.BloodTypeFulfillment.Any() ? Model.BloodTypeFulfillment.Max(x => x.Demand) : 1;
+    var maxDemand = Model.BloodTypeFulfillment != null && Model.BloodTypeFulfillment.Any()
+        ? Model.BloodTypeFulfillment.Max(x => x.Demand)
+        : 1;
 }
+
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -218,7 +226,7 @@
                                 @Math.Abs(Model.EngagedTrendPercent)%
                             </span>
                         </div>
-                        <p class="text-xs text-gray-400 mt-2">Donors active this month</p>
+                        <p class="text-xs text-gray-400 mt-2">Donors active </p>
                     </div>
 
                     <!-- Unmet Requests -->
@@ -263,12 +271,6 @@
                         <div class="relative h-[280px] w-full">
                             <canvas id="supplyDemandChart" height="280"></canvas>
                         </div>
-                        @if (!Model.MonthlyTrends.Any())
-                        {
-                            <div class="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50">
-                                <p class="text-gray-500">No trend data available for selected filters</p>
-                            </div>
-                        }
                     </div>
 
                     <!-- Donor Retention -->
@@ -533,6 +535,7 @@
             exportButton.innerHTML = originalText;
             exportButton.disabled = false;
         });
+
     </script>
 
 </body>
