@@ -43,13 +43,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label asp-for="Password" class="text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <input asp-for="Password" class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-white/20 bg-white dark:bg-white/5 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="••••••••" />
+                        <input asp-for="Password" class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-white/20 bg-white dark:bg-white/5 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="••••••••" autocomplete="off" />
                         <span asp-validation-for="Password" class="text-xs text-red-500"></span>
                     </div>
 
                     <div class="space-y-2">
                         <label asp-for="ConfirmPassword" class="text-sm font-medium text-gray-700 dark:text-gray-300"></label>
-                        <input asp-for="ConfirmPassword" class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-white/20 bg-white dark:bg-white/5 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="••••••••" />
+                        <input asp-for="ConfirmPassword" class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-white/20 bg-white dark:bg-white/5 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="••••••••" autocomplete="off" />
                         <span asp-validation-for="ConfirmPassword" class="text-xs text-red-500"></span>
                     </div>
                 </div>

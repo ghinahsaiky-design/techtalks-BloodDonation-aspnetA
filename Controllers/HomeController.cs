@@ -42,6 +42,11 @@ namespace BloodDonation.Controllers
             return View();
         }
 
+        public IActionResult isHealthy()
+        {
+            return View();
+        }
+
         // CONTACT – GET
         [HttpGet]
         public IActionResult Contact()

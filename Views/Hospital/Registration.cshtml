@@ -234,7 +234,7 @@
                     <!-- Password -->
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">key</span>
-                        <input asp-for="Password" type="password" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                            <input asp-for="Password" type="password" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" " autocomplete="off" />
                         <label asp-for="Password" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
                         <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main focus:outline-none" onclick="togglePassword('Password')">
                             <span class="material-symbols-outlined text-[20px]">visibility</span>
@@ -244,7 +244,7 @@
                     <!-- Confirm Password -->
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted z-10">lock_reset</span>
-                        <input asp-for="ConfirmPassword" type="password" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" "/>
+                            <input asp-for="ConfirmPassword" type="password" class="floating-input block px-10 pb-2.5 pt-5 w-full text-base text-text-main dark:text-white bg-transparent rounded-lg border border-border-light dark:border-border-dark appearance-none focus:outline-none focus:ring-0 focus:border-primary peer placeholder-transparent" placeholder=" " autocomplete="off" />
                         <label asp-for="ConfirmPassword" class="floating-label absolute left-10 text-text-muted duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-surface-light dark:bg-surface-dark px-2"></label>
                         <span asp-validation-for="ConfirmPassword" class="text-red-600 text-xs mt-1 ml-10 block"></span>
                     </div>
