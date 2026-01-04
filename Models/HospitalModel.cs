@@ -36,6 +36,9 @@ namespace BloodDonation.Models
         [MaxLength(500)]
         public string? LogoPath { get; set; }
 
+        [MaxLength(20)]
+        public string Status { get; set; } = "Active"; // Active, Inactive, Deleted
+
         public virtual ICollection<HospitalStaff> HospitalStaff { get; set; } = new List<HospitalStaff>();
     }
 }

@@ -260,12 +260,12 @@
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @foreach (var member in Model.TeamMembers)
                         {
-                            var statusColor = member.Status == "Active" ? "green" : "gray";
-                            var statusText = member.Status == "Active" ? "Active" : member.Status;
-                            var roleBadgeColor = member.Role == "Admin" ? "purple" : "gray";
+                            var statusColor = member.Status == "Active" ? "green" : member.Status == "Suspended" ? "red" : "gray";
+                            var statusText = member.Status;
                             var isPrimaryAdmin = member.Role == "Admin" && member.StaffId == 0;
+                            var isSuspended = member.Status == "Suspended";
                             
-                            <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group @(isSuspended ? "opacity-60" : "")">
                                 <td class="py-4 px-6">
                                     <div class="flex items-center gap-3">
                                         <div class="size-9 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
@@ -299,6 +299,13 @@
                                             @statusText
                                         </span>
                                     }
+                                    else if (statusColor == "red")
+                                    {
+                                        <span class="flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                                            <span class="size-1.5 rounded-full bg-red-500"></span>
+                                            @statusText
+                                        </span>
+                                    }
                                     else
                                     {
                                         <span class="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -310,13 +317,35 @@
                                 <td class="py-4 px-6 text-right">
                                     @if (!isPrimaryAdmin && member.StaffId > 0)
                                     {
-                                        <form asp-controller="Hospital" asp-action="RemoveTeamMember" method="post" class="inline" onsubmit="return confirm('Are you sure you want to remove this team member?');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="staffId" value="@member.StaffId" />
-                                            <button type="submit" class="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors" title="Remove">
-                                                <span class="material-symbols-outlined text-lg">delete</span>
-                                            </button>
-                                        </form>
+                                        <div class="flex items-center justify-end gap-2">
+                                            @if (isSuspended)
+                                            {
+                                                <!-- Restore button for suspended staff -->
+                                                <form asp-controller="Hospital" asp-action="RestoreTeamMember" method="post" class="inline" onsubmit="return confirm('Are you sure you want to restore this team member?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="staffId" value="@member.StaffId" />
+                                                    <button type="submit" class="text-green-400 hover:text-green-600 dark:hover:text-green-300 transition-colors" title="Restore">
+                                                        <span class="material-symbols-outlined text-lg">undo</span>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <!-- Edit button for active staff -->
+                                                <button type="button" onclick="openEditTeamMemberModal(@member.StaffId)" class="text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" title="Edit">
+                                                    <span class="material-symbols-outlined text-lg">edit</span>
+                                                </button>
+                                            }
+                                            
+                                            <!-- Delete/Remove button -->
+                                            <form asp-controller="Hospital" asp-action="RemoveTeamMember" method="post" class="inline" onsubmit="return confirm('Are you sure you want to remove this team member? This will suspend their account.');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="staffId" value="@member.StaffId" />
+                                                <button type="submit" class="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors" title="Remove">
+                                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
                                     }
                                     else
                                     {
@@ -329,6 +358,9 @@
                 </table>
             </div>
         </section>
+
+        <!-- Edit Team Member Modal Container -->
+        <div id="editTeamMemberContainer"></div>
 
         <!-- Add User Modal -->
         <div id="addUserModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -446,10 +478,66 @@
             document.getElementById('addUserModal').classList.add('hidden');
         }
 
+        window.openEditTeamMemberModal = function(staffId) {
+            const container = document.getElementById('editTeamMemberContainer');
+            if (!container) {
+                console.error('editTeamMemberContainer not found');
+                alert('Error: Modal container not found');
+                return;
+            }
+            
+            fetch('/Hospital/EditTeamMemberModal?staffId=' + staffId)
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 400) {
+                            return response.text().then(text => {
+                                alert('Cannot edit this staff member.');
+                                throw new Error(text);
+                            });
+                        }
+                        throw new Error('Failed to load edit modal');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    container.innerHTML = html;
+                    // The modal should be visible now since it has fixed positioning
+                    const modal = container.querySelector('#editTeamMemberModal');
+                    if (modal) {
+                        // Modal is already visible by default (fixed positioning)
+                        console.log('Edit modal loaded successfully');
+                    } else {
+                        console.error('editTeamMemberModal not found in loaded HTML');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading edit modal:', err);
+                    alert('Failed to load edit form. Please try again.');
+                });
+        };
+
+        window.closeEditTeamMemberModal = function() {
+            const container = document.getElementById('editTeamMemberContainer');
+            if (container) {
+                container.innerHTML = '';
+            }
+        };
+
         // Close modal when clicking outside
         document.getElementById('addUserModal')?.addEventListener('click', function(e) {
             if (e.target === this) {
                 closeAddUserModal();
+            }
+        });
+
+        // Handle click outside edit modal (using event delegation since modal is loaded dynamically)
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('editTeamMemberContainer');
+            if (container && !container.classList.contains('hidden')) {
+                const editModal = container.querySelector('#editTeamMemberModal');
+                if (editModal && e.target === editModal) {
+                    window.closeEditTeamMemberModal();
+                }
             }
         });
     </script>

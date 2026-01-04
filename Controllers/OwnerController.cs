@@ -117,9 +117,9 @@ namespace BloodDonation.Controllers
 
             var newHospitalsThisMonth = await _context.Hospitals
                 .Include(h => h.User)
-                .CountAsync(h => h.User.CreatedAt >= oneMonthAgo);
+                .CountAsync(h => h.User.CreatedAt >= oneMonthAgo && h.Status != "Deleted");
 
-            var activeHospitals = await _context.Hospitals.Include(h => h.User).CountAsync(h => h.User.Status == "Active");
+            var activeHospitals = await _context.Hospitals.Include(h => h.User).CountAsync(h => h.User.Status == "Active" && h.Status != "Deleted");
             var activeTeamMembers = await _context.HospitalStaff.CountAsync(s => s.Status == "Active");
             var newTeamMembersThisMonth = await _context.HospitalStaff.CountAsync(s => s.CreatedAt >= oneMonthAgo);
 
@@ -242,6 +242,13 @@ namespace BloodDonation.Controllers
              var user = await _userManager.FindByIdAsync(id.ToString());
              if (user == null || user.Role != "Admin") return NotFound();
 
+             // Prevent editing inactive/deleted admins
+             if (user.Status == "Inactive")
+             {
+                 TempData["ErrorMessage"] = "Cannot edit an inactive admin. Please restore them first.";
+                 return RedirectToAction(nameof(AdminManagement));
+             }
+
              var model = new EditAdminViewModel
              {
                  Id = user.Id,
@@ -300,22 +307,75 @@ namespace BloodDonation.Controllers
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null || user.Role != "Admin") return NotFound();
 
+            // Soft delete: Set status to "Inactive" instead of deleting
             var email = user.Email;
-            var result = await _userManager.DeleteAsync(user);
+            user.Status = "Inactive";
+            var result = await _userManager.UpdateAsync(user);
+            
             if (result.Succeeded)
             {
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+                
                 var currentUser = await _userManager.GetUserAsync(User);
                 _context.Actions.Add(new TrackedAction
                 {
                     Name = "Delete Admin",
-                    Description = $"Deleted admin: {email}",
+                    Description = $"Deactivated admin: {email} (Status set to Inactive)",
                     Type = ActionType.Delete,
                     PerformedByUserId = currentUser.Id,
                     PerformedAt = DateTime.UtcNow,
-                    TargetUserId = null
+                    TargetUserId = user.Id
                 });
                 await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = $"Admin '{email}' has been deactivated successfully.";
             }
+            else
+            {
+                TempData["ErrorMessage"] = $"Failed to deactivate admin: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            }
+            
+            return RedirectToAction(nameof(AdminManagement));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RestoreAdmin(int id)
+        {
+            if (!await IsOwnerAsync()) return Forbid();
+
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null || user.Role != "Admin") return NotFound();
+
+            // Restore: Set status back to "Active"
+            var email = user.Email;
+            user.Status = "Active";
+            var result = await _userManager.UpdateAsync(user);
+            
+            if (result.Succeeded)
+            {
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+                
+                var currentUser = await _userManager.GetUserAsync(User);
+                _context.Actions.Add(new TrackedAction
+                {
+                    Name = "Restore Admin",
+                    Description = $"Restored admin: {email} (Status set to Active)",
+                    Type = ActionType.Update,
+                    PerformedByUserId = currentUser.Id,
+                    PerformedAt = DateTime.UtcNow,
+                    TargetUserId = user.Id
+                });
+                await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = $"Admin '{email}' has been restored successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = $"Failed to restore admin: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            }
+            
             return RedirectToAction(nameof(AdminManagement));
         }
 
@@ -351,16 +411,18 @@ namespace BloodDonation.Controllers
                 .Include(h => h.HospitalStaff).ThenInclude(hs => hs.User)
                 .AsQueryable();
 
+            // Show all hospitals including deleted ones for Owner/Admin
+
             if (!string.IsNullOrEmpty(q))
             {
                 query = query.Where(h => h.Name.Contains(q) ||
-                                         h.User.Email.Contains(q) ||
+                                         (h.User != null && h.User.Email != null && h.User.Email.Contains(q)) ||
                                          h.Id.ToString().Contains(q));
             }
 
             if (!string.IsNullOrEmpty(status) && status != "All")
             {
-                query = query.Where(h => h.User.Status == status);
+                query = query.Where(h => h.User != null && h.User.Status == status);
             }
 
             if (!string.IsNullOrEmpty(location) && location != "All")
@@ -368,9 +430,11 @@ namespace BloodDonation.Controllers
                 query = query.Where(h => h.City == location || h.State == location);
             }
 
-            var hospitals = await query
-                .OrderByDescending(h => h.User.CreatedAt)
-                .ToListAsync();
+            // Materialize first to handle null User cases
+            var allHospitals = await query.ToListAsync();
+            var hospitals = allHospitals
+                .OrderByDescending(h => h.User?.CreatedAt ?? DateTime.MinValue)
+                .ToList();
 
             ViewBag.SearchQuery = q;
             ViewBag.CurrentStatus = status ?? "All";

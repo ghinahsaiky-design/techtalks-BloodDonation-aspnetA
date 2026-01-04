@@ -1,0 +1,64 @@
+@model BloodDonation.Models.EditTeamMemberViewModel
+
+<div id="editTeamMemberModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-[#181112] dark:text-white">Edit Team Member</h3>
+            <button type="button" onclick="closeEditTeamMemberModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form asp-controller="Hospital" asp-action="EditTeamMember" method="post" class="p-6">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="StaffId" />
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label" for="editFirstName">First Name</label>
+                    <input class="form-input" id="editFirstName" asp-for="FirstName" required />
+                    <span asp-validation-for="FirstName" class="text-red-500 text-xs"></span>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="editLastName">Last Name</label>
+                    <input class="form-input" id="editLastName" asp-for="LastName" required />
+                    <span asp-validation-for="LastName" class="text-red-500 text-xs"></span>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="editEmail">Email Address</label>
+                    <input class="form-input" id="editEmail" asp-for="Email" type="email" required />
+                    <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="editRole">Role</label>
+                    <select class="form-input" id="editRole" asp-for="Role" required>
+                        <option value="Staff">Staff</option>
+                        <option value="Coordinator">Coordinator</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-red-500 text-xs"></span>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="editStatus">Status</label>
+                    <select class="form-input" id="editStatus" asp-for="Status">
+                        <option value="Active">Active</option>
+                        <option value="Suspended">Suspended</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex gap-3 justify-end">
+                <button type="button" onclick="closeEditTeamMemberModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+

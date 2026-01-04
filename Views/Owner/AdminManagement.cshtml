@@ -112,7 +112,8 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-white/10">
                     @foreach (var admin in Model.Admins)
                     {
-                        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                        var isInactive = admin.Status == "Inactive";
+                        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group @(isInactive ? "opacity-60" : "")">
                             <td class="px-6 py-4 font-mono text-xs text-gray-500">#@admin.Id</td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-col">
@@ -142,11 +143,25 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                    <a asp-action="EditAdmin" asp-route-id="@admin.Id" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-blue-700 transition-colors" title="Edit Details">
-                                        <span class="material-symbols-outlined text-[20px]">edit</span>
-                                    </a>
-                                    <form asp-action="DeleteAdmin" asp-route-id="@admin.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this admin?');" class="inline">
-                                        <button type="submit" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-red-600 transition-colors" title="Delete Account">
+                                    @if (isInactive)
+                                    {
+                                        <!-- Restore button for inactive admins -->
+                                        <form asp-action="RestoreAdmin" asp-route-id="@admin.Id" method="post" onsubmit="return confirm('Are you sure you want to restore this admin?');" class="inline">
+                                            <button type="submit" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-green-600 transition-colors" title="Restore Admin">
+                                                <span class="material-symbols-outlined text-[20px]">undo</span>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <!-- Edit button for active admins -->
+                                        <a asp-action="EditAdmin" asp-route-id="@admin.Id" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-blue-700 transition-colors" title="Edit Details">
+                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                        </a>
+                                    }
+                                    <!-- Delete/Deactivate button -->
+                                    <form asp-action="DeleteAdmin" asp-route-id="@admin.Id" method="post" onsubmit="return confirm('Are you sure you want to @(isInactive ? "permanently delete" : "deactivate") this admin?');" class="inline">
+                                        <button type="submit" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-red-600 transition-colors" title="@(isInactive ? "Permanently Delete" : "Deactivate")">
                                             <span class="material-symbols-outlined text-[20px]">delete</span>
                                         </button>
                                     </form>
