@@ -4,7 +4,7 @@ namespace BloodDonation.Models
 {
     public class RegisterViewModel
     {
-      
+
 
         [Required]
         [Display(Name = "First Name")]
@@ -25,6 +25,10 @@ namespace BloodDonation.Models
         [Required]
         [DataType(DataType.Password)]
         [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
+        [RegularExpression(
+    @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$",
+    ErrorMessage = "Password must contain: 1 uppercase, 1 lowercase, 1 number, and 1 special character."
+)]
         public string Password { get; set; } = string.Empty;
 
         [Required]
@@ -34,7 +38,9 @@ namespace BloodDonation.Models
         public string ConfirmPassword { get; set; } = string.Empty;
 
         [Display(Name = "Phone Number")]
-        public string Phone { get; set; } = string.Empty;
+        [RegularExpression("^[0-9]*$", ErrorMessage = "phone number must contain only numbers.")]
+        public string? Phone { get; set; }
+
 
         // -----------------------------
         // FIXED VALUES TO MATCH DATABASE

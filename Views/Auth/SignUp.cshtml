@@ -11,7 +11,7 @@
 <style>
     body {
         background: linear-gradient(135deg, #f8f9fa, #ffffff);
-        margin-top:100px;
+        margin-top: 100px;
     }
 
     .auth-wrapper {
@@ -38,14 +38,14 @@
             box-shadow: 0 0 0 3px rgba(233,78,78,.18);
         }
 
-    .input-group.error {
-        border-color: #dc3545;
-    }
+        .input-group.error {
+            border-color: #dc3545;
+        }
 
-    .input-group.error:focus-within {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 3px rgba(220,53,69,.18);
-    }
+            .input-group.error:focus-within {
+                border-color: #dc3545;
+                box-shadow: 0 0 0 3px rgba(220,53,69,.18);
+            }
 
     .form-control,
     .form-select {
@@ -94,8 +94,8 @@
             <!-- First Name -->
             <div class="mb-3">
                 <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-person"></i></span>
-                <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="FirstName" class="form-control" placeholder="First Name" />
                 </div>
                 <span asp-validation-for="FirstName" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -103,8 +103,8 @@
             <!-- Last Name -->
             <div class="mb-3">
                 <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-person"></i></span>
-                <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="LastName" class="form-control" placeholder="Last Name" />
                 </div>
                 <span asp-validation-for="LastName" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -112,8 +112,8 @@
             <!-- Email -->
             <div class="mb-3">
                 <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-at"></i></span>
-                <input asp-for="Email" type="email" class="form-control" placeholder="Email Address" />
+                    <span class="input-group-text"><i class="bi bi-at"></i></span>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="Email Address" />
                 </div>
                 <span asp-validation-for="Email" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -121,26 +121,49 @@
             <!-- Password -->
             <div class="mb-3">
                 <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                    <input asp-for="Password" type="password" class="form-control" placeholder="Password (min 6 characters)" autocomplete="off" />
+                    <span class="input-group-text">
+                        <i class="bi bi-lock"></i>
+                    </span>
+
+                    <input asp-for="Password"
+                           id="password"
+                           type="password"
+                           class="form-control"
+                           placeholder="Password (min 6 characters)"
+                           " />
+
+
                 </div>
-                <span asp-validation-for="Password" class="text-danger small d-block mt-1 ms-2"></span>
+
+                <span asp-validation-for="Password"
+                      class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Confirm Password -->
+
             <div class="mb-3">
                 <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm Password" autocomplete="off"/>
+                    <span class="input-group-text">
+                        <i class="bi bi-lock"></i>
+                    </span>
+
+                    <input asp-for="ConfirmPassword"
+                           id="confirmPassword"
+                           type="password"
+                           class="form-control"
+                           placeholder="Confirm Password" />
+
                 </div>
-                <span asp-validation-for="ConfirmPassword" class="text-danger small d-block mt-1 ms-2"></span>
+
+                <span asp-validation-for="ConfirmPassword"
+                      class="text-danger small d-block mt-1 ms-2"></span>
             </div>
 
             <!-- Phone -->
             <div class="mb-3">
                 <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                    <input asp-for="Phone" class="form-control" placeholder="Phone Number (optional)" />
+                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                    <input asp-for="Phone" class="form-control" type="tel" pattern="[0-9]*" placeholder="Phone Number (optional)" />
                 </div>
                 <span asp-validation-for="Phone" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -148,7 +171,7 @@
             <!-- Date of Birth -->
             <div class="mb-3">
                 <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
                     <input asp-for="DateOfBirth" type="date" class="form-control" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 </div>
                 <span asp-validation-for="DateOfBirth" class="text-danger small d-block mt-1 ms-2"></span>
@@ -157,12 +180,12 @@
             <!-- Gender -->
             <div class="mb-3">
                 <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
-                <select asp-for="Gender" class="form-select">
-                    <option value="">Select Gender</option>
-                    <option>Male</option>
-                    <option>Female</option>
-                </select>
+                    <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                    <select asp-for="Gender" class="form-select">
+                        <option value="">Select Gender</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                    </select>
                 </div>
                 <span asp-validation-for="Gender" class="text-danger small d-block mt-1 ms-2"></span>
             </div>
@@ -174,7 +197,7 @@
                         <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
                         <select asp-for="LocationId" class="form-select">
                             <option value="">Location</option>
-                            @foreach (var l in Model.Locations.OrderBy(a=>a.Districts))
+                            @foreach (var l in Model.Locations.OrderBy(a => a.Districts))
                             {
                                 <option value="@l.LocationId">@l.Districts</option>
                             }
@@ -217,7 +240,7 @@
                 Already have an account?
                 <a asp-controller="Auth" asp-action="Login" class="login-link">Log In</a>
             </p>
-            
+
             <div class="text-center mt-3 pt-3 border-top">
                 <p class="small text-muted mb-2">Are you a hospital or medical institution?</p>
                 <a asp-controller="Hospital" asp-action="Registration" class="login-link">
@@ -275,5 +298,21 @@
                 observer.observe(form, { childList: true, subtree: true, characterData: true });
             }
         });
+
+        function togglePassword(inputId, eyeId) {
+            const input = document.getElementById(inputId);
+            const eye = document.getElementById(eyeId);
+
+            if (input.type === "password") {
+                input.type = "text";
+                eye.classList.remove("bi-eye-slash");
+                eye.classList.add("bi-eye");
+            } else {
+                input.type = "password";
+                eye.classList.remove("bi-eye");
+                eye.classList.add("bi-eye-slash");
+            }
+        }
+
     </script>
 }
