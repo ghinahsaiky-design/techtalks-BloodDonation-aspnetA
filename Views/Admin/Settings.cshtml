@@ -5,18 +5,20 @@
 
 
 <div class="max-w-4xl mx-auto space-y-8 pb-10">
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-<div>
-<h1 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Settings</h1>
-<p class="text-gray-500 dark:text-gray-400 mt-1">Manage global system preferences and permissions.</p>
-</div>
-<div class="flex gap-3">
-<button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 transition-colors">Discard</button>
-<button class="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg shadow-sm hover:bg-primary/90 transition-colors">Save Changes</button>
-</div>
-</div>
 @if (Model != null)
 {
+    <form asp-action="UpdateProfile" asp-controller="Admin" method="post">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Settings</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Manage global system preferences and permissions.</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="@Url.Action("Profile", "Admin")" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 transition-colors flex items-center justify-center">Discard</a>
+                <button type="submit" class="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg shadow-sm hover:bg-primary/90 transition-colors">Save Changes</button>
+            </div>
+        </div>
+
         <section class="bg-white dark:bg-background-dark rounded-xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
             <div class="p-6 border-b border-gray-100 dark:border-white/10">
                 <div class="flex items-center justify-between gap-3 mb-1">
@@ -33,9 +35,8 @@
                         }
                     </div>
 
-                    <!-- Right-side button: matches Edit Profile placement/size from Admin/Profile.cshtml -->
                     <div class="flex gap-3">
-                        <button id="deleteAccountBtn"
+                        <button type="button" id="deleteAccountBtn"
                                 class="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors shadow-sm min-w-[120px]">
                             <span class="material-symbols-outlined text-[18px]">delete</span>
                             Delete Account
@@ -45,25 +46,30 @@
 
                 <p class="text-sm text-gray-500 dark:text-gray-400 pl-9">Your account information and role.</p>
             </div>
-        <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div class="col-span-2 md:col-span-1">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
-                <input class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="text" value="@(Model.FirstName + " " + Model.LastName)" readonly/>
+            <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
+                    <input name="firstName" class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-white dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="text" value="@Model.FirstName" required />
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
+                    <input name="lastName" class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-white dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="text" value="@Model.LastName" required />
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                    <input name="email" class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-white dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="email" value="@Model.Email" required />
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
+                    <input class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="text" value="@Model.Role" readonly/>
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Member Since</label>
+                    <input class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="text" value="@Model.CreatedAt.ToString("MMM dd, yyyy")" readonly/>
+                </div>
             </div>
-            <div class="col-span-2 md:col-span-1">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
-                <input class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="email" value="@Model.Email" readonly/>
-            </div>
-            <div class="col-span-2 md:col-span-1">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
-                <input class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="text" value="@Model.Role" readonly/>
-            </div>
-            <div class="col-span-2 md:col-span-1">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Member Since</label>
-                <input class="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm p-2.5" type="text" value="@Model.CreatedAt.ToString("MMM dd, yyyy")" readonly/>
-            </div>
-        </div>
-    </section>
+        </section>
+    </form>
 }
 <section class="bg-white dark:bg-background-dark rounded-xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
 <div class="p-6 border-b border-gray-100 dark:border-white/10">
@@ -297,4 +303,3 @@
 
     });
 </script>
-</div>

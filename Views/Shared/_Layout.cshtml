@@ -1,9 +1,4 @@
 ﻿@using System.Security.Claims
-
-@{
-    var firstName = User.FindFirst("FirstName")?.Value ?? "";
-    var firstLetter = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString() : "";
-}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,21 +78,12 @@
                                     Logout
                                 </button>
                             </form>
-                            <!-- Circle avatar -->
-                            <a asp-controller="Account" asp-action="Profile"
-                               class="relative group flex h-10 w-10 items-center justify-center rounded-full bg-soft-red text-white text-sm font-semibold">
-
-                                @firstLetter
-
-                                <!-- Hover text -->
-                                <span class="absolute top-12 text-sm font-medium text-soft-red opacity-0 transition-opacity group-hover:opacity-100">
-                                    View profile
-                                </span>
-                            </a>
+                            <!-- Profile avatar using ViewComponent -->
+                            @await Component.InvokeAsync("UserProfileImage")
 
                             <!-- Hello text -->
                             <span class="text-deep-blue dark:text-white text-sm font-medium leading-normal">
-                                Hello, @firstName
+                                Hello, @(User.FindFirst("FirstName")?.Value ?? "")
                             </span>
                         </div>
                     }

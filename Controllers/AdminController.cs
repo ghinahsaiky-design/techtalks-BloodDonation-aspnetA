@@ -1471,6 +1471,77 @@ namespace BloodDonation.Controllers
             return View(user);
         }
 
+        // POST: Admin/UpdateProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(string firstName, string lastName, string email)
+        {
+            if (!await IsAdminAsync())
+            {
+                return Forbid();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (string.IsNullOrWhiteSpace(firstName))
+            {
+                TempData["ErrorMessage"] = "First Name is required.";
+                return RedirectToAction("Settings");
+            }
+
+            if (string.IsNullOrWhiteSpace(lastName))
+            {
+                TempData["ErrorMessage"] = "Last Name is required.";
+                return RedirectToAction("Settings");
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                TempData["ErrorMessage"] = "Email is required.";
+                return RedirectToAction("Settings");
+            }
+
+            // Check if email is being changed and if it's already taken
+            if (user.Email != email)
+            {
+                var existingUser = await _userManager.FindByEmailAsync(email);
+                if (existingUser != null && existingUser.Id != user.Id)
+                {
+                    TempData["ErrorMessage"] = "Email is already taken by another user.";
+                    return RedirectToAction("Settings");
+                }
+                user.Email = email;
+                user.UserName = email;
+            }
+
+            user.FirstName = firstName;
+            user.LastName = lastName;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Profile updated successfully.";
+                
+                // Record tracked action
+                await RecordActionAsync(
+                    "Update Profile",
+                    ActionType.Update,
+                    "Admin updated their profile details",
+                    targetUserId: user.Id
+                );
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to update profile: " + string.Join(", ", result.Errors.Select(e => e.Description));
+            }
+
+            return RedirectToAction("Settings");
+        }
+
         // POST: Admin/ChangePassword
         [HttpPost]
         [ValidateAntiForgeryToken]
