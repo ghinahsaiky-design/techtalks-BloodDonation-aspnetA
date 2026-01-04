@@ -437,20 +437,30 @@ namespace BloodDonation.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateRequest()
         {
-            var model = new CreateBloodRequestViewModel
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
+
+            if (hospital == null) return NotFound();
+
+            // Pre-populate the request with hospital information
+            var request = new DonorRequest
             {
-                BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync(),
-                DateRequired = DateTime.Now,
-                TimeRequired = DateTime.Now.TimeOfDay
+                RequesterEmail = hospital.User?.Email ?? user.Email ?? "",
+                HospitalName = hospital.Name,
+                ContactNumber = hospital.User?.PhoneNumber ?? user.PhoneNumber ?? ""
             };
 
-            return View(model);
+            ViewBag.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
+            ViewBag.Locations = await _context.Locations.OrderBy(l => l.Districts).ToListAsync();
+            return View(request);
         }
 
         [Authorize(Roles = "Hospital")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateRequest(CreateBloodRequestViewModel model)
+        public async Task<IActionResult> CreateRequest(DonorRequest request)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
@@ -464,49 +474,76 @@ namespace BloodDonation.Controllers
             if (!isPrimaryUser && staff != null && staff.Role != "Admin" && staff.Role != "Coordinator")
             {
                 TempData["ErrorMessage"] = "You do not have permission to create blood requests.";
-                model.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
-                return View(model);
+                ViewBag.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
+                ViewBag.Locations = await _context.Locations.OrderBy(l => l.Districts).ToListAsync();
+                return View(request);
             }
 
-            if (!ModelState.IsValid)
+            // Remove ModelState errors for navigation properties
+            ModelState.Remove("BloodType");
+            ModelState.Remove("Location");
+            ModelState.Remove("RequestedByUser");
+
+            // Validate required fields
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(request.PatientName))
             {
-                model.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
-                return View(model);
+                errors.Add("Patient Name is required.");
             }
 
-            // Get hospital location (default to first location if not set)
-            var location = await _context.Locations.FirstOrDefaultAsync();
-            if (location == null)
+            if (request.BloodTypeId <= 0)
             {
-                ModelState.AddModelError("", "No locations available in the system.");
-                model.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
-                return View(model);
+                errors.Add("Blood Type is required.");
             }
 
-            // Map urgency level from view model to database values
-            var urgencyLevel = model.UrgencyLevel?.ToLower() switch
+            if (request.LocationId <= 0)
             {
-                "routine" => "Normal",
-                "urgent" => "High",
-                "critical" => "Critical",
-                _ => "Normal"
-            };
+                errors.Add("Location is required.");
+            }
 
-            // Create request
-            var request = new DonorRequest
+            if (string.IsNullOrWhiteSpace(request.UrgencyLevel))
             {
-                PatientName = $"Request for {model.Quantity} units", // Store quantity in patient name temporarily
-                BloodTypeId = model.BloodTypeId,
-                LocationId = location.LocationId,
-                UrgencyLevel = urgencyLevel,
-                ContactNumber = hospital.User.PhoneNumber ?? "",
-                RequesterEmail = hospital.User.Email ?? "",
-                HospitalName = hospital.Name,
-                AdditionalNotes = BuildAdditionalNotes(model),
-                RequestedByUserId = user.Id,
-                Status = "Pending",
-                CreatedAt = DateTime.UtcNow
-            };
+                errors.Add("Urgency Level is required.");
+            }
+            else if (!new[] { "Critical", "High", "Normal", "Low" }.Contains(request.UrgencyLevel))
+            {
+                errors.Add("Invalid Urgency Level. Must be one of: Critical, High, Normal, Low.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.ContactNumber))
+            {
+                errors.Add("Contact Number is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.RequesterEmail))
+            {
+                errors.Add("Requester Email is required.");
+            }
+
+            if (errors.Any())
+            {
+                TempData["ErrorMessage"] = "Failed to create request:\n• " + string.Join("\n• ", errors);
+                ViewBag.BloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
+                ViewBag.Locations = await _context.Locations.OrderBy(l => l.Districts).ToListAsync();
+                return View(request);
+            }
+
+            // Set hospital name and email if not provided
+            if (string.IsNullOrWhiteSpace(request.HospitalName))
+            {
+                request.HospitalName = hospital.Name;
+            }
+
+            if (string.IsNullOrWhiteSpace(request.RequesterEmail))
+            {
+                request.RequesterEmail = hospital.User?.Email ?? user.Email ?? "";
+            }
+
+            // Set requested by user
+            request.RequestedByUserId = user.Id;
+            request.Status = "Pending";
+            request.CreatedAt = DateTime.UtcNow;
 
             _context.DonorRequests.Add(request);
             await _context.SaveChangesAsync();
@@ -786,29 +823,6 @@ namespace BloodDonation.Controllers
             return $"{(int)timeSpan.TotalDays} day(s) ago";
         }
 
-        private string BuildAdditionalNotes(CreateBloodRequestViewModel model)
-        {
-            var notes = new List<string>();
-            
-            notes.Add($"Quantity: {model.Quantity} units");
-            notes.Add($"Component: {model.Component}");
-            
-            if (!string.IsNullOrWhiteSpace(model.DeliveryLocation))
-                notes.Add($"Delivery Location: {model.DeliveryLocation}");
-            
-            if (!string.IsNullOrWhiteSpace(model.PatientMRN))
-                notes.Add($"Patient MRN: {model.PatientMRN}");
-            
-            if (!string.IsNullOrWhiteSpace(model.Diagnosis))
-                notes.Add($"Diagnosis: {model.Diagnosis}");
-            
-            if (!string.IsNullOrWhiteSpace(model.AdditionalNotes))
-                notes.Add($"Notes: {model.AdditionalNotes}");
-
-            notes.Add($"Required Date/Time: {model.DateRequired:yyyy-MM-dd} {model.TimeRequired:hh\\:mm}");
-
-            return string.Join(" | ", notes);
-        }
 
         [Authorize(Roles = "Hospital")]
         [HttpGet]
