@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using BloodDonation.Models.ViewModels;
 
 namespace BloodDonation.Controllers
 {
@@ -29,7 +30,7 @@ namespace BloodDonation.Controllers
         // ============================================
         // OWNER ACTIONS - Hospital Management
         // ============================================
-        
+
         [Authorize(Roles = "Owner")]
         [HttpGet]
         public async Task<IActionResult> Index(string? q)
@@ -47,7 +48,7 @@ namespace BloodDonation.Controllers
 
             // Order by User.CreatedAt Descending
             var model = await list.OrderByDescending(h => h.User.CreatedAt).ToListAsync();
-            
+
             return View("~/Views/Owner/HospitalManagement.cshtml", model);
         }
 
@@ -105,6 +106,23 @@ namespace BloodDonation.Controllers
 
             _context.Hospitals.Add(entity);
             await _context.SaveChangesAsync();
+
+            // Record the action
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser != null)
+            {
+                _context.Actions.Add(new TrackedAction
+                {
+                    Name = "Create Hospital",
+                    Description = $"Created new hospital: {entity.Name}",
+                    Type = ActionType.Create,
+                    PerformedByUserId = currentUser.Id,
+                    PerformedAt = DateTime.UtcNow,
+                    TargetEntityId = entity.Id,
+                    TargetUserId = user.Id
+                });
+                await _context.SaveChangesAsync();
+            }
 
             return Ok();
         }
@@ -177,12 +195,29 @@ namespace BloodDonation.Controllers
                 hospital.User.PhoneNumber = model.Phone;
                 hospital.User.Status = model.Status ?? "Active";
                 hospital.User.FirstName = model.Name;
-                
+
                 await _userManager.UpdateAsync(hospital.User);
             }
 
             _context.Hospitals.Update(hospital);
             await _context.SaveChangesAsync();
+
+            // Record the action
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser != null)
+            {
+                _context.Actions.Add(new TrackedAction
+                {
+                    Name = "Edit Hospital",
+                    Description = $"Updated hospital details: {hospital.Name}",
+                    Type = ActionType.Update,
+                    PerformedByUserId = currentUser.Id,
+                    PerformedAt = DateTime.UtcNow,
+                    TargetEntityId = hospital.Id,
+                    TargetUserId = hospital.UserId
+                });
+                await _context.SaveChangesAsync();
+            }
 
             return Ok();
         }
@@ -192,18 +227,61 @@ namespace BloodDonation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var hospital = await _context.Hospitals.Include(h => h.User).FirstOrDefaultAsync(h => h.Id == id);
+            var hospital = await _context.Hospitals
+                .Include(h => h.User)
+                .Include(h => h.HospitalStaff)
+                    .ThenInclude(hs => hs.User)
+                .FirstOrDefaultAsync(h => h.Id == id);
+
             if (hospital != null)
             {
-                var user = hospital.User;
-                _context.Hospitals.Remove(hospital);
+                var hospitalName = hospital.Name;
                 
-                if (user != null)
+                // Collect all users to delete (Hospital User + Staff Users)
+                var usersToDelete = new System.Collections.Generic.List<Users>();
+                
+                if (hospital.User != null) 
+                {
+                    usersToDelete.Add(hospital.User);
+                }
+
+                if (hospital.HospitalStaff != null)
+                {
+                    foreach (var staff in hospital.HospitalStaff)
+                    {
+                        if (staff.User != null)
+                        {
+                            usersToDelete.Add(staff.User);
+                        }
+                    }
+                }
+
+                // Remove hospital (this will cascade delete HospitalStaff)
+                _context.Hospitals.Remove(hospital);
+                await _context.SaveChangesAsync();
+
+                // Now delete the user accounts
+                foreach (var user in usersToDelete)
                 {
                     await _userManager.DeleteAsync(user);
                 }
-                
-                await _context.SaveChangesAsync();
+
+                // Record the action
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null)
+                {
+                    _context.Actions.Add(new TrackedAction
+                    {
+                        Name = "Delete Hospital",
+                        Description = $"Deleted hospital: {hospitalName}",
+                        Type = ActionType.Delete,
+                        PerformedByUserId = currentUser.Id,
+                        PerformedAt = DateTime.UtcNow,
+                        TargetEntityId = null,
+                        TargetUserId = null
+                    });
+                    await _context.SaveChangesAsync();
+                }
             }
 
             return RedirectToAction("HospitalManagement", "Owner");
@@ -349,7 +427,7 @@ namespace BloodDonation.Controllers
             // Calculate request trends for last 30 days
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
             var last30DaysRequests = hospitalRequests.Where(r => r.CreatedAt >= thirtyDaysAgo).ToList();
-            
+
             // Group by date for trend chart
             var trends = last30DaysRequests
                 .GroupBy(r => r.CreatedAt.Date)
@@ -365,7 +443,7 @@ namespace BloodDonation.Controllers
             var allDates = Enumerable.Range(0, 30)
                 .Select(i => DateTime.UtcNow.Date.AddDays(-29 + i))
                 .ToList();
-            
+
             var trendsDict = trends.ToDictionary(t => t.Date.Date);
             var completeTrends = allDates.Select(date => new DailyRequestCount
             {
@@ -376,11 +454,11 @@ namespace BloodDonation.Controllers
             // Calculate previous 30 days for growth comparison
             var previous30DaysStart = DateTime.UtcNow.AddDays(-60);
             var previous30DaysEnd = DateTime.UtcNow.AddDays(-30);
-            var previous30DaysCount = hospitalRequests.Count(r => 
+            var previous30DaysCount = hospitalRequests.Count(r =>
                 r.CreatedAt >= previous30DaysStart && r.CreatedAt < previous30DaysEnd);
-            
+
             var last30DaysTotal = last30DaysRequests.Count;
-            var growth = previous30DaysCount > 0 
+            var growth = previous30DaysCount > 0
                 ? ((last30DaysTotal - previous30DaysCount) * 100.0 / previous30DaysCount)
                 : (last30DaysTotal > 0 ? 100.0 : 0);
 
@@ -388,7 +466,7 @@ namespace BloodDonation.Controllers
             var allBloodTypes = await _context.BloodTypes.OrderBy(b => b.Type).ToListAsync();
             var bloodTypeCounts = new Dictionary<string, int>();
             var totalBloodTypeRequests = hospitalRequests.Where(r => r.BloodType != null).Count();
-            
+
             foreach (var request in hospitalRequests.Where(r => r.BloodType != null))
             {
                 var bloodType = request.BloodType.Type;
@@ -401,8 +479,8 @@ namespace BloodDonation.Controllers
             foreach (var bloodType in allBloodTypes)
             {
                 var count = bloodTypeCounts.GetValueOrDefault(bloodType.Type, 0);
-                var percentage = totalBloodTypeRequests > 0 
-                    ? (count * 100.0 / totalBloodTypeRequests) 
+                var percentage = totalBloodTypeRequests > 0
+                    ? (count * 100.0 / totalBloodTypeRequests)
                     : 0;
                 bloodTypePercentages[bloodType.Type] = percentage;
             }
@@ -579,7 +657,7 @@ namespace BloodDonation.Controllers
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
-                query = query.Where(r => 
+                query = query.Where(r =>
                     r.RequestId.ToString().Contains(searchQuery) ||
                     r.BloodType.Type.Contains(searchQuery));
             }
@@ -674,8 +752,8 @@ namespace BloodDonation.Controllers
                 {
                     ConfirmationId = c.ConfirmationId,
                     DonorId = c.DonorId,
-                    DonorName = c.Donor.IsIdentityHidden 
-                        ? $"Donor #{c.DonorId}" 
+                    DonorName = c.Donor.IsIdentityHidden
+                        ? $"Donor #{c.DonorId}"
                         : $"{c.Donor.User.FirstName} {c.Donor.User.LastName}",
                     Email = c.Donor.User.Email ?? "",
                     PhoneNumber = c.Donor.User.PhoneNumber ?? "",
@@ -725,7 +803,7 @@ namespace BloodDonation.Controllers
                 // Parse the notification message to extract status
                 var requestStatus = "Updated";
                 var statusColor = "blue";
-                
+
                 if (n.Message.Contains("Approved"))
                 {
                     requestStatus = "Approved";
@@ -813,7 +891,7 @@ namespace BloodDonation.Controllers
         private string GetTimeAgo(DateTime dateTime)
         {
             var timeSpan = DateTime.UtcNow - dateTime;
-            
+
             if (timeSpan.TotalMinutes < 1)
                 return "Just now";
             if (timeSpan.TotalMinutes < 60)
@@ -823,9 +901,281 @@ namespace BloodDonation.Controllers
             return $"{(int)timeSpan.TotalDays} day(s) ago";
         }
 
-
         [Authorize(Roles = "Hospital")]
         [HttpGet]
+        public IActionResult Statistics(string timeframe, int? bloodTypeId)
+        {
+            // Start with all donor requests
+            var query = _context.DonorRequests.Include(r => r.BloodType).AsQueryable();
+
+            // Filter by timeframe
+            DateTime? startDate = null;
+            if (!string.IsNullOrEmpty(timeframe) && timeframe != "all")
+            {
+                int days = timeframe switch
+                {
+                    "30" => 30,
+                    "90" => 90,
+                    "365" => 365,
+                    _ => 0
+                };
+
+                if (days > 0)
+                {
+                    startDate = DateTime.Today.AddDays(-days);
+                    query = query.Where(r => r.CreatedAt >= startDate);
+                }
+            }
+            else
+            {
+                // "all" → include everything
+                startDate = query.Any() ? query.Min(r => r.CreatedAt) : DateTime.Today;
+            }
+
+
+            // Filter by blood type
+            if (bloodTypeId.HasValue)
+            {
+                query = query.Where(r => r.BloodTypeId == bloodTypeId.Value);
+            }
+
+            // Build model based on filtered data
+            var model = new HospitalStatisticsViewModel
+            {
+                FulfillmentRate = GetFulfillmentRate(query),
+                AverageCompletionTimeHours = GetAverageCompletionTime(query),
+                EngagedRequests = GetEngagedRequests(query),
+                UnmetRequests = GetUnmetRequests(query),
+                SupplyVsDemand = GetSupplyVsDemand(query),
+                CompletionRatio = GetCompletionRatio(query),
+                BloodTypeFulfillment = GetFulfillmentByBloodType(query),
+                StatusBreakdown = GetStatusBreakdown(query),
+                // New properties
+                MonthlyTrends = GetMonthlyTrends(query, startDate),
+                MonthlyPerformance = GetMonthlyPerformance(query, startDate),
+                FulfillmentTrend = GetFulfillmentTrend(query, startDate),
+                TimeTrendHours = GetTimeTrend(query, startDate),
+                EngagedTrendPercent = GetEngagedTrend(query, startDate),
+                UnmetTrendCount = GetUnmetTrend(query, startDate)
+            };
+
+            // Blood types for dropdown
+            ViewBag.Timeframes = new List<SelectListItem>
+    {
+        new SelectListItem { Text = "Last 30 Days", Value = "30", Selected = timeframe == "30" },
+        new SelectListItem { Text = "Last 3 Months", Value = "90", Selected = timeframe == "90" },
+        new SelectListItem { Text = "Last Year", Value = "365", Selected = timeframe == "365" },
+        new SelectListItem { Text = "All Time", Value = "all", Selected = timeframe == "all" }
+    };
+
+            ViewBag.BloodTypesList = _context.BloodTypes
+                .Select(bt => new SelectListItem
+                {
+                    Text = bt.Type,
+                    Value = bt.BloodTypeId.ToString(),
+                    Selected = bloodTypeId.HasValue && bt.BloodTypeId == bloodTypeId.Value
+                })
+                .ToList();
+
+            return View(model);
+        }
+
+        // Existing helper methods
+        private double GetFulfillmentRate(IQueryable<DonorRequest> query)
+        {
+            int total = query.Count();
+            if (total == 0) return 0;
+            int completed = query.Count(r => r.Status == "Completed");
+            return Math.Round((double)completed / total * 100, 1);
+        }
+
+        private double GetAverageCompletionTime(IQueryable<DonorRequest> query)
+        {
+            var times = query
+                .Where(r => r.CompletedAt != null)
+                .Select(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours)
+                .ToList();
+
+            return times.Any() ? Math.Round(times.Average(), 1) : 0;
+        }
+
+        private int GetEngagedRequests(IQueryable<DonorRequest> query)
+        {
+            return query.Count(r => r.Status == "Approved" || r.Status == "Completed");
+        }
+
+        private int GetUnmetRequests(IQueryable<DonorRequest> query)
+        {
+            return query.Count(r => r.Status == "Pending" || r.Status == "Cancelled");
+        }
+
+        private SupplyDemandViewModel GetSupplyVsDemand(IQueryable<DonorRequest> query)
+        {
+            return new SupplyDemandViewModel
+            {
+                Requested = query.Count(),
+                Completed = query.Count(r => r.Status == "Completed")
+            };
+        }
+
+        private List<BloodTypeFulfillmentViewModel> GetFulfillmentByBloodType(IQueryable<DonorRequest> query)
+        {
+            return query
+                .GroupBy(r => r.BloodType.Type)
+                .Select(g => new BloodTypeFulfillmentViewModel
+                {
+                    BloodType = g.Key,
+                    Demand = g.Count(),
+                    Completed = g.Count(r => r.Status == "Completed")
+                })
+                .ToList();
+        }
+
+        private List<StatusBreakdownViewModel> GetStatusBreakdown(IQueryable<DonorRequest> query)
+        {
+            return query
+                .GroupBy(r => r.Status)
+                .Select(g => new StatusBreakdownViewModel
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+        }
+
+        private CompletionRatioViewModel GetCompletionRatio(IQueryable<DonorRequest> query)
+        {
+            int completed = query.Count(r => r.Status == "Completed");
+            int total = query.Count();
+
+            return new CompletionRatioViewModel
+            {
+                Completed = completed,
+                NotCompleted = total - completed
+            };
+        }
+
+        // New helper methods for trends and monthly data
+        private List<MonthlyTrendViewModel> GetMonthlyTrends(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            var endDate = DateTime.Today;
+
+            // If no startDate provided, default to all data
+            var compareStartDate = startDate ?? query.Min(r => r.CreatedAt);
+
+            return query
+                .Where(r => r.CreatedAt >= compareStartDate && r.CreatedAt <= endDate)
+                .AsEnumerable()
+                .GroupBy(r => new DateTime(r.CreatedAt.Year, r.CreatedAt.Month, 1))
+                .Select(g => new MonthlyTrendViewModel
+                {
+                    Month = g.Key.ToString("MMM yyyy"), // "Jan 2026"
+                    Requested = g.Count(),
+                    Completed = g.Count(r => r.Status == "Completed")
+                })
+                .OrderBy(g => g.Month)
+                .ToList();
+        }
+
+
+
+        private List<MonthlyPerformanceViewModel> GetMonthlyPerformance(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            var endDate = DateTime.Today;
+            var compareStartDate = startDate ?? query.Min(r => r.CreatedAt);
+
+            return query
+                .Where(r => r.CreatedAt >= compareStartDate && r.CreatedAt <= endDate)
+                .AsEnumerable()
+                .GroupBy(r => new DateTime(r.CreatedAt.Year, r.CreatedAt.Month, 1))
+                .Select(g => new MonthlyPerformanceViewModel
+                {
+                    Month = g.Key.ToString("MMMM yyyy"),
+                    Requested = g.Count(),
+                    Fulfilled = g.Count(r => r.Status == "Completed"),
+                    Efficiency = g.Count() > 0 ? Math.Round((double)g.Count(r => r.Status == "Completed") / g.Count() * 100, 1) : 0
+                })
+                .OrderBy(g => g.Month)
+                .ToList();
+        }
+
+
+
+        private double GetFulfillmentTrend(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
+                return 2.1; // Default if not enough data
+
+            var currentPeriod = query.Where(r => r.CreatedAt >= startDate);
+            var previousPeriod = query.Where(r => r.CreatedAt >= startDate.Value.AddMonths(-1) && r.CreatedAt < startDate);
+
+            var currentRate = GetFulfillmentRate(currentPeriod);
+            var previousRate = GetFulfillmentRate(previousPeriod);
+
+            return Math.Round(currentRate - previousRate, 1);
+        }
+
+        private double GetTimeTrend(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
+                return 0.25;
+
+            var currentValues = query
+                .Where(r => r.CreatedAt >= startDate && r.CompletedAt != null)
+                .AsEnumerable()
+                .Select(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours)
+                .ToList();
+
+            var previousValues = query
+                .Where(r =>
+                    r.CreatedAt >= startDate.Value.AddMonths(-1) &&
+                    r.CreatedAt < startDate &&
+                    r.CompletedAt != null)
+                .AsEnumerable()
+                .Select(r => (r.CompletedAt!.Value - r.CreatedAt).TotalHours)
+                .ToList();
+
+            // 🔹 No data → neutral trend
+            if (!currentValues.Any() || !previousValues.Any())
+                return 0;
+
+            var currentAvg = currentValues.Average();
+            var previousAvg = previousValues.Average();
+
+            return Math.Round(previousAvg - currentAvg, 2);
+        }
+
+
+
+        private double GetEngagedTrend(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
+                return 12.0; // Default
+
+            var currentPeriod = query.Where(r => r.CreatedAt >= startDate);
+            var previousPeriod = query.Where(r => r.CreatedAt >= startDate.Value.AddMonths(-1) && r.CreatedAt < startDate);
+
+            var currentEngaged = currentPeriod.Count(r => r.Status == "Approved" || r.Status == "Completed");
+            var previousEngaged = previousPeriod.Count(r => r.Status == "Approved" || r.Status == "Completed");
+
+            if (previousEngaged == 0) return 0;
+            return Math.Round((double)(currentEngaged - previousEngaged) / previousEngaged * 100, 1);
+        }
+
+        private int GetUnmetTrend(IQueryable<DonorRequest> query, DateTime? startDate)
+        {
+            if (!startDate.HasValue || startDate.Value > DateTime.Today.AddDays(-60))
+                return 2; // Default
+
+            var currentPeriod = query.Where(r => r.CreatedAt >= startDate);
+            var previousPeriod = query.Where(r => r.CreatedAt >= startDate.Value.AddMonths(-1) && r.CreatedAt < startDate);
+
+            var currentUnmet = currentPeriod.Count(r => r.Status == "Pending" || r.Status == "Cancelled");
+            var previousUnmet = previousPeriod.Count(r => r.Status == "Pending" || r.Status == "Cancelled");
+
+            return currentUnmet - previousUnmet;
+        }
+
         public async Task<IActionResult> Settings()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -1233,9 +1583,11 @@ namespace BloodDonation.Controllers
         }
     }
 
+
     // Request model for marking notification as read
     public class MarkNotificationReadRequest
     {
         public int NotificationId { get; set; }
     }
+
 }

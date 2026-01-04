@@ -68,44 +68,44 @@ namespace BloodDonation.Data
                 new Locations { LocationId = 26, Districts = "West Beqaa"}
             );
 
-            // ========================
-            // RELATIONSHIPS TO FIX FK
-            // ========================
+            // =========================
+            // RELATIONSHIPS
+            // =========================
 
             // DonorConfirmation -> DonorRequest  (NO CASCADE)
             modelBuilder.Entity<DonorConfirmation>()
-                .HasOne(dc => dc.Request)          // navigation property
-                .WithMany()                        // no collection on DonorRequest
+                .HasOne(dc => dc.Request)
+                .WithMany()                             // no collection on DonorRequest
                 .HasForeignKey(dc => dc.RequestId)
-                .OnDelete(DeleteBehavior.NoAction);   // or DeleteBehavior.Restrict
+                .OnDelete(DeleteBehavior.NoAction);
 
-            // DonorConfirmation -> DonorProfile  (you can keep cascade here)
+            // DonorConfirmation -> DonorProfile (Cascade is fine)
             modelBuilder.Entity<DonorConfirmation>()
-                .HasOne(dc => dc.Donor)           // navigation property
-                .WithMany()                       // no collection on DonorProfile (I assume)
+                .HasOne(dc => dc.Donor)
+                .WithMany()                             // or .WithMany(d => d.Confirmations)
                 .HasForeignKey(dc => dc.DonorId)
-                .OnDelete(DeleteBehavior.Cascade);   // or NoAction if you prefer
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // HospitalNotification -> DonorRequest  (NO CASCADE)
+            // HospitalNotification -> DonorRequest (NO CASCADE)
             modelBuilder.Entity<HospitalNotification>()
                 .HasOne(hn => hn.Request)
                 .WithMany()
                 .HasForeignKey(hn => hn.RequestId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // HospitalStaff -> Hospital relationship
+            // HospitalStaff -> Hospital  (keep cascade)
             modelBuilder.Entity<HospitalStaff>()
                 .HasOne(hs => hs.Hospital)
-                .WithMany()
+                .WithMany(h => h.HospitalStaff)
                 .HasForeignKey(hs => hs.HospitalId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // HospitalStaff -> Users relationship
+            // HospitalStaff -> Users (NO CASCADE to avoid multiple cascade paths)
             modelBuilder.Entity<HospitalStaff>()
                 .HasOne(hs => hs.User)
-                .WithMany()
+                .WithMany()                             // or .WithMany(u => u.HospitalStaff)
                 .HasForeignKey(hs => hs.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         }
 
     }

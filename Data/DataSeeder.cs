@@ -66,7 +66,8 @@ namespace BloodDonation.Data
                 new { Email = "Ghinahsaiky@gmail.com", FirstName = "Ghina", LastName = "Hsaiky", Password = "Admin@123" },
                 new { Email = "rifaatramadan0@gmail.com", FirstName = "Rifaat", LastName = "Ramadan", Password = "Admin@123" },
                 new { Email = "yamen_nasr@outlook.com", FirstName = "Yamen", LastName = "Nasr", Password = "Admin@123" },
-                new { Email = "akhdarmohammad01@gmail.com", FirstName = "Mohammad", LastName = "Akhdar", Password = "Admin@123" }
+                new { Email = "akhdarmohammad01@gmail.com", FirstName = "Mohammad", LastName = "Akhdar", Password = "Admin@123" },
+                new { Email = "mahdi.m.tawbe@gmail.com", FirstName = "Mahdi", LastName = "Tawbe", Password = "Admin@123" }
             };
 
             foreach (var ownerData in ownerUsers)

@@ -1,0 +1,538 @@
+﻿@model BloodDonation.Models.ViewModels.HospitalStatisticsViewModel
+
+@{
+    Layout = "_HospitalLayout";
+    ViewData["Title"] = "Statistics";
+    var total = Model.CompletionRatio.Completed + Model.CompletionRatio.NotCompleted;
+    var percent = total == 0 ? 0 : ((double)Model.CompletionRatio.Completed * 100 / total);
+
+    // Calculate blood type bar heights
+    var maxDemand = Model.BloodTypeFulfillment.Any() ? Model.BloodTypeFulfillment.Max(x => x.Demand) : 1;
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Supply vs Demand Trends - Using real data from ViewModel
+        const monthLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyTrends.Select(m => m.Month)));
+        const requestedData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyTrends.Select(m => m.Requested)));
+        const receivedData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyTrends.Select(m => m.Completed)));
+
+        // Create line chart with real data
+        new Chart(document.getElementById('supplyDemandChart'), {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: [
+                    {
+                        label: 'Requested',
+                        data: requestedData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'transparent',
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Received',
+                        data: receivedData,
+                        borderColor: '#d60528',
+                        backgroundColor: 'transparent',
+                        tension: 0.4,
+                        pointBackgroundColor: '#d60528',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        borderWidth: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            borderDash: [5, 5]
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Donor Retention (Donut Chart)
+        const retentionData = {
+            labels: ['Returning Donors', 'New Donors'],
+            datasets: [{
+                data: [@Model.CompletionRatio.Completed, @Model.CompletionRatio.NotCompleted],
+                backgroundColor: ['#d60528', '#3b82f6'],
+                borderWidth: 0
+            }]
+        };
+
+        new Chart(document.getElementById('retentionChart'), {
+            type: 'doughnut',
+            data: retentionData,
+            options: {
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+}
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181112] dark:text-white">
+    <div class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark">
+        <header class="bg-white dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+            <div class="px-8 py-6 flex flex-wrap justify-between items-end gap-4">
+                <div class="flex flex-col gap-1">
+                    <h1 class="text-[#181112] dark:text-white text-3xl font-black leading-tight tracking-tight">
+                        Statistics &amp; Analytics
+                    </h1>
+                    <p class="text-[#8c5f66] dark:text-gray-400 text-sm font-normal">
+                        Detailed insights into donation trends and fulfillment.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right mr-4 hidden sm:block">
+                        <p class="text-xs text-gray-400">Data Last Updated</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Today, @DateTime.Now.ToString("hh:mm tt")</p>
+                    </div>
+                    <button id="exportButton" class="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm transition-colors">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+                        Export PDF
+                    </button>
+                </div>
+            </div>
+        </header>
+        <main id="statisticsContainer" class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-[1200px] mx-auto flex flex-col gap-6">
+                <!-- Filter Section -->
+                <form method="get" asp-action="Statistics">
+                    <div class="bg-white dark:bg-[#1a1a1a] p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col sm:flex-row gap-4 items-center">
+                        <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                            <span class="material-symbols-outlined">filter_list</span>
+                            <span class="text-sm font-semibold">Filter View:</span>
+                        </div>
+                        <div class="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Timeframe -->
+                            <div class="relative">
+                                <select name="timeframe" asp-items="ViewBag.Timeframes" class="w-full bg-gray-50 dark:bg-white/5 border-0 rounded-lg py-2 pl-3 pr-10 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary">
+                                </select>
+                            </div>
+
+                            <!-- Blood Type -->
+                            <div class="relative">
+                                <select name="bloodTypeId" asp-items="ViewBag.BloodTypesList" class="w-full bg-gray-50 dark:bg-white/5 border-0 rounded-lg py-2 pl-3 pr-10 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary">
+                                    <option value="">All Blood Types</option>
+                                </select>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="relative">
+                                <select name="status" class="w-full bg-gray-50 dark:bg-white/5 border-0 rounded-lg py-2 pl-3 pr-10 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary">
+                                    <option value="">All Statuses</option>
+                                    <option value="Emergency">Emergency</option>
+                                    <option value="Standard">Standard</option>
+                                    <option value="Scheduled">Scheduled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm transition-colors">
+                            Apply
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Statistics Cards -->
+                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Fulfillment Rate -->
+                    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-lg bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                                <span class="material-symbols-outlined">handshake</span>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Fulfillment Rate</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.FulfillmentRate%</h3>
+                            <span class="text-xs font-medium @(Model.FulfillmentTrend >= 0 ? "text-green-600" : "text-red-600") flex items-center">
+                                <span class="material-symbols-outlined text-sm">@(Model.FulfillmentTrend >= 0 ? "arrow_upward" : "arrow_downward")</span>
+                                @Math.Abs(Model.FulfillmentTrend)%
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Percentage of requests fully met</p>
+                    </div>
+
+                    <!-- Avg. Match Time -->
+                    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                                <span class="material-symbols-outlined">schedule</span>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg. Match Time</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.AverageCompletionTimeHours Hrs</h3>
+                            <span class="text-xs font-medium @(Model.TimeTrendHours >= 0 ? "text-green-600" : "text-red-600") flex items-center">
+                                <span class="material-symbols-outlined text-sm">@(Model.TimeTrendHours >= 0 ? "arrow_downward" : "arrow_upward")</span>
+                                @Math.Abs(Model.TimeTrendHours) Hrs
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Time from request to confirmation</p>
+                    </div>
+
+                    <!-- Engaged Donors -->
+                    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
+                                <span class="material-symbols-outlined">group</span>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Engaged Donors</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.EngagedRequests</h3>
+                            <span class="text-xs font-medium @(Model.EngagedTrendPercent >= 0 ? "text-green-600" : "text-red-600") flex items-center">
+                                <span class="material-symbols-outlined text-sm">@(Model.EngagedTrendPercent >= 0 ? "arrow_upward" : "arrow_downward")</span>
+                                @Math.Abs(Model.EngagedTrendPercent)%
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Donors active this month</p>
+                    </div>
+
+                    <!-- Unmet Requests -->
+                    <div class="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
+                                <span class="material-symbols-outlined">warning</span>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Unmet Requests</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.UnmetRequests</h3>
+                            <span class="text-xs font-medium @(Model.UnmetTrendCount >= 0 ? "text-red-600" : "text-green-600") flex items-center">
+                                <span class="material-symbols-outlined text-sm">@(Model.UnmetTrendCount >= 0 ? "arrow_upward" : "arrow_downward")</span>
+                                @Math.Abs(Model.UnmetTrendCount)
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Due to critical O- shortage</p>
+                    </div>
+                </section>
+
+                <!-- Trends and Retention -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Supply vs. Demand Trends -->
+                    <div class="lg:col-span-2 bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex flex-wrap justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-[#181112] dark:text-white text-lg font-bold">Supply vs. Demand Trends</h3>
+                                <p class="text-gray-500 text-xs">Comparison of blood units requested vs received over the last @Model.MonthlyTrends.Count months</p>
+                            </div>
+                            <div class="flex gap-4 text-xs font-semibold">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="block size-2.5 rounded-full bg-blue-500"></span>
+                                    <span class="text-gray-600 dark:text-gray-300">Requested</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="block size-2.5 rounded-full bg-primary"></span>
+                                    <span class="text-gray-600 dark:text-gray-300">Received</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative h-[280px] w-full">
+                            <canvas id="supplyDemandChart" height="280"></canvas>
+                        </div>
+                        @if (!Model.MonthlyTrends.Any())
+                        {
+                            <div class="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50">
+                                <p class="text-gray-500">No trend data available for selected filters</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Donor Retention -->
+                    <div class="bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
+                        <h3 class="text-[#181112] dark:text-white text-lg font-bold mb-1">Donor Retention</h3>
+                        <p class="text-gray-500 text-xs mb-8">Returning vs New Donors</p>
+                        <div class="flex-1 flex items-center justify-center relative">
+                            @if (total > 0)
+                            {
+                                <canvas id="retentionChart" width="180" height="180"></canvas>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <span class="text-3xl font-bold text-gray-800 dark:text-white">@percent.ToString("F1")%</span>
+                                    <span class="text-xs text-gray-500">Returning</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-gray-500">
+                                    <span class="material-symbols-outlined text-4xl mb-2">pie_chart</span>
+                                    <p>No retention data available</p>
+                                </div>
+                            }
+                        </div>
+                        <div class="flex flex-col gap-3 mt-8">
+                            <div class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="size-3 bg-primary rounded-sm"></span>
+                                    <span class="text-gray-600 dark:text-gray-300">Returning Donors</span>
+                                </div>
+                                <span class="font-bold">@Model.CompletionRatio.Completed</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="size-3 bg-blue-500 rounded-sm"></span>
+                                    <span class="text-gray-600 dark:text-gray-300">New Donors</span>
+                                </div>
+                                <span class="font-bold">@Model.CompletionRatio.NotCompleted</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blood Type Fulfillment and Monthly Performance -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Blood Type Fulfillment -->
+                    <div class="bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-[#181112] dark:text-white text-lg font-bold">Fulfillment by Blood Type</h3>
+                            <div class="flex gap-4 text-xs font-semibold">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="block size-2.5 rounded-sm bg-primary/20"></span>
+                                    <span class="text-gray-600 dark:text-gray-300">Demand</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="block size-2.5 rounded-sm bg-primary"></span>
+                                    <span class="text-gray-600 dark:text-gray-300">Supplied</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative h-[200px] flex items-end justify-between gap-2 sm:gap-4 px-2">
+                            @if (Model.BloodTypeFulfillment.Any())
+                            {
+                                @foreach (var bloodType in Model.BloodTypeFulfillment.OrderBy(b => b.BloodType))
+                                {
+                                    var demandHeight = bloodType.Demand > 0 ? Math.Min((bloodType.Demand / (double)maxDemand) * 100, 100) : 0;
+                                    var completedHeight = bloodType.Demand > 0 ? Math.Min((bloodType.Completed / (double)bloodType.Demand) * demandHeight, demandHeight) : 0;
+                                    var isCritical = bloodType.BloodType == "O-" && bloodType.Completed < bloodType.Demand * 0.5;
+                                    var shortagePercent = bloodType.Demand > 0 ? Math.Round((1 - (double)bloodType.Completed / bloodType.Demand) * 100, 0) : 0;
+
+                                    <div class="w-full flex flex-col items-center gap-2" title="@bloodType.BloodType: @bloodType.Completed of @bloodType.Demand units supplied (@shortagePercent% shortage)">
+                                        <div class="relative w-full h-[150px] flex justify-center items-end gap-1">
+                                            <div class="w-3 bg-primary/20 rounded-t-sm" style="height: @(demandHeight)%"></div>
+                                            <div class="w-3 @(isCritical ? "bg-red-600" : "bg-primary") @(isCritical ? "animate-pulse" : "") rounded-t-sm" style="height: @(completedHeight)%"></div>
+                                        </div>
+                                        <span class="text-xs font-bold @(isCritical ? "text-red-600 dark:text-red-400" : "text-gray-600 dark:text-gray-400")">@bloodType.BloodType</span>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <p class="text-gray-500">No blood type data available</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Monthly Performance Table -->
+                    <div class="bg-white dark:bg-[#1a1a1a] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-[#181112] dark:text-white text-lg font-bold">Monthly Performance</h3>
+                            <a class="text-primary text-sm font-semibold hover:underline" href="#">View All</a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            @if (Model.MonthlyPerformance.Any())
+                            {
+                                <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+                                    <thead class="border-b border-gray-100 dark:border-gray-700">
+                                        <tr>
+                                            <th class="pb-3 font-semibold">Month</th>
+                                            <th class="pb-3 font-semibold">Requested</th>
+                                            <th class="pb-3 font-semibold">Fulfilled</th>
+                                            <th class="pb-3 font-semibold text-right">Efficiency</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                        @foreach (var month in Model.MonthlyPerformance)
+                                        {
+                                            var efficiencyClass = month.Efficiency >= 90 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                                            month.Efficiency >= 80 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                            "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+
+                                            <tr>
+                                                <td class="py-3 text-gray-900 dark:text-white font-medium">@month.Month</td>
+                                                <td class="py-3">@month.Requested Units</td>
+                                                <td class="py-3">@month.Fulfilled Units</td>
+                                                <td class="py-3 text-right">
+                                                    <span class="@efficiencyClass px-2 py-1 rounded text-xs font-bold">@month.Efficiency%</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else
+                            {
+                                <div class="text-center py-8 text-gray-500">
+                                    <span class="material-symbols-outlined text-4xl mb-2">table_chart</span>
+                                    <p>No monthly performance data available</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- PDF Export Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        document.getElementById("exportButton").addEventListener("click", async function () {
+
+            const exportButton = this;
+            const originalText = exportButton.innerHTML;
+
+            exportButton.innerHTML =
+                '<span class="material-symbols-outlined">downloading</span> Generating PDF...';
+            exportButton.disabled = true;
+
+            const filterSection = document.querySelector('form[method="get"]');
+            if (filterSection) filterSection.style.display = 'none';
+
+            const container = document.getElementById("statisticsContainer");
+
+            // 🔹 Fix overflow clipping
+            const originalOverflow = container.style.overflow;
+            const originalHeight = container.style.height;
+            container.style.overflow = 'visible';
+            container.style.height = 'auto';
+
+            try {
+                const canvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff",
+                    logging: false,
+                    allowTaint: true,
+                    onclone: (clonedDoc) => {
+
+                        // Force light mode
+                        clonedDoc.body.classList.remove("dark");
+                        clonedDoc.body.style.backgroundColor = "#ffffff";
+
+                        // Backgrounds
+                        clonedDoc.querySelectorAll(
+                            '.dark\\:bg-\\[\\#1a1a1a\\], .dark\\:bg-background-dark'
+                        ).forEach(el => {
+                            el.style.backgroundColor = "#ffffff";
+                        });
+
+                        // Text colors
+                        clonedDoc.querySelectorAll(
+                            '.dark\\:text-white, .dark\\:text-gray-300, .dark\\:text-gray-400'
+                        ).forEach(el => {
+                            el.style.color = "#111827";
+                        });
+
+                        // Borders
+                        clonedDoc.querySelectorAll('.dark\\:border-gray-800')
+                            .forEach(el => {
+                                el.style.borderColor = "#e5e7eb";
+                            });
+                    }
+                });
+
+                const imgData = canvas.toDataURL("image/png");
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF("p", "pt", "a4");
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                const margin = 72;
+                const usableWidth = pdfWidth - margin * 2;
+                const usableHeight = pdfHeight - margin * 2;
+
+                const imgHeight = (canvas.height * usableWidth) / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = margin;
+
+                // Header
+                pdf.setFontSize(20);
+                pdf.text("Hospital Statistics Report", margin, 40);
+
+                pdf.setFontSize(10);
+                pdf.setTextColor(120);
+                pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 58);
+
+                position = 80;
+                heightLeft -= usableHeight;
+
+                pdf.addImage(imgData, "PNG", margin, position, usableWidth, imgHeight);
+
+                // 🔹 Multi-page support
+                while (heightLeft > 0) {
+                    pdf.addPage();
+                    position = margin - heightLeft;
+                    pdf.addImage(imgData, "PNG", margin, position, usableWidth, imgHeight);
+                    heightLeft -= usableHeight;
+                }
+
+                // Page numbers
+                const pageCount = pdf.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    pdf.setPage(i);
+                    pdf.setFontSize(9);
+                    pdf.setTextColor(150);
+                    pdf.text(
+                        `Page ${i} of ${pageCount}`,
+                        pdfWidth / 2,
+                        pdfHeight - 30,
+                        { align: "center" }
+                    );
+                }
+
+                pdf.save(`Hospital_Statistics_${new Date().toISOString().split("T")[0]}.pdf`);
+
+            } catch (error) {
+                console.error("PDF export error:", error);
+                alert("Failed to generate PDF. Please try again.");
+            }
+
+            // Restore UI
+            container.style.overflow = originalOverflow;
+            container.style.height = originalHeight;
+            if (filterSection) filterSection.style.display = '';
+
+            exportButton.innerHTML = originalText;
+            exportButton.disabled = false;
+        });
+    </script>
+
+</body>
