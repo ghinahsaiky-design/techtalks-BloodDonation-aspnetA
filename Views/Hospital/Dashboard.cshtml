@@ -235,70 +235,157 @@
             </div>
         </div>
         
-        <!-- Recent Communications & Actions -->
+        <!-- Recent Requests & Actions -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left: Communications -->
+            <!-- Left: Recent Requests -->
             <div class="lg:col-span-2 bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                    <h3 class="text-[#181112] dark:text-white text-lg font-bold">Recent Communications</h3>
-                    <a class="text-primary text-sm font-semibold hover:underline" href="#">View All</a>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-xl">assignment</span>
+                        <h3 class="text-[#181112] dark:text-white text-lg font-bold">Recent Requests</h3>
+                    </div>
+                    <a asp-action="ViewRequests" class="text-primary text-sm font-semibold hover:underline">View All</a>
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-800">
-                    <div class="p-4 flex gap-4 items-start hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
-                        <div class="size-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 font-bold">JD</div>
-                        <div class="flex-1">
-                            <div class="flex justify-between mb-1">
-                                <p class="text-sm font-bold text-[#181112] dark:text-white">John Doe (Donor)</p>
-                                <span class="text-xs text-gray-500">2 min ago</span>
-                            </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">I am available to donate for the O- emergency request this afternoon. Please confirm...</p>
-                        </div>
-                    </div>
-                    <div class="p-4 flex gap-4 items-start hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
-                        <div class="size-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 font-bold">RC</div>
-                        <div class="flex-1">
-                            <div class="flex justify-between mb-1">
-                                <p class="text-sm font-bold text-[#181112] dark:text-white">Red Cross Logistics</p>
-                                <span class="text-xs text-gray-500">1 hr ago</span>
-                            </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">Shipment #BLD-40291 is currently in transit. ETA: 14:00 today.</p>
-                        </div>
-                    </div>
-                    <div class="p-4 flex gap-4 items-start hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
-                        <div class="size-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 font-bold">SM</div>
-                        <div class="flex-1">
-                            <div class="flex justify-between mb-1">
-                                <p class="text-sm font-bold text-[#181112] dark:text-white">Sarah Miller (Donor)</p>
-                                <span class="text-xs text-gray-500">4 hrs ago</span>
-                            </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">Thank you for the update. I will schedule my next appointment for next month.</p>
-                        </div>
-                    </div>
+                    @if (Model.RecentRequests != null && Model.RecentRequests.Any())
+                    {
+                        @foreach (var request in Model.RecentRequests)
+                        {
+                            var statusColor = request.Status switch
+                            {
+                                "Completed" => "bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400",
+                                "Approved" => "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+                                "Pending" => "bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400",
+                                "Cancelled" => "bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400",
+                                _ => "bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400"
+                            };
+                            var timeSpan = DateTime.UtcNow - request.CreatedAt;
+                            string timeAgo;
+                            if (timeSpan.TotalMinutes < 60)
+                            {
+                                timeAgo = (int)timeSpan.TotalMinutes + " min ago";
+                            }
+                            else if (timeSpan.TotalHours < 24)
+                            {
+                                timeAgo = (int)timeSpan.TotalHours + " hr ago";
+                            }
+                            else
+                            {
+                                var days = (int)timeSpan.TotalDays;
+                                timeAgo = days + " day" + (days > 1 ? "s" : "") + " ago";
+                            }
+                            
+                            <a asp-action="ViewRequests" class="p-4 flex gap-4 items-start hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer block">
+                                <div class="size-10 rounded-full @statusColor flex items-center justify-center flex-shrink-0 font-bold">
+                                    @request.BloodType?.Type
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between mb-1">
+                                        <p class="text-sm font-bold text-[#181112] dark:text-white">Request #@request.RequestId - @request.BloodType?.Type</p>
+                                        <span class="text-xs text-gray-500">@timeAgo</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium @statusColor border">@request.Status</span>
+                                        @if (!string.IsNullOrEmpty(request.PatientName))
+                                        {
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">@request.PatientName</p>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(request.AdditionalNotes))
+                                    {
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">@request.AdditionalNotes</p>
+                                    }
+                                </div>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-gray-500 dark:text-gray-400">No recent requests</div>
+                    }
                 </div>
             </div>
             
-            <!-- Right: Quick Stock Check -->
+            <!-- Right: Alerts -->
             <div class="bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 flex flex-col gap-4">
-                <h3 class="text-[#181112] dark:text-white text-lg font-bold">Inventory Alerts</h3>
-                <div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 flex gap-3 items-start">
-                    <span class="material-symbols-outlined text-red-600 dark:text-red-400">error</span>
-                    <div>
-                        <p class="text-sm font-bold text-red-800 dark:text-red-300">O- Negative Critical</p>
-                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">Only 2 units remaining. Immediate action required.</p>
-                        <button class="mt-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded transition-colors">Launch Campaign</button>
-                    </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-xl">notifications</span>
+                    <h3 class="text-[#181112] dark:text-white text-lg font-bold">Alerts</h3>
                 </div>
-                <div class="p-4 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30 flex gap-3 items-start">
-                    <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">warning</span>
-                    <div>
-                        <p class="text-sm font-bold text-orange-800 dark:text-orange-300">Platelets Low</p>
-                        <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Supply dropping below 3-day buffer.</p>
-                    </div>
-                </div>
-                <div class="mt-auto pt-4">
-                    <button class="w-full flex items-center justify-center gap-2 rounded-lg py-2.5 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
-                        View Full Inventory
-                    </button>
+                <div class="flex flex-col gap-3 overflow-y-auto max-h-[400px]">
+                    @if (Model.RecentNotifications != null && Model.RecentNotifications.Any())
+                    {
+                        @foreach (var notification in Model.RecentNotifications)
+                        {
+                            var alertColor = notification.Message.Contains("Completed") || notification.Message.Contains("Approved")
+                                ? "bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-900/30"
+                                : notification.Message.Contains("Cancelled") || notification.Message.Contains("Critical") || notification.Message.Contains("Urgent")
+                                ? "bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30"
+                                : notification.Message.Contains("Pending")
+                                ? "bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-900/30"
+                                : "bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30";
+                            
+                            var iconColor = notification.Message.Contains("Completed") || notification.Message.Contains("Approved")
+                                ? "text-green-600 dark:text-green-400"
+                                : notification.Message.Contains("Cancelled") || notification.Message.Contains("Critical") || notification.Message.Contains("Urgent")
+                                ? "text-red-600 dark:text-red-400"
+                                : notification.Message.Contains("Pending")
+                                ? "text-orange-600 dark:text-orange-400"
+                                : "text-blue-600 dark:text-blue-400";
+                            
+                            var textColor = notification.Message.Contains("Completed") || notification.Message.Contains("Approved")
+                                ? "text-green-800 dark:text-green-300"
+                                : notification.Message.Contains("Cancelled") || notification.Message.Contains("Critical") || notification.Message.Contains("Urgent")
+                                ? "text-red-800 dark:text-red-300"
+                                : notification.Message.Contains("Pending")
+                                ? "text-orange-800 dark:text-orange-300"
+                                : "text-blue-800 dark:text-blue-300";
+                            
+                            var iconName = notification.Message.Contains("Completed") || notification.Message.Contains("Approved")
+                                ? "check_circle"
+                                : notification.Message.Contains("Cancelled") || notification.Message.Contains("Critical") || notification.Message.Contains("Urgent")
+                                ? "error"
+                                : notification.Message.Contains("Pending")
+                                ? "warning"
+                                : "info";
+                            
+                            var timeSpan = DateTime.UtcNow - notification.CreatedAt;
+                            string timeAgo;
+                            if (timeSpan.TotalMinutes < 60)
+                            {
+                                timeAgo = (int)timeSpan.TotalMinutes + " min ago";
+                            }
+                            else if (timeSpan.TotalHours < 24)
+                            {
+                                timeAgo = (int)timeSpan.TotalHours + " hr ago";
+                            }
+                            else
+                            {
+                                var days = (int)timeSpan.TotalDays;
+                                timeAgo = days + " day" + (days > 1 ? "s" : "") + " ago";
+                            }
+                            
+                            <a asp-action="ViewRequests" class="p-4 rounded-lg @alertColor border flex gap-3 items-start hover:opacity-80 transition-opacity cursor-pointer @(notification.Status == "Unread" ? "ring-2 ring-primary/50" : "")">
+                                <span class="material-symbols-outlined @iconColor flex-shrink-0">@iconName</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold @textColor">@notification.Message</p>
+                                    @if (notification.Request != null && notification.Request.BloodType != null)
+                                    {
+                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Request #@notification.RequestId - @notification.Request.BloodType.Type</p>
+                                    }
+                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">@timeAgo</p>
+                                </div>
+                                @if (notification.Status == "Unread")
+                                {
+                                    <div class="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1"></div>
+                                }
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-gray-500 dark:text-gray-400">No alerts at this time</div>
+                    }
                 </div>
             </div>
         </div>

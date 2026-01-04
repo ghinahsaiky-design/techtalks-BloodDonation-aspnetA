@@ -113,6 +113,7 @@ namespace BloodDonation.Models
         public double SuccessRate { get; set; }
         
         public List<DonorRequest> RecentRequests { get; set; } = new List<DonorRequest>();
+        public List<HospitalNotification> RecentNotifications { get; set; } = new List<HospitalNotification>();
         public Dictionary<string, int> BloodTypeDemand { get; set; } = new Dictionary<string, int>();
         
         // For charts
