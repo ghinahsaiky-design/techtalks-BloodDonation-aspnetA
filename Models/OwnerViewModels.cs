@@ -69,6 +69,9 @@ namespace BloodDonation.Models
         [Display(Name = "Confirm Password")]
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        public string Status { get; set; } = "Active";
     }
 
     public class EditAdminViewModel
@@ -86,6 +89,9 @@ namespace BloodDonation.Models
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
+        [Required]
+        public string Status { get; set; }
     }
 
     public class AddHospitalTeamMemberViewModel

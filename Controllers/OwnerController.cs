@@ -205,6 +205,7 @@ namespace BloodDonation.Controllers
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     Role = "Admin",
+                    Status = model.Status,
                     CreatedAt = DateTime.UtcNow,
                     EmailConfirmed = true
                 };
@@ -254,7 +255,8 @@ namespace BloodDonation.Controllers
                  Id = user.Id,
                  FirstName = user.FirstName,
                  LastName = user.LastName,
-                 Email = user.Email
+                 Email = user.Email,
+                 Status = user.Status
              };
              return View(model);
         }
@@ -273,6 +275,7 @@ namespace BloodDonation.Controllers
                 user.LastName = model.LastName;
                 user.Email = model.Email;
                 user.UserName = model.Email;
+                user.Status = model.Status;
 
                 var result = await _userManager.UpdateAsync(user);
                 if (result.Succeeded)
