@@ -1035,7 +1035,6 @@ namespace BloodDonation.Controllers
                 return $"{(int)timeSpan.TotalHours} hour(s) ago";
             return $"{(int)timeSpan.TotalDays} day(s) ago";
         }
-
         [Authorize(Roles = "Hospital")]
         [HttpGet]
         public async Task<IActionResult> Statistics(string timeframe, int? bloodTypeId)
@@ -1043,12 +1042,11 @@ namespace BloodDonation.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            // 🔹 Get the hospital for the current user
-            var hospital = await _context.Hospitals
-                .FirstOrDefaultAsync(h => h.UserId == user.Id);
+            // Use helper to resolve hospital for primary user or staff member
+            var (hospital, staff, isPrimaryUser) = await GetHospitalForUserAsync(user.Id);
             if (hospital == null) return NotFound();
 
-            // 🔹 Get all relevant user IDs: hospital user + active staff from HospitalStaff table
+            // Get all relevant user IDs: hospital user + active staff from HospitalStaff table
             var hospitalUserIds = new List<int> { hospital.UserId };
 
             var staffUserIds = await _context.HospitalStaff
@@ -1058,7 +1056,7 @@ namespace BloodDonation.Controllers
 
             hospitalUserIds.AddRange(staffUserIds);
 
-            // 🔹 Filter donor requests by these user IDs
+            // Filter donor requests by these user IDs
             var query = _context.DonorRequests
                 .Include(r => r.BloodType)
                 .Where(r => r.RequestedByUserId != null && hospitalUserIds.Contains(r.RequestedByUserId.Value))
