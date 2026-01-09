@@ -1216,53 +1216,54 @@ namespace BloodDonation.Controllers
         }
 
         // New helper methods for trends and monthly data
-        private List<MonthlyTrendViewModel> GetMonthlyTrends(IQueryable<DonorRequest> query, DateTime? startDate)
+        private List<MonthlyTrendViewModel> GetMonthlyTrends(
+   IQueryable<DonorRequest> query, DateTime? startDate)
         {
             var endDate = DateTime.Today;
+            var data = query.AsEnumerable().ToList();
 
-            // Materialize the query first to avoid database execution issues
-            var materializedQuery = query.AsEnumerable().ToList();
+            var from = startDate ?? (data.Any() ? data.Min(r => r.CreatedAt) : DateTime.Today);
 
-            // If no startDate provided, default to all data
-            var compareStartDate = startDate ?? (materializedQuery.Any() ? materializedQuery.Min(r => r.CreatedAt) : DateTime.Today);
-
-            return materializedQuery
-                .Where(r => r.CreatedAt >= compareStartDate && r.CreatedAt <= endDate)
+            return data
+                .Where(r => r.CreatedAt >= from && r.CreatedAt <= endDate)
                 .GroupBy(r => new DateTime(r.CreatedAt.Year, r.CreatedAt.Month, 1))
                 .Select(g => new MonthlyTrendViewModel
                 {
-                    Month = g.Key.ToString("MMM yyyy"), // "Jan 2026"
+                    MonthDate = g.Key,                      // ✅ REAL date
+                    Month = g.Key.ToString("MMM yyyy"),     // display only
                     Requested = g.Count(),
                     Completed = g.Count(r => r.Status == "Completed")
                 })
-                .OrderBy(g => g.Month)
+                .OrderBy(x => x.MonthDate)                 // ✅ correct ordering
                 .ToList();
         }
 
 
 
-        private List<MonthlyPerformanceViewModel> GetMonthlyPerformance(IQueryable<DonorRequest> query, DateTime? startDate)
+        private List<MonthlyPerformanceViewModel> GetMonthlyPerformance(
+           IQueryable<DonorRequest> query, DateTime? startDate)
         {
             var endDate = DateTime.Today;
-            
-            // Materialize the query first to avoid database execution issues
-            var materializedQuery = query.AsEnumerable().ToList();
-            
-            var compareStartDate = startDate ?? (materializedQuery.Any() ? materializedQuery.Min(r => r.CreatedAt) : DateTime.Today);
+            var data = query.AsEnumerable().ToList();
 
-            return materializedQuery
-                .Where(r => r.CreatedAt >= compareStartDate && r.CreatedAt <= endDate)
+            var from = startDate ?? (data.Any() ? data.Min(r => r.CreatedAt) : DateTime.Today);
+
+            return data
+                .Where(r => r.CreatedAt >= from && r.CreatedAt <= endDate)
                 .GroupBy(r => new DateTime(r.CreatedAt.Year, r.CreatedAt.Month, 1))
                 .Select(g => new MonthlyPerformanceViewModel
                 {
+                    MonthDate = g.Key,
                     Month = g.Key.ToString("MMMM yyyy"),
                     Requested = g.Count(),
                     Fulfilled = g.Count(r => r.Status == "Completed"),
-                    Efficiency = g.Count() > 0 ? Math.Round((double)g.Count(r => r.Status == "Completed") / g.Count() * 100, 1) : 0
+                    Efficiency = g.Count() == 0 ? 0
+                        : Math.Round((double)g.Count(r => r.Status == "Completed") / g.Count() * 100, 1)
                 })
-                .OrderBy(g => g.Month)
+                .OrderBy(x => x.MonthDate)
                 .ToList();
         }
+
 
 
 

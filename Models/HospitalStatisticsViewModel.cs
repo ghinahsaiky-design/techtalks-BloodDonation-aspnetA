@@ -19,29 +19,15 @@
         public CompletionRatioViewModel CompletionRatio { get; set; } = new();
 
         // Time series data
-        public List<MonthlyTrendViewModel> MonthlyTrends { get; set; } = new();
-        public List<MonthlyPerformanceViewModel> MonthlyPerformance { get; set; } = new();
+        public List<MonthlyTrendViewModel> MonthlyTrends { get; set; }
+        public List<MonthlyPerformanceViewModel> MonthlyPerformance { get; set; }
+
 
         // Other collections
         public List<BloodTypeFulfillmentViewModel> BloodTypeFulfillment { get; set; } = new();
         public List<StatusBreakdownViewModel> StatusBreakdown { get; set; } = new();
     }
 
-    // Add these new ViewModels
-    public class MonthlyTrendViewModel
-    {
-        public string Month { get; set; } = "";
-        public int Requested { get; set; }
-        public int Completed { get; set; }
-    }
-
-    public class MonthlyPerformanceViewModel
-    {
-        public string Month { get; set; } = "";
-        public int Requested { get; set; }
-        public int Fulfilled { get; set; }
-        public double Efficiency { get; set; }
-    }
 
     public class SupplyDemandViewModel
     {
